@@ -4,16 +4,18 @@ Thanks for helping build the all-in-one Local LLM Developer Box. This guide cove
 
 ## Repository Layout
 
-This repo is the **extracted, canonical source** of the feature collection. Features live at the top level (each directory is a complete devcontainer feature):
+This repo is the **extracted, canonical source** of the feature collection, in the standard devcontainer layout:
 
 ```
 .
-├── llama-server/        # Prebuilt llama.cpp server feature
-├── gpu-bridge/          # WSL2 GPU bridge feature
-├── bifrost-gateway/     # Bifrost gateway feature
-├── models/              # On-demand model fetch feature
-├── opencode-agents/     # Multi-agent opencode setup + library
-├── llm-lab/             # llm-lab template (devcontainer-template.json + tests)
+├── src/
+│   ├── llama-server/        # Prebuilt llama.cpp server feature
+│   ├── gpu-bridge/          # WSL2 GPU bridge feature
+│   ├── bifrost-gateway/     # Bifrost gateway feature
+│   ├── models/              # On-demand model fetch feature
+│   ├── opencode-agents/     # Multi-agent opencode setup + library
+│   └── templates/
+│       └── llm-lab/         # llm-lab template (devcontainer-template.json + tests)
 ├── library/             # Reference books shipped by opencode-agents
 ├── docs/                # Website (GitHub Pages: /docs on main)
 ├── test/                # Shared test scenarios
@@ -30,14 +32,14 @@ The upstream source-of-truth repo (`opencode-local-lab`) regenerates this tree w
 
 ## Development Workflow
 
-1. **Make changes** to the feature you are working on (its `devcontainer-feature.json` and/or `install.sh`).
+1. **Make changes** to the feature you are working on (its `devcontainer-feature.json` and/or `install.sh` under `src/<feature-name>/`).
 2. **Validate the feature manifest**:
    ```bash
-   devcontainer features info -f ./llama-server
+   devcontainer features info -f ./src/llama-server
    ```
 3. **Test scenarios** (if you changed install behavior), run the feature test suite:
    ```bash
-   devcontainer features test -f ./llama-server -i ghcr.io/devcontainers/features/universal:latest
+   devcontainer features test -f ./src/llama-server -i ghcr.io/devcontainers/features/universal:latest
    ```
    Add or update `test/scenarios.json` entries in `./test/` when behavior changes.
 4. **Check the dependency graph**:
@@ -48,7 +50,7 @@ The upstream source-of-truth repo (`opencode-local-lab`) regenerates this tree w
 
 ## Adding a New Feature
 
-1. Create `<feature-name>/` at the repo root with:
+1. Create `src/<feature-name>/` with:
    - `devcontainer-feature.json` — manifest (id, version, options, `installsAfter`)
    - `install.sh` — must be idempotent and exit non-zero on hard failure
 2. Follow the conventions of existing features:
@@ -88,8 +90,8 @@ The site is served by GitHub Pages from the `/docs` folder on `main`.
 
 Publishing happens in CI (`.github/workflows/release.yaml`) — do not publish from your local machine.
 
-- **Features:** `devcontainer features publish ./{feature} -r ghcr.io -n nmwael/agentic-devcontainer-feature`
-- **Templates:** `devcontainer templates publish ./llm-lab -r ghcr.io -n nmwael/agentic-devcontainer-feature-templates`
+- **Features:** `devcontainer features publish ./src -r ghcr.io -n nmwael/agentic-devcontainer-feature`
+- **Templates:** `devcontainer templates publish ./src/templates -r ghcr.io -n nmwael/agentic-devcontainer-feature-templates`
 - Requires a token with `packages: write` (GitHub Actions `GITHUB_TOKEN` or a PAT stored as `GH_PAT`).
 
 ## Pull Requests

@@ -110,8 +110,8 @@ See **[CONTRIBUTING.md](CONTRIBUTING.md)** for the full development workflow, ho
 
 ### Quick Summary
 
-1. Make changes to the feature at the repo root (e.g. `llama-server/install.sh`)
-2. Validate with `devcontainer features info -f ./llama-server`
+1. Make changes to the feature source under `src/<feature-name>/` (e.g. `src/llama-server/install.sh`)
+2. Validate with `devcontainer features info -f ./src/llama-server`
 3. Test scenarios with `devcontainer features test` and the shared `test/` scenarios
 4. Update `docs/index.html` if the feature description changes
 5. Open a PR — one logical change per PR
@@ -121,29 +121,29 @@ See **[CONTRIBUTING.md](CONTRIBUTING.md)** for the full development workflow, ho
 Publishing happens in CI via `.github/workflows/release.yaml`:
 
 ```bash
-# Features
-devcontainer features publish ./llama-server -r ghcr.io -n nmwael/agentic-devcontainer-feature
-devcontainer features publish ./gpu-bridge -r ghcr.io -n nmwael/agentic-devcontainer-feature
-# ... etc
+# Features (the whole collection in one command — publishes collection metadata too)
+devcontainer features publish ./src -r ghcr.io -n nmwael/agentic-devcontainer-feature
 
 # Template
-devcontainer templates publish ./llm-lab -r ghcr.io -n nmwael/agentic-devcontainer-feature-templates
+devcontainer templates publish ./src/templates -r ghcr.io -n nmwael/agentic-devcontainer-feature-templates
 ```
 
-Requires `GITHUB_TOKEN` or `GH_PAT` with `packages: write`. CI publishes all features in one trigger — do not publish from local.
+Requires `GITHUB_TOKEN` (automatic, with `packages: write` job permission). CI publishes on push to `main` or `v*` tags — do not publish from local.
 
 ## Repository Structure
 
-This repository is the extracted, standalone feature collection — every feature lives at the top level:
+This repository is the extracted, standalone feature collection in the canonical devcontainer layout (features under `src/`, template under `src/templates/`):
 
 ```
 .
-├── llama-server/        # Prebuilt llama.cpp server feature
-├── gpu-bridge/          # WSL2 GPU bridge feature
-├── bifrost-gateway/     # Bifrost gateway feature
-├── models/              # On-demand model fetch feature
-├── opencode-agents/     # Multi-agent setup + library feature
-├── llm-lab/             # llm-lab template (devcontainer-template.json + tests)
+├── src/
+│   ├── llama-server/        # Prebuilt llama.cpp server feature
+│   ├── gpu-bridge/          # WSL2 GPU bridge feature
+│   ├── bifrost-gateway/     # Bifrost gateway feature
+│   ├── models/              # On-demand model fetch feature
+│   ├── opencode-agents/     # Multi-agent setup + library feature
+│   └── templates/
+│       └── llm-lab/         # llm-lab template (devcontainer-template.json + tests)
 ├── library/             # Reference books shipped by opencode-agents
 ├── docs/                # Website (index.html) — GitHub Pages source
 ├── test/                # Shared test scenarios
