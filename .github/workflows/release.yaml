@@ -27,13 +27,10 @@ jobs:
 
       - name: Publish features
         run: |
-          devcontainer features publish \
-            ./llama-server \
-            ./gpu-bridge \
-            ./bifrost-gateway \
-            ./models \
-            ./opencode-agents \
-            -r ghcr.io -n "${FEATURES_NAMESPACE}" --log-level info
+          for feature in llama-server gpu-bridge bifrost-gateway models opencode-agents; do
+            echo "Publishing ${feature}..."
+            devcontainer features publish "./${feature}" -r ghcr.io -n "${FEATURES_NAMESPACE}" --log-level info
+          done
         env:
           GITHUB_TOKEN: ${{ secrets.GH_PAT }}
 
@@ -41,3 +38,4 @@ jobs:
         run: devcontainer templates publish ./llm-lab -r ghcr.io -n "${TEMPLATES_NAMESPACE}" --log-level info
         env:
           GITHUB_TOKEN: ${{ secrets.GH_PAT }}
+
