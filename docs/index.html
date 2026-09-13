@@ -325,6 +325,16 @@
         </header>
 
         <div class="section">
+            <h2>How to Use</h2>
+            <p class="lead">Three ways to engage with this repo — pick the one that fits.</p>
+            <ol>
+                <li><strong>Consumer (new repo)</strong> — Add the features block from the Quick Start section below to your <code>devcontainer.json</code>, or apply the <code>llm-lab</code> template.</li>
+                <li><strong>Self-consumption</strong> — This very repo boots the full stack from its own collection: llama-server at <code>:8089</code>, bifrost at <code>:8082</code>, opencode agents scaffolded, library books installed (or opt out with <code>WITH_LIBRARY=false</code>), models fetched via <code>fetch-models.sh</code>. A live reference implementation.</li>
+                <li><strong>Contributor</strong> — Read <code>CONTRIBUTING.md</code> for the development workflow, adding new features, and library contributions.</li>
+            </ol>
+        </div>
+
+        <div class="section">
             <h2>What You Get</h2>
             <p class="lead">Spin up a complete local-LLM developer environment in any repo — a single <code>features</code> block provisions the whole box:</p>
             <div class="features-grid">
@@ -590,16 +600,6 @@
                 <tr><td>INCLUDE_MODELS</td><td>true</td><td>Include on-demand model fetch scaffolding.</td></tr>
                 <tr><td>INCLUDE_LIBRARY</td><td>true</td><td>Include library reference books (opt out: WITH_LIBRARY=false).</td></tr>
             </table>
-        </div>
-
-        <div class="section">
-            <h2>How to Use</h2>
-            <p class="lead">Three ways to engage with this repo — pick the one that fits.</p>
-            <ol>
-                <li><strong>Consumer (new repo)</strong> — Add the features block above to your <code>devcontainer.json</code>, or apply the <code>llm-lab</code> template.</li>
-                <li><strong>Self-consumption</strong> — This very repo boots the full stack from its own collection: llama-server at <code>:8089</code>, bifrost at <code>:8082</code>, opencode agents scaffolded, library books installed (or opt out with <code>WITH_LIBRARY=false</code>), models fetched via <code>fetch-models.sh</code>. A live reference implementation.</li>
-                <li><strong>Contributor</strong> — Read <code>CONTRIBUTING.md</code> for the development workflow, adding new features, and library contributions.</li>
-            </ol>
         </div>
 
         <footer class="footer">
