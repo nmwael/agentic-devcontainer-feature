@@ -589,6 +589,7 @@
             <table class="reference">
                 <tr><th>Variable</th><th>Example</th><th>Description</th></tr>
                 <tr><td>TS_AUTHKEY</td><td>${localEnv:TS_AUTHKEY}</td><td>Tailscale auth key — auto-joins your tailnet on boot (pair with the Work From Anywhere setup).</td></tr>
+                <tr><td>TS_HOSTNAME</td><td>llm-lab</td><td>Tailscale node name — the box appears as <code>llm-lab</code> on your tailnet (set to override).</td></tr>
                 <tr><td>GOOGLE_API_KEY</td><td>${localEnv:GOOGLE_API_KEY}</td><td>Google (Gemini) API key for the AI provider tier.</td></tr>
                 <tr><td>NVIDIA_API_KEY</td><td>${localEnv:NVIDIA_API_KEY}</td><td>NVIDIA API key if you use NVIDIA-hosted model endpoints.</td></tr>
                 <tr><td>SKIP_LLAMA_START</td><td>${localEnv:SKIP_LLAMA_START}</td><td>Set true to skip auto-starting llama-server — bring your own model server.</td></tr>
