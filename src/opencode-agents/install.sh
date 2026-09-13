@@ -344,6 +344,17 @@ INSTALL_DIR="${INSTALL_DIR:-/usr/local/share/opencode-agents}"
 OVERWRITE="${OVERWRITE:-false}"
 WORKSPACE="${WORKSPACE:-$(pwd)}"
 
+# Materialize opencode.json from the shipped fragment — before the guard so
+# existing workspaces get a usable config too. Only fills when absent, empty,
+# or "{}" (a default init); a real consumer config is NEVER touched.
+if [ ! -s "$WORKSPACE/opencode.json" ] || \
+   [ "$(tr -d '[:space:]' < "$WORKSPACE/opencode.json" 2>/dev/null)" = "{}" ]; then
+    cp -f "$INSTALL_DIR/opencode.json.fragment" "$WORKSPACE/opencode.json"
+    echo "opencode.json generated from fragment (slot-pinned models)"
+else
+    echo "opencode.json present — leaving consumer config untouched"
+fi
+
 # Idempotent: skip if files already exist unless OVERWRITE
 if [ "$OVERWRITE" = "true" ]; then
     echo "OVERWRITE=true — refreshing scaffold files (may overwrite existing workspace files)"

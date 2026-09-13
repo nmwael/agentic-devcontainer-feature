@@ -22,7 +22,7 @@ This generates `.devcontainer/devcontainer.json` with:
 - `FEATURES_TAG` [1.0.0]
 - `INCLUDE_AGENTS` / `INCLUDE_MODELS` / `INCLUDE_LIBRARY` booleans
 - `runArgs` with `--device=nvidia.com/gpu=all`, forwardPorts
-- `opencode.json` fragment with slot-pinned models
+- `opencode.json` in the workspace (scaffold materializes the shipped slot-pinned-models fragment; fills only empty/absent configs)
 
 ### Direct Features Path
 Add to your `devcontainer.json` features block:

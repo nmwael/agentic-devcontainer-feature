@@ -37,6 +37,31 @@
     [ -d /workspaces/ci/.opencode/agent ]
 }
 
+@test "scaffold.sh generates opencode.json from the shipped fragment (fresh workspace)" {
+    fresh=$(mktemp -d)
+    run env WORKSPACE="$fresh" /usr/local/share/opencode-agents/scaffold.sh
+    [ "$status" -eq 0 ]
+    [ -s "$fresh/opencode.json" ]
+    grep -q '"provider"' "$fresh/opencode.json"
+    grep -q '"slot"' "$fresh/opencode.json"
+    rm -rf "$fresh"
+}
+
+@test "scaffold.sh fills an empty opencode.json but keeps a real consumer config" {
+    work=$(mktemp -d)
+    : > "$work/opencode.json"
+    run env WORKSPACE="$work" /usr/local/share/opencode-agents/scaffold.sh
+    [ "$status" -eq 0 ]
+    [ -s "$work/opencode.json" ]
+    grep -q '"provider"' "$work/opencode.json"
+    printf '{"custom":true}\n' > "$work/opencode.json"
+    run env WORKSPACE="$work" /usr/local/share/opencode-agents/scaffold.sh
+    grep -q '"custom":true' "$work/opencode.json"
+    run grep -q '"provider"' "$work/opencode.json"
+    [ "$status" -ne 0 ]
+    rm -rf "$work"
+}
+
 @test "second install is a no-op (idempotent)" {
     run /bin/sh /tmp/feature/install.sh
     [ "$status" -eq 0 ]

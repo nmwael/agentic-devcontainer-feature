@@ -453,6 +453,7 @@
             <h4>What Consumers Get</h4>
             <ul>
                 <li><strong>Complete agent roster</strong> — working multi-role delegation (build → architect → specialist → reviewer), not just prompt templates</li>
+                <li><strong>Workspace <code>opencode.json</code></strong> — scaffold materializes a slot-pinned provider/agent config from the shipped fragment (fills empty/<code>{}</code> files, never a real consumer config)</li>
                 <li><strong>HITL enforcement</strong> — code changes blocked without explicit human approval; structured approvals via the <code>question</code> tool</li>
                 <li><strong>Anti-stall protocols</strong> — atomic delegations, immediate recovery from stuck subagents, bounded iteration, artifact isolation, checkpoint notes</li>
                 <li><strong>Library extensibility</strong> — add books via <code>library/&lt;role&gt;/</code> and register them; the shipped register is never clobbered by re-scaffolds</li>
@@ -514,7 +515,7 @@
         "ghcr.io/nmwael/agentic-devcontainer-feature/gpu-bridge": "1.0.1",
         "ghcr.io/nmwael/agentic-devcontainer-feature/bifrost-gateway": "1.0.3",
         "ghcr.io/nmwael/agentic-devcontainer-feature/models": "1.0.1",
-        "ghcr.io/nmwael/agentic-devcontainer-feature/opencode-agents": "1.0.4",
+        "ghcr.io/nmwael/agentic-devcontainer-feature/opencode-agents": "1.0.5",
         "ghcr.io/tailscale/codespace/tailscale": {
             "version": "latest"
         }
