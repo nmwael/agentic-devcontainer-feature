@@ -35,8 +35,10 @@ exec node "$BIFROST_DIR/dist/index.js" "\$PORT_ENV"
 LAUNCHER_EOF
 chmod 0755 "/usr/local/bin/start-bifrost"
 
-# Scaffold config/bifrost.json into workspace from template (idempotent create-if-missing)
-CONFIG_DIR="/workspaces/opencode-local-lab/config"
+# Scaffold config/bifrost.json into the feature dir (workspace-agnostic).
+# The gateway runs with defaults if absent; copy it into your project as
+# config/bifrost.json to customize upstream routing / slot_routing.
+CONFIG_DIR="/usr/local/share/llm-lab/bifrost/config"
 mkdir -p "$CONFIG_DIR"
 
 cat > "$CONFIG_DIR/bifrost.json" <<CONFIG_EOF
@@ -48,7 +50,7 @@ cat > "$CONFIG_DIR/bifrost.json" <<CONFIG_EOF
 }
 CONFIG_EOF
 
-echo "Bifrost config scaffolded to $CONFIG_DIR/bifrost.json"
+echo "Bifrost config scaffolded to $CONFIG_DIR/bifrost.json (copy to your project's config/bifrost.json to customize)"
 
 # Stamp version
 echo "$VERSION" > "$BIFROST_DIR/version"

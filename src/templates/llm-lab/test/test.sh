@@ -41,7 +41,7 @@ case "$SCENARIO" in
         fi
         
         # Check opencode-agents scaffold
-        if [ -f /workspaces/opencode-local-lab/AGENTS.md ]; then
+        if [ -f "${WORKSPACE:-$PWD}/AGENTS.md" ]; then
             echo "OK: opencode-agents scaffold present (AGENTS.md)"
         else
             echo "WARN: opencode-agents scaffold not present"
@@ -78,7 +78,7 @@ case "$SCENARIO" in
         fi
         
         # Check opencode-agents
-        if [ -f /workspaces/opencode-local-lab/AGENTS.md ]; then
+        if [ -f "${WORKSPACE:-$PWD}/AGENTS.md" ]; then
             echo "OK: opencode-agents scaffold present"
         fi
         

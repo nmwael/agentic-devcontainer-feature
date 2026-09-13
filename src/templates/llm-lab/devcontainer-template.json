@@ -1,21 +1,27 @@
 {
     "id": "llm-lab",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "name": "llm-lab",
-    "description": "Local LLM lab devcontainer template — generates full agentic setup with features, GPU bridge, bifrost, models, and opencode agents.",
+    "description": "Local LLM lab devcontainer template \u2014 generates full agentic setup with features, GPU bridge, bifrost, models, and opencode agents.",
     "documentationURL": "https://github.com/nmwael/agentic-devcontainer-feature/tree/main/src/templates/llm-lab",
     "publisher": "nmwael",
     "schemaVersion": 1,
     "options": {
         "GPU_MODE": {
             "type": "enum",
-            "enum": ["wsl2", "native", "none"],
+            "enum": [
+                "wsl2",
+                "native",
+                "none"
+            ],
             "default": "none",
             "description": "WSL2 GPU bridge mode (wsl2), native Linux GPU (native), or no GPU (none)"
         },
         "MODEL": {
             "type": "enum",
-            "enum": ["gemma-4-26B-A4B-it-UD-IQ2_M"],
+            "enum": [
+                "gemma-4-26B-A4B-it-UD-IQ2_M"
+            ],
             "default": "gemma-4-26B-A4B-it-UD-IQ2_M",
             "description": "Model to fetch and run (IQ2_M variant only for v1)"
         },
@@ -40,7 +46,10 @@
             "description": "Include library reference books (opt-out: WITH_LIBRARY=false)"
         }
     },
-    "platforms": ["linux", "wsl2"],
+    "platforms": [
+        "linux",
+        "wsl2"
+    ],
     "patterns": {
         "templateOption": "${templateOption:id}"
     }

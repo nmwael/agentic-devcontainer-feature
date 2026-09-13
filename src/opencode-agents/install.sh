@@ -42,9 +42,9 @@ This repo uses a Human-in-the-Loop (HITL) approval workflow. Specialist subagent
 
 **You MUST NOT create, edit, or modify any code files until the human has explicitly approved an architect's plan.** Operational tasks (starting services, running commands, reading files) are exempt. Everything else requires: architect plans -> human approves -> developer implements.
 
-See `/workspaces/opencode-local-lab/library/ai-researcher/project_stack.md` for full project stack and model specifications.
+See `library/ai-researcher/project_stack.md` for full project stack and model specifications.
 
-Design-flow reference: [`SELF_DISCOVERING_FLOWS.md`](/workspaces/opencode-local-lab/SELF_DISCOVERING_FLOWS.md) records the audit and agreed plan for making the boxforsine CrewAI/OpenMirai flows genuinely self-discovering (LLM proposes per-variant geometry, generator materializes, `verify_pair.py` scores, loop iterates) instead of replaying hard-coded `VARIANT_PROFILES`.
+Design-flow reference: [`SELF_DISCOVERING_FLOWS.md`](SELF_DISCOVERING_FLOWS.md) records the audit and agreed plan for making the boxforsine CrewAI/OpenMirai flows genuinely self-discovering (LLM proposes per-variant geometry, generator materializes, `verify_pair.py` scores, loop iterates) instead of replaying hard-coded `VARIANT_PROFILES`.
 
 ## Conventions when modifying
 
@@ -142,9 +142,9 @@ AGENTS_MD_EOF
     cat > "$INSTALL_DIR/AGENTS_LIFECYCLE.md" <<'AGENTS_LIFECYCLE_MD_EOF'
 # Project Lifecycle Reference
 
-[Agent Task Lifecycle](/workspaces/opencode-local-lab/AGENTS_LIFECYCLE.md)
+[Agent Task Lifecycle](AGENTS_LIFECYCLE.md)
 
-# opencode-local-lab
+# Your Agentic Workspace
 
 This project uses a Human-in-the-Loop (HITL) approval workflow. Specialist subagents plan, develop, test, and audit code.
 
@@ -152,9 +152,9 @@ This project uses a Human-in-the-Loop (HITL) approval workflow. Specialist subag
 
 **You MUST NOT create, edit, or modify any code files until the human has explicitly approved an architect's plan.** Operational tasks (starting services, running commands, reading files) are exempt. Everything else requires: architect plans -> human approves -> developer implements.
 
-See `/workspaces/opencode-local-lab/library/ai-researcher/project_stack.md` for full project stack and model specifications.
+See `library/ai-researcher/project_stack.md` for full project stack and model specifications.
 
-Design-flow reference: [`SELF_DISCOVERING_FLOWS.md`](/workspaces/opencode-local-lab/SELF_DISCOVERING_FLOWS.md) records the audit and agreed plan for making the boxforsine CrewAI/OpenMirai flows genuinely self-discovering (LLM proposes per-variant geometry, generator materializes, `verify_pair.py` scores, loop iterates) instead of replaying hard-coded `VARIANT_PROFILES`.
+Design-flow reference: [`SELF_DISCOVERING_FLOWS.md`](SELF_DISCOVERING_FLOWS.md) records the audit and agreed plan for making the boxforsine CrewAI/OpenMirai flows genuinely self-discovering (LLM proposes per-variant geometry, generator materializes, `verify_pair.py` scores, loop iterates) instead of replaying hard-coded `VARIANT_PROFILES`.
 
 ## ⚙️ ANTI-STALL & AGENTIC EFFICIENCY PROTOCOLS (Continuous Completion)
 
@@ -342,7 +342,7 @@ echo "Opencode-agents scaffold: copying payload to workspace"
 
 INSTALL_DIR="${INSTALL_DIR:-/usr/local/share/opencode-agents}"
 OVERWRITE="${OVERWRITE:-false}"
-WORKSPACE="/workspaces/opencode-local-lab"
+WORKSPACE="${WORKSPACE:-$(pwd)}"
 
 # Idempotent: skip if files already exist unless OVERWRITE
 if [ "$OVERWRITE" = "true" ]; then
@@ -414,6 +414,20 @@ cat > "$INSTALL_DIR/opencode.json.fragment" <<'OPENCODE_JSON_FRAGMENT_EOF'
   }
 }
 OPENCODE_JSON_FRAGMENT_EOF
+
+# Install the opencode CLI itself (binary via the official installer).
+# This is what makes `opencode serve` / `opencode` usable in the box;
+# the payload above only ships the agent scaffold (AGENTS.md, library).
+if command -v opencode >/dev/null 2>&1; then
+    echo "opencode CLI already installed: $(opencode --version 2>/dev/null || echo present)"
+else
+    echo "Installing opencode CLI (official installer)..."
+    if curl -fsSL https://opencode.ai/install | bash; then
+        echo "opencode CLI installed: $(opencode --version 2>/dev/null || echo present)"
+    else
+        echo "WARNING: opencode CLI install failed — run 'curl -fsSL https://opencode.ai/install | bash' manually"
+    fi
+fi
 
 echo "Done! Opencode-agents feature activated."
 echo "Scaffold scripts placed at $INSTALL_DIR/scaffold.sh"
