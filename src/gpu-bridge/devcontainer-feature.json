@@ -1,7 +1,7 @@
 {
     "name": "WSL2 GPU Bridge",
     "id": "gpu-bridge",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "description": "WSL2 GPU bridge as a feature; NO-OP on native Linux. Installs after llama-server.",
     "options": {
         "WSL2_ONLY": {

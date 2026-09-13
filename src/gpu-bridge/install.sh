@@ -52,15 +52,11 @@ mkdir -p "$FEATURE_DIR/drivers"
 
 # Symlink CUDA loader libraries from WSL drivers to WSL lib
 # These libs are needed for llama-server to work under WSL2
-LIBS_TO_LINK=(
-    "libcuda.so.1"
-    "libcuda_loader.so"
-    "libnvidia-ml.so.1"
-    "libnvidia-ptxjitcompiler.so.1"
-    "libnvdxgdmal.so.1"
-)
+# NOTE: POSIX-sh only — devcontainer features run under /bin/sh (dash on
+# Ubuntu/Debian), so no bash arrays. Iterate a whitespace list instead.
+LIBS_TO_LINK="libcuda.so.1 libcuda_loader.so libnvidia-ml.so.1 libnvidia-ptxjitcompiler.so.1 libnvdxgdmal.so.1"
 
-for lib in "${LIBS_TO_LINK[@]}"; do
+for lib in $LIBS_TO_LINK; do
     # Find the actual file in WSL drivers
     if [ -d "$DRIVERS_DIR" ]; then
         DRIVER_FILE=$(find "$DRIVERS_DIR" -name "$lib" 2>/dev/null | head -1)
