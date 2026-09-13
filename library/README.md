@@ -13,27 +13,14 @@ library/
 │   └── autonomous-agent-loops.mini.md
 ├── ai-researcher/
 │   ├── llama-cpp.mini.md
-│   └── gemma-4-26b-a4b.mini.md
+│   ├── gemma-4-26b-a4b.mini.md
+│   └── project_stack.md
 ├── coder/
 │   ├── clean-code.mini.md
 │   ├── java.mini.md
 │   ├── refactoring.mini.md
 │   ├── tdd-software.mini.md
-│       ├── tdd-mechanical.mini.md (moved to 3dprints/library/)
 │   └── the-pragmatic-programmer.mini.md
-├── domainbooks/
-│   ├── firefighter/
-│   │   ├── firefighter.md
-│   │   └── firefighter-rulebook.md
-│   ├── crisis/
-│   │   ├── crisis.md
-│   │   └── crisis-rulebook.md
-│   ├── stormflood/
-│   │   ├── stormflood.md
-│   │   └── stormflood-rulebook.md
-│   └── cyberattack/
-│       ├── cyberattack.md
-│       └── cyberattack-rulebook.md
 ├── researcher/
 │   └── a-philosophy-of-software-design.mini.md
 ├── reviewer/
@@ -42,12 +29,7 @@ library/
 └── release-it.mini.md
 ```
 
-Domain books in `domainbooks/` are original condensed references for this repo: each
-`<domain>.md` lists Danish-sourced reference material (official Danish authorities, URLs
-verified; deepened Sep 2026 with legislation, agency vejledninger and event-based sources
-per domain), and each `<domain>-rulebook.md` is a 100+ line decision-rules distillation in
-the agent-rules-books format (When to use / Primary bias to correct / Decision rules /
-Trigger rules / Key Danish sources / Final checklist) grounded ONLY in those Danish sources.
+The `@3d-designer` books (`tdd-mechanical.mini.md`, `design_standards.mini.md`) live at `3dprints/library/` (same relative layout as the original repo).
 
 | Role | Books |
 | :--- | :--- |
@@ -64,3 +46,4 @@ Trigger rules / Key Danish sources / Final checklist) grounded ONLY in those Dan
 Layout notes:
 - The llama.cpp book moved from `llama.cpp/` to `ai-researcher/`: llama.cpp is a research/ML-adjacent topic, owned by the `ai-researcher` agent.
 - The java book moved from `java/` to `coder/`: Java is a coder concern; per maintainer directive it is not shared with `researcher`/`reviewer`.
+- `domainbooks/` (Danish crisis/firefighter/stormflood/cyberattack reference books from the original lab repo) is intentionally not shipped here.
