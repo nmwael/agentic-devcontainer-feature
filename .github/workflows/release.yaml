@@ -1,9 +1,11 @@
-name: Release dev container features and templates (M1 spike)
+name: Publish dev container features and templates
 
 on:
   push:
     branches:
-      - feat/agentic-devcontainer-feature
+      - main
+    tags:
+      - "v*"
   workflow_dispatch:
 
 env:
@@ -18,17 +20,24 @@ jobs:
       packages: write
       contents: read
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7.0.1
 
       - name: Install devcontainer CLI
         run: npm install -g "@devcontainers/cli@${DEVCONTAINER_CLI_VERSION}"
 
-      - name: Publish hello feature
-        run: devcontainer features publish ./src -r ghcr.io -n "${FEATURES_NAMESPACE}" --log-level info
+      - name: Publish features
+        run: |
+          devcontainer features publish \
+            ./llama-server \
+            ./gpu-bridge \
+            ./bifrost-gateway \
+            ./models \
+            ./opencode-agents \
+            -r ghcr.io -n "${FEATURES_NAMESPACE}" --log-level info
         env:
           GITHUB_TOKEN: ${{ secrets.GH_PAT }}
 
-      - name: Publish hello template
-        run: devcontainer templates publish ./src/templates -r ghcr.io -n "${TEMPLATES_NAMESPACE}" --log-level info
+      - name: Publish llm-lab template
+        run: devcontainer templates publish ./llm-lab -r ghcr.io -n "${TEMPLATES_NAMESPACE}" --log-level info
         env:
           GITHUB_TOKEN: ${{ secrets.GH_PAT }}
