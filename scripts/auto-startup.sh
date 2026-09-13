@@ -19,14 +19,24 @@ if [ -d /usr/lib/wsl/drivers ] && [ -d /usr/lib/wsl/lib ]; then
     done
 fi
 
-# --- Tailscale (userspace networking), only if the tooling is present ---
+# --- Tailscale (official feature: tailscaled + CLI), userspace networking ---
+# The feature bakes the binaries; the daemon must be started per container
+# boot (build-time runs don't persist). Root daemon + world socket dir so the
+# vscode user's CLI can talk to it. Joins the tailnet automatically when
+# TS_AUTHKEY is set (containerEnv) — "join the VPN" with zero manual steps.
 if command -v tailscaled >/dev/null 2>&1 && ! pgrep -x tailscaled >/dev/null 2>&1; then
-    sudo mkdir -p /var/run/tailscale 2>/dev/null && sudo chown "$(id -u):$(id -g)" /var/run/tailscale 2>/dev/null
-    tailscaled -tun userspace-networking -state /tmp/tailscaled.state -socket /var/run/tailscale/tailscaled.sock &
+    echo "[auto-startup] starting tailscaled (userspace networking)"
+    sudo mkdir -p /var/run/tailscale /var/lib/tailscale 2>/dev/null
+    sudo chown "$(id -u):$(id -g)" /var/run/tailscale 2>/dev/null
+    # shellcheck disable=SC2024 # redirect as vscode to /tmp is intended (sticky world-writable)
+    sudo nohup tailscaled -tun userspace-networking \
+        -state /var/lib/tailscale/tailscaled.state \
+        -socket /var/run/tailscale/tailscaled.sock \
+        >/tmp/tailscaled.log 2>&1 &
     sleep 2
 fi
 if command -v tailscale >/dev/null 2>&1; then
-    if timeout 5 tailscale status >/dev/null 2>&1; then
+    if sudo timeout 5 tailscale status >/dev/null 2>&1; then
         echo "[auto-startup] tailscale already up"
     elif [ -n "${TS_AUTHKEY:-}" ]; then
         sudo tailscale up --authkey="$TS_AUTHKEY" --accept-routes --accept-dns --operator="$(id -un)" 2>/dev/null \

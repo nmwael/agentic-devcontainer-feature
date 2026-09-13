@@ -416,6 +416,7 @@
                 <li><strong>opencode CLI</strong> — <code>opencode-agents</code> (v1.0.2+) installs the official opencode binary, so <code>opencode</code>, <code>opencode serve</code>, and the agent roster all work immediately.</li>
                 <li><strong>Tooling baseline</strong> — python3.12, git, curl, sudo, and a shell arrive with the box: everything the multi-agent workflows reference exists in the container.</li>
                 <li><strong>Agent scaffold</strong> — <code>AGENTS.md</code>, <code>.opencode/agent/*.md</code> role definitions, and the <code>library/</code> reference books land in your workspace on first start.</li>
+                <li><strong>Tailscale VPN</strong> — the official <code>tailscale/codespace</code> feature installs <code>tailscaled</code> + <code>tailscale</code>; auto-startup joins your tailnet automatically via <code>TS_AUTHKEY</code> (userspace networking, no TUN required).</li>
             </ul>
             <p>That's why the sample <code>devcontainer.json</code> above is complete: five features = models, runtime, gateway, agents, and tools — no extra setup steps, no missing binaries.</p>
         </div>
@@ -472,8 +473,7 @@
                 </div>
                 <div class="tailscale-step">
                     <h4>2. Connect Tailscale</h4>
-                    <code>tailscale up --authkey=AK-...</code>
-                    <p>One command inside the container (or run the auto-start hook) authenticates this machine to your tailnet.</p>
+                    <p>Nothing to run — set <code>TS_AUTHKEY</code> in <code>containerEnv</code> (see Quick Start) and auto-startup runs <code>tailscale up --authkey=…</code> on every container start, joining your tailnet automatically.</p>
                 </div>
                 <div class="tailscale-step">
                     <h4>3. Find your IP</h4>
@@ -514,7 +514,10 @@
         "ghcr.io/nmwael/agentic-devcontainer-feature/gpu-bridge": "1.0.1",
         "ghcr.io/nmwael/agentic-devcontainer-feature/bifrost-gateway": "1.0.3",
         "ghcr.io/nmwael/agentic-devcontainer-feature/models": "1.0.1",
-        "ghcr.io/nmwael/agentic-devcontainer-feature/opencode-agents": "1.0.4"
+        "ghcr.io/nmwael/agentic-devcontainer-feature/opencode-agents": "1.0.4",
+        "ghcr.io/tailscale/codespace/tailscale": {
+            "version": "latest"
+        }
     },
     "runArgs": [
         "--device=nvidia.com/gpu=all",
@@ -535,7 +538,7 @@
         }
     }
 }</code>
-            <p>Notes: <code>--device=nvidia.com/gpu=all</code> targets native Linux <em>and</em> WSL2 GPU modes. Set <code>TS_AUTHKEY</code> as a local env var to auto-join your Tailscale tailnet (see Work From Anywhere above). Omit <code>containerEnv</code>/<code>customizations</code> for the minimal lab. For the pre-built <code>vscode</code> user + sudo + python3.12, apply the <code>llm-lab</code> template instead (it ships a Dockerfile variant).</p>
+            <p>Notes: <code>--device=nvidia.com/gpu=all</code> targets native Linux <em>and</em> WSL2 GPU modes. Set <code>TS_AUTHKEY</code> as a local env var to auto-join your Tailscale tailnet (see Work From Anywhere above). The official <code>ghcr.io/tailscale/codespace/tailscale</code> feature adds the VPN; <code>containerEnv: TS_AUTHKEY</code> makes it join automatically on every start. Omit <code>containerEnv</code>/<code>customizations</code> for the minimal lab. For the pre-built <code>vscode</code> user + sudo + python3.12, apply the <code>llm-lab</code> template instead (it ships a Dockerfile variant).</p>
 
             <h4>Configuration reference</h4>
             <p>Every option the features expose. Defaults are what you get from the pinned versions above — pass an object to override, e.g. <code>"ghcr.io/.../llama-server": { "version": "b10360", "cudaArchs": "80;86;89;90;120" }</code>. The <code>"1"</code> major tag always tracks the latest of the 1.x line.</p>

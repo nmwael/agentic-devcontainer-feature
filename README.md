@@ -32,7 +32,8 @@ Add to your `devcontainer.json` features block:
     "ghcr.io/nmwael/agentic-devcontainer-feature/gpu-bridge": "1",
     "ghcr.io/nmwael/agentic-devcontainer-feature/bifrost-gateway": "1",
     "ghcr.io/nmwael/agentic-devcontainer-feature/models": "1",
-    "ghcr.io/nmwael/agentic-devcontainer-feature/opencode-agents": "1"
+    "ghcr.io/nmwael/agentic-devcontainer-feature/opencode-agents": "1",
+    "ghcr.io/tailscale/codespace/tailscale": { "version": "latest" }
 }
 ```
 Plus `--device=nvidia.com/gpu=all` in `runArgs`.
