@@ -1,6 +1,6 @@
 {
     "name": "llm-lab",
-    dockerFile: "Dockerfile",
+    "dockerFile": "Dockerfile",
     "features": {
         "ghcr.io/nmwael/agentic-devcontainer-feature/llama-server": "1",
         "ghcr.io/nmwael/agentic-devcontainer-feature/gpu-bridge": "${templateOption:GPU_MODE == 'wsl2' ? '1' : '0'}",
