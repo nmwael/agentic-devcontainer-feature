@@ -1,6 +1,6 @@
 {
     "id": "llm-lab",
-    "version": "1.0.1",
+    "version": "1.0.2",
     "name": "llm-lab",
     "description": "Local LLM lab devcontainer template \u2014 generates full agentic setup with features, GPU bridge, bifrost, models, and opencode agents.",
     "documentationURL": "https://github.com/nmwael/agentic-devcontainer-feature/tree/main/src/templates/llm-lab",
@@ -27,7 +27,7 @@
         },
         "FEATURES_TAG": {
             "type": "string",
-            "default": "1.0.0",
+            "default": "1",
             "description": "Version tag for the feature collection (ghcr.io namespace)"
         },
         "INCLUDE_AGENTS": {

@@ -510,11 +510,11 @@
     "name": "local-llm-lab",
     "image": "nvidia/cuda:13.3.0-cudnn-runtime-ubuntu24.04",
     "features": {
-        "ghcr.io/nmwael/agentic-devcontainer-feature/llama-server": "1",
-        "ghcr.io/nmwael/agentic-devcontainer-feature/gpu-bridge": "1",
-        "ghcr.io/nmwael/agentic-devcontainer-feature/bifrost-gateway": "1",
-        "ghcr.io/nmwael/agentic-devcontainer-feature/models": "1",
-        "ghcr.io/nmwael/agentic-devcontainer-feature/opencode-agents": "1"
+        "ghcr.io/nmwael/agentic-devcontainer-feature/llama-server": "1.0.2",
+        "ghcr.io/nmwael/agentic-devcontainer-feature/gpu-bridge": "1.0.1",
+        "ghcr.io/nmwael/agentic-devcontainer-feature/bifrost-gateway": "1.0.3",
+        "ghcr.io/nmwael/agentic-devcontainer-feature/models": "1.0.1",
+        "ghcr.io/nmwael/agentic-devcontainer-feature/opencode-agents": "1.0.4"
     },
     "runArgs": [
         "--device=nvidia.com/gpu=all",
@@ -537,7 +537,7 @@
             <p>Notes: <code>--device=nvidia.com/gpu=all</code> targets native Linux <em>and</em> WSL2 GPU modes. Set <code>TS_AUTHKEY</code> as a local env var to auto-join your Tailscale tailnet (see Work From Anywhere above). Omit <code>containerEnv</code>/<code>customizations</code> for the minimal lab. For the pre-built <code>vscode</code> user + sudo + python3.12, apply the <code>llm-lab</code> template instead (it ships a Dockerfile variant).</p>
 
             <h4>Configuration reference</h4>
-            <p>Every option the features expose. Defaults are what you get from the plain <code>"1"</code> references above — pass an object to override, e.g. <code>"ghcr.io/.../llama-server": { "version": "b10360", "cudaArchs": "80;86;89;90;120" }</code>.</p>
+            <p>Every option the features expose. Defaults are what you get from the pinned versions above — pass an object to override, e.g. <code>"ghcr.io/.../llama-server": { "version": "b10360", "cudaArchs": "80;86;89;90;120" }</code>. The <code>"1"</code> major tag always tracks the latest of the 1.x line.</p>
 
             <h5>Llama Server</h5>
             <table class="reference">
@@ -595,7 +595,7 @@
                 <tr><th>Option</th><th>Default</th><th>Description</th></tr>
                 <tr><td>GPU_MODE</td><td>none</td><td>wsl2 = GPU bridge for Windows/WSL2 hosts; native = native Linux GPU passthrough; none = CPU-only.</td></tr>
                 <tr><td>MODEL</td><td>gemma-4-26B-A4B-it-UD-IQ2_M</td><td>Model to fetch and run (IQ2_M variant only in v1).</td></tr>
-                <tr><td>FEATURES_TAG</td><td>1.0.0</td><td>Version tag of the feature collection to pin (ghcr.io namespace).</td></tr>
+                <tr><td>FEATURES_TAG</td><td>1</td><td>Version tag of the feature collection to pin (ghcr.io namespace); "1" tracks the latest of the 1.x line.</td></tr>
                 <tr><td>INCLUDE_AGENTS</td><td>true</td><td>Scaffold opencode-agents (AGENTS.md, skills, library).</td></tr>
                 <tr><td>INCLUDE_MODELS</td><td>true</td><td>Include on-demand model fetch scaffolding.</td></tr>
                 <tr><td>INCLUDE_LIBRARY</td><td>true</td><td>Include library reference books (opt out: WITH_LIBRARY=false).</td></tr>
