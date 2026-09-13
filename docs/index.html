@@ -385,8 +385,9 @@
                         <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
                     </svg>
                     <h3>Opencode Agents</h3>
-                    <p>Full agentic setup: <code>AGENTS.md</code>, <code>.opencode/agent/*.md</code>, library books, HITL contract.</p>
+                    <p>Installs the opencode CLI plus the full agentic setup: <code>AGENTS.md</code>, <code>.opencode/agent/*.md</code>, library books, HITL contract.</p>
                     <ul>
+                        <li>Installs the opencode CLI — <code>opencode</code> on PATH</li>
                         <li>6 primary agent role definitions</li>
                         <li>Library of reference books with attribution</li>
                         <li>Opt-out: <code>WITH_LIBRARY=false</code></li>
@@ -394,6 +395,19 @@
                     </ul>
                 </div>
             </div>
+        </div>
+
+        <div class="section">
+            <h2>Full Toolchain — No More <code>command not found</code></h2>
+            <p class="lead">The collection installs the actual binaries the agents use, not just config files. When you add these features, <code>opencode</code>, <code>llama-server</code>, and <code>start-bifrost</code> are real commands on your PATH — the agents call them directly, no manual setup.</p>
+            <ul>
+                <li><strong>opencode CLI</strong> — <code>opencode-agents</code> (v1.0.2+) installs the official opencode binary, so <code>opencode</code>, <code>opencode serve</code>, and the agent roster all work immediately.</li>
+                <li><strong>llama-server</strong> — prebuilt llama.cpp binary plus CUDA runtime libs at <code>/usr/local/bin/llama-server</code>; OpenAI-compatible <code>/v1</code> endpoint on <code>:8089</code>.</li>
+                <li><strong>bifrost gateway</strong> — <code>bifrost-gateway</code> (v1.0.2+) provisions its own node/npm runtime when the base image lacks one, then installs <code>@maximhq/bifrost</code> and the <code>start-bifrost</code> launcher.</li>
+                <li><strong>Tooling baseline</strong> — python3.12, git, curl, sudo, and a shell arrive with the box: everything the multi-agent workflows reference exists in the container.</li>
+                <li><strong>Agent scaffold</strong> — <code>AGENTS.md</code>, <code>.opencode/agent/*.md</code> role definitions, and the <code>library/</code> reference books land in your workspace on first start.</li>
+            </ul>
+            <p>That's why the sample <code>devcontainer.json</code> above is complete: five features = models, runtime, gateway, agents, and tools — no extra setup steps, no missing binaries.</p>
         </div>
 
         <div class="section">
@@ -439,7 +453,7 @@
         <div class="section">
             <h2>📱 Work From Anywhere with Tailscale</h2>
             <p class="lead">Once the devcontainer boots, your llama-server, bifrost, and opencode endpoints are reachable from your phone over a secure mesh network — no public port exposure required.</p>
-            <p><strong>Your devcontainer is a devbox you control on the go.</strong> Open <code>opencode</code> from your phone (mobile browser via <code>opencode serve</code>) and you're talking to your full agentic setup — <code>@architect</code>, <code>@coder</code>, <code>@researcher</code> and the rest — wherever you are. Ask for a change, review a diff, kick off a build, or check the llama-server health, all from the palm of your hand, while the heavy compute stays on your box.</p>
+            <p><strong>Your devcontainer is a devbox you control on the go.</strong> Open <code>opencode</code> from your phone — via the <a href="https://github.com/dzianisv/opencode-mobile" target="_blank" rel="noopener noreferrer">OpenCode Mobile</a> Android app (Google Play / F-Droid / APK) or any mobile browser pointed at <code>opencode serve</code> — and you're talking to your full agentic setup: <code>@architect</code>, <code>@coder</code>, <code>@researcher</code> and the rest, wherever you are. Ask for a change, review a diff, kick off a build, or check the llama-server health, all from the palm of your hand, while the heavy compute stays on your box.</p>
 
             <div class="tailscale-grid">
                 <div class="tailscale-step">
@@ -458,7 +472,7 @@
                 </div>
                 <div class="tailscale-step">
                     <h4>4. Open from your phone</h4>
-                    <p>Install the Tailscale app on your phone, sign in to the same account, and browse straight to your box:</p>
+                    <p>Install the Tailscale app on your phone and sign in to the same account. Then either browse straight to your box, or use the dedicated client — <a href="https://github.com/dzianisv/opencode-mobile" target="_blank" rel="noopener noreferrer">OpenCode Mobile</a>, an open-source Android client for opencode (independent, community-built) — point it at <code>http://100.x.x.x:4096</code> with your server password and run AI coding sessions from your phone over Tailscale:</p>
                     <ul class="endpoints">
                         <li><code>http://100.x.x.x:4096</code> — opencode serve (agentic IDE — your devbox remote control)</li>
                         <li><code>http://100.x.x.x:8082</code> — bifrost chat UI</li>

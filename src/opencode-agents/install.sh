@@ -418,6 +418,9 @@ OPENCODE_JSON_FRAGMENT_EOF
 # Install the opencode CLI itself (binary via the official installer).
 # This is what makes `opencode serve` / `opencode` usable in the box;
 # the payload above only ships the agent scaffold (AGENTS.md, library).
+if ! command -v curl >/dev/null 2>&1; then
+    apt-get install -y --no-install-recommends curl >/dev/null 2>&1 || echo "WARNING: curl unavailable"
+fi
 if command -v opencode >/dev/null 2>&1; then
     echo "opencode CLI already installed: $(opencode --version 2>/dev/null || echo present)"
 else

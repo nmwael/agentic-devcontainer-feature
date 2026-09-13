@@ -17,6 +17,18 @@ LLAMA_PORT="${LLAMA_PORT:-8089}"
 BIFROST_DIR="/usr/local/share/llm-lab/bifrost"
 mkdir -p "$BIFROST_DIR"
 
+# Bifrost is a node app; base images (e.g. nvidia/cuda) often lack node/npm.
+# Provision a runtime here so the feature is self-sufficient.
+if ! command -v npm >/dev/null 2>&1 || ! command -v node >/dev/null 2>&1; then
+    echo "node/npm not found — provisioning nodejs + npm via apt..."
+    if apt-get update -qq && apt-get install -y --no-install-recommends nodejs npm >/dev/null 2>&1; then
+        echo "node $(node --version 2>/dev/null || echo ?) ready"
+    else
+        echo "WARNING: nodejs/npm install failed — bifrost will not be functional"
+        exit 0
+    fi
+fi
+
 echo "Installing @maximhq/bifrost@$VERSION into $BIFROST_DIR ..."
 npm install --prefix "$BIFROST_DIR" "@maximhq/bifrost@$VERSION" 2>/dev/null || {
     echo "WARNING: npm install failed for @maximhq/bifrost@$VERSION"
