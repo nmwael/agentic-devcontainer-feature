@@ -431,22 +431,37 @@
   -t ghcr.io/nmwael/agentic-devcontainer-feature/llm-lab</code>
             <p>Generates <code>.devcontainer/devcontainer.json</code> with <code>GPU_MODE</code>, <code>MODEL</code>, <code>FEATURES_TAG</code>, <code>INCLUDE_AGENTS</code>/<code>INCLUDE_MODELS</code>/<code>INCLUDE_LIBRARY</code> options.</p>
 
-            <h4>Direct features path</h4>
-            <code class="block">"features": {
-    "ghcr.io/nmwael/agentic-devcontainer-feature/llama-server": "1",
-    "ghcr.io/nmwael/agentic-devcontainer-feature/gpu-bridge": "1",
-    "ghcr.io/nmwael/agentic-devcontainer-feature/bifrost-gateway": "1",
-    "ghcr.io/nmwael/agentic-devcontainer-feature/models": "1",
-    "ghcr.io/nmwael/agentic-devcontainer-feature/opencode-agents": "1"
+            <h4>Full example: complete devcontainer.json</h4>
+            <p>Copy this whole file into <code>.devcontainer/devcontainer.json</code> — a one-file, GPU-capable local LLM lab:</p>
+            <code class="block">{
+    "name": "local-llm-lab",
+    "image": "nvidia/cuda:13.3.0-cudnn-runtime-ubuntu24.04",
+    "features": {
+        "ghcr.io/nmwael/agentic-devcontainer-feature/llama-server": "1",
+        "ghcr.io/nmwael/agentic-devcontainer-feature/gpu-bridge": "1",
+        "ghcr.io/nmwael/agentic-devcontainer-feature/bifrost-gateway": "1",
+        "ghcr.io/nmwael/agentic-devcontainer-feature/models": "1",
+        "ghcr.io/nmwael/agentic-devcontainer-feature/opencode-agents": "1"
+    },
+    "runArgs": [
+        "--device=nvidia.com/gpu=all",
+        "--shm-size=2g",
+        "--cap-add=SYS_PTRACE",
+        "--security-opt=seccomp:unconfined"
+    ],
+    "containerEnv": {
+        "TS_AUTHKEY": "${localEnv:TS_AUTHKEY}"
+    },
+    "customizations": {
+        "vscode": {
+            "extensions": [
+                "ms-python.python",
+                "ms-vscode.cpptools"
+            ]
+        }
+    }
 }</code>
-
-            <h4>Required runArgs for GPU</h4>
-            <code class="block">"runArgs": [
-    "--device=nvidia.com/gpu=all",
-    "--shm-size=2g",
-    "--cap-add=SYS_PTRACE",
-    "--security-opt=seccomp:unconfined"
-]</code>
+            <p>Notes: <code>--device=nvidia.com/gpu=all</code> targets native Linux <em>and</em> WSL2 GPU modes. Set <code>TS_AUTHKEY</code> as a local env var to auto-join your Tailscale tailnet (see Work From Anywhere above). Omit <code>containerEnv</code>/<code>customizations</code> for the minimal lab. For the pre-built <code>vscode</code> user + sudo + python3.12, apply the <code>llm-lab</code> template instead (it ships a Dockerfile variant).</p>
         </div>
 
         <div class="section">
