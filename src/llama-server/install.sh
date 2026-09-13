@@ -54,7 +54,11 @@ SCRATCH="/tmp/llama-server-scratch-${VERSION}-${ARCH_VARIANT}"
 mkdir -p "$SCRATCH"
 rm -rf "${SCRATCH:?}"/*
 
-if ! curl -fL "$ASSET_URL_FINAL" -o "$SCRATCH/llama-server.tar.gz"; then
+# Bounded download: --max-time/--retry prevent a stalled connection from
+# hanging the devcontainer "configuring" step forever (worst case ~15 min,
+# then the graceful-degrade path below runs instead).
+if ! curl -fL --max-time 300 --retry 3 --retry-delay 2 \
+    "$ASSET_URL_FINAL" -o "$SCRATCH/llama-server.tar.gz"; then
     echo "WARNING: Failed to download llama-server asset from $ASSET_URL_FINAL"
     echo "llama-server will not be installed. The feature gracefully degrades."
     echo "To install manually: download the tarball, unpack to $INSTALL_PATH,"

@@ -66,9 +66,24 @@ else
 fi
 
 # --- bifrost proxy :8082 -> :8089 (launcher installed by the bifrost-gateway feature) ---
+# Backgrounded + bounded poll: the first start downloads the ~120 MB Go binary,
+# which must never block postStartCommand forever.
 if command -v start-bifrost >/dev/null 2>&1; then
-    echo "[auto-startup] starting bifrost on :8082"
-    start-bifrost || echo "[auto-startup] WARNING: start-bifrost exited non-zero"
+    if curl -sf -o /dev/null --max-time 2 http://127.0.0.1:8082/; then
+        echo "[auto-startup] bifrost already up on :8082"
+    else
+        echo "[auto-startup] starting bifrost on :8082 (background)"
+        nohup start-bifrost >/tmp/bifrost.log 2>&1 &
+        i=0
+        while [ $i -lt 30 ]; do
+            curl -sf -o /dev/null --max-time 2 http://127.0.0.1:8082/ \
+                && { echo "[auto-startup] bifrost ready on :8082"; break; }
+            i=$((i + 1)); sleep 2
+        done
+        if [ $i -ge 30 ]; then
+            echo "[auto-startup] WARNING: bifrost not ready after 60s — continuing in background (see /tmp/bifrost.log)"
+        fi
+    fi
 else
     echo "[auto-startup] bifrost launcher not installed — skipping"
 fi
