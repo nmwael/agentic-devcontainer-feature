@@ -12,130 +12,254 @@
             --accent-light: #ff6b8a;
             --text: #e9e8f5;
             --muted: #7d8da2;
+            --card-bg: #0d1117;
+            --border: #30363d;
             --success: #0f3460;
         }
-        
+
         * {
             box-sizing: border-box;
             margin: 0;
             padding: 0;
         }
-        
+
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: var(--primary);
             color: var(--text);
             line-height: 1.6;
         }
-        
+
         .container {
             max-width: 1200px;
             margin: 0 auto;
             padding: 2rem;
         }
-        
+
         header {
             text-align: center;
-            padding: 3rem 0;
-            border-bottom: 1px solid var(--muted);
-            margin-bottom: 2rem;
+            padding: 4rem 2rem;
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 3rem;
         }
-        
+
         h1 {
-            font-size: 3rem;
+            font-size: 3.5rem;
             font-weight: 300;
             letter-spacing: 0.3em;
             background: linear-gradient(135deg, var(--text), var(--accent));
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             margin-bottom: 1rem;
+            line-height: 1.2;
         }
-        
-        .tagline {
-            font-size: 1.2rem;
+
+        .subtitle {
+            font-size: 1.25rem;
             color: var(--muted);
-            max-width: 600px;
+            max-width: 700px;
             margin: 0 auto;
         }
-        
-        .features-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 2rem;
-            margin: 2rem 0;
-        }
-        
-        .feature-card {
-            background: var(--secondary);
-            border: 1px solid var(--muted);
-            border-radius: 12px;
-            padding: 2rem;
-            transition: transform 0.3s ease, border-color 0.3s ease;
-        }
-        
-        .feature-card:hover {
-            border-color: var(--accent);
-            transform: translateY(-4px);
-        }
-        
-        .feature-icon {
-            width: 48px;
-            height: 48px;
-            margin-bottom: 1rem;
-        }
-        
-        .feature-card h3 {
-            font-size: 1.2rem;
-            margin-bottom: 0.5rem;
-        }
-        
-        .feature-card p {
-            color: var(--muted);
-            font-size: 0.9rem;
-        }
-        
-        .quick-start {
-            background: var(--secondary);
-            border: 1px solid var(--muted);
-            border-radius: 12px;
-            padding: 2rem;
-            margin: 2rem 0;
-        }
-        
-        .quick-start h3 {
-            margin-bottom: 1rem;
-        }
-        
-        .quick-start code {
-            background: var(--primary);
-            color: var(--accent);
-            padding: 0.2rem 0.4rem;
-            border-radius: 4px;
-            font-family: monospace;
-            font-size: 0.85rem;
-        }
-        
+
         .badge {
             display: inline-block;
             background: var(--accent);
             color: white;
-            padding: 0.2rem 0.6rem;
-            border-radius: 4px;
-            font-size: 0.7rem;
-            margin-left: 0.5rem;
+            padding: 0.5rem 1rem;
+            border-radius: 2rem;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin: 0.5rem;
         }
-        
-        .footer {
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 2rem;
+            margin: 3rem 0;
+        }
+
+        .feature-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 2.5rem;
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .feature-card:hover {
+            border-color: var(--accent);
+            transform: translateY(-4px);
+        }
+
+        .feature-icon {
+            width: 48px;
+            height: 48px;
+            margin: 0 auto 1.5rem;
+            display: block;
+        }
+
+        .feature-card h3 {
+            font-size: 1.3rem;
+            margin-bottom: 1rem;
             text-align: center;
-            padding: 2rem;
+        }
+
+        .feature-card p {
+            color: var(--muted);
+            font-size: 0.95rem;
+            line-height: 1.5;
+            text-align: center;
+        }
+
+        .feature-card code {
+            background: var(--secondary);
+            color: var(--accent);
+            padding: 0.1rem 0.4rem;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            font-family: 'SF Mono', 'Menlo', 'Consolas', monospace;
+        }
+
+        .feature-card ul {
+            margin-top: 1rem;
+            padding-left: 1.2rem;
             color: var(--muted);
             font-size: 0.85rem;
-            border-top: 1px solid var(--muted);
-            margin-top: 3rem;
+            line-height: 1.7;
+            text-align: left;
         }
-        
+
+        .section {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 2.5rem;
+            margin: 3rem 0;
+        }
+
+        .section h2 {
+            font-size: 1.6rem;
+            margin-bottom: 0.5rem;
+            text-align: center;
+        }
+
+        .section .lead {
+            text-align: center;
+            color: var(--muted);
+            margin-bottom: 2rem;
+        }
+
+        .section h4 {
+            margin-top: 1.5rem;
+            margin-bottom: 0.75rem;
+            color: var(--text);
+        }
+
+        .section ol,
+        .section ul {
+            color: var(--muted);
+            line-height: 1.8;
+            padding-left: 1.4rem;
+        }
+
+        .section li {
+            margin-bottom: 0.6rem;
+        }
+
+        .section code {
+            background: var(--secondary);
+            color: var(--accent);
+            padding: 0.15rem 0.45rem;
+            border-radius: 4px;
+            font-family: 'SF Mono', 'Menlo', 'Consolas', monospace;
+            font-size: 0.85rem;
+        }
+
+        .quick-start code.block {
+            display: block;
+            text-align: left;
+            background: var(--secondary);
+            color: var(--accent);
+            padding: 0.8rem 1rem;
+            border-radius: 8px;
+            font-family: 'SF Mono', 'Menlo', 'Consolas', monospace;
+            font-size: 0.85rem;
+            margin: 0.75rem 0;
+            overflow-x: auto;
+            white-space: pre;
+        }
+
+        .gate {
+            border-left: 4px solid var(--accent);
+            background: rgba(233, 69, 96, 0.08);
+            padding: 1rem 1.25rem;
+            border-radius: 0 8px 8px 0;
+            margin: 1.25rem 0;
+            color: var(--text);
+        }
+
+        .gate strong {
+            color: var(--accent-light);
+        }
+
+        .tailscale-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 1.5rem;
+            margin-top: 1.5rem;
+        }
+
+        .tailscale-step {
+            background: var(--secondary);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1.25rem;
+        }
+
+        .tailscale-step h4 {
+            margin-top: 0;
+            color: var(--text);
+        }
+
+        .tailscale-step code {
+            background: var(--card-bg);
+        }
+
+        .endpoints {
+            margin-top: 0.75rem;
+            padding-left: 1.2rem;
+        }
+
+        .endpoints li {
+            font-size: 0.9rem;
+        }
+
+        .footer {
+            text-align: center;
+            padding: 3rem 2rem;
+            color: var(--muted);
+            border-top: 1px solid var(--border);
+            margin-top: 4rem;
+        }
+
+        .footer a {
+            color: var(--accent);
+            text-decoration: none;
+        }
+
+        .footer a:hover {
+            text-decoration: underline;
+        }
+
+        .footer p {
+            margin: 0.3rem 0;
+        }
+
         @media (max-width: 600px) {
-            h1 { font-size: 2rem; }
+            h1 { font-size: 2.5rem; }
             .features-grid { grid-template-columns: 1fr; }
         }
     </style>
@@ -144,51 +268,201 @@
     <div class="container">
         <header>
             <h1>agentic-devcontainer-feature</h1>
-            <p class="tagline">All-in-one Local LLM Developer Box — DevContainer Features Collection</p>
+            <p class="subtitle">All-in-one Local LLM Developer Box — DevContainer Features Collection</p>
+            <div>
+                <span class="badge">5 Features</span>
+                <span class="badge">1 Template</span>
+                <span class="badge">Multi-Agent HITL</span>
+                <span class="badge">Tailscale Ready</span>
+            </div>
         </header>
-        
-        <div class="features-grid">
-            <div class="feature-card">
-                <svg class="feature-icon" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
-                </svg>
-                <h3>Llama Server</h3>
-                <p>Prebuilt llama.cpp server with CUDA support — OpenAI-compatible /v1 API</p>
-            </div>
-            <div class="feature-card">
-                <svg class="feature-icon" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M12 2L2 7l10 5 10-5-10-5zM2 12l10 5 10-5"/>
-                </svg>
-                <h3>Bifrost Gateway</h3>
-                <p>Bifrost v2.1.1 gateway exposing llama-servers as OpenAI-compatible providers on :8082</p>
-            </div>
-            <div class="feature-card">
-                <svg class="feature-icon" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
-                </svg>
-                <h3>Model Fetch</h3>
-                <p>On-demand GGUF model fetch from HuggingFace — IQ2_M, Q4_K_M, Q8_0 variants</p>
-            </div>
-            <div class="feature-card">
-                <svg class="feature-icon" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M12 2L2 7l10 5 10-5-10-5zM2 12l10 5 10-5"/>
-                </svg>
-                <h3>Opencode Agents</h3>
-                <p>Full agentic setup: AGENTS.md, AGENTS_LIFECYCLE.md, .opencode/agent/*.md, library books + EXTENSIONS.md</p>
+
+        <div class="section">
+            <h2>What You Get</h2>
+            <p class="lead">Spin up a complete local-LLM developer environment in any repo — a single <code>features</code> block provisions the whole box:</p>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <svg class="feature-icon" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+                    </svg>
+                    <h3>Llama Server</h3>
+                    <p>Prebuilt llama.cpp server with CUDA support — OpenAI-compatible <code>/v1</code> API.</p>
+                    <ul>
+                        <li>Binary at <code>/opt/llama-server/llama-server</code></li>
+                        <li>Symlinked to <code>/usr/local/bin/llama-server</code></li>
+                        <li>Idempotent: NO-OP if already installed (custom image base)</li>
+                        <li>Options: <code>VERSION</code>, <code>CUDA_ARCHS</code>, <code>BUNDLE_CUDA_LIBS</code></li>
+                    </ul>
+                </div>
+                <div class="feature-card">
+                    <svg class="feature-icon" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+                    </svg>
+                    <h3>Gpu Bridge</h3>
+                    <p>WSL2 GPU bridge: symlinks NVIDIA driver libs into the container so CUDA actually works on Windows hosts.</p>
+                    <ul>
+                        <li>Auto-detects WSL2 via <code>/proc/version</code></li>
+                        <li>NO-OP on native Linux</li>
+                        <li>Re-verifies <code>/dev/dxg</code> on every start</li>
+                        <li>Options: <code>WSL2_ONLY</code>, <code>ENV_REWRITE</code></li>
+                    </ul>
+                </div>
+                <div class="feature-card">
+                    <svg class="feature-icon" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+                    </svg>
+                    <h3>Bifrost Gateway</h3>
+                    <p>Bifrost v2.1.1 gateway exposing llama-servers as OpenAI-compatible providers on <code>:8082</code>.</p>
+                    <ul>
+                        <li>Installs <code>@maximhq/bifrost</code> npm package</li>
+                        <li>Scaffolds <code>config/bifrost.json</code> from template</li>
+                        <li>Slot routing: <code>gemma4-26b-a4b-sN</code></li>
+                        <li>Options: <code>PORT</code>, <code>VERSION</code>, <code>LLAMA_PORT</code></li>
+                    </ul>
+                </div>
+                <div class="feature-card">
+                    <svg class="feature-icon" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+                    </svg>
+                    <h3>Model Fetch</h3>
+                    <p>On-demand GGUF model fetch from HuggingFace — weights are NEVER baked into image layers.</p>
+                    <ul>
+                        <li>Installs <code>fetch-models.sh</code> to <code>/usr/local/share/llm-lab/models/</code></li>
+                        <li>Idempotent: skip if file exists + checksum matches</li>
+                        <li>Resumable downloads: <code>curl --retry 5 --continue-at -</code></li>
+                        <li>Options: <code>MODEL</code>, <code>QUANT</code>, <code>MODELS_DIR</code></li>
+                    </ul>
+                </div>
+                <div class="feature-card">
+                    <svg class="feature-icon" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+                    </svg>
+                    <h3>Opencode Agents</h3>
+                    <p>Full agentic setup: <code>AGENTS.md</code>, <code>.opencode/agent/*.md</code>, library books, HITL contract.</p>
+                    <ul>
+                        <li>6 primary agent role definitions</li>
+                        <li>Library of reference books with attribution</li>
+                        <li>Opt-out: <code>WITH_LIBRARY=false</code></li>
+                        <li>Options: <code>OVERWRITE</code>, <code>WITH_LIBRARY</code>, <code>INSTALL_DIR</code></li>
+                    </ul>
+                </div>
             </div>
         </div>
-        
-        <div class="quick-start">
-            <h3>Quick Start</h3>
-            <p>Add features to your repo:</p>
-            <code>"features": {"ghcr.io/nmwael/agentic-devcontainer-feature/{llama-server,gpu-bridge,bifrost-gateway,models,opencode-agents}": "1"}</code>
-            <p>Or use the <strong>llm-lab template</strong>:</code>
-            <code>devcontainer templates apply -w <your-repo> -t ghcr.io/nmwael/agentic-devcontainer-feature/llm-lab</code>
+
+        <div class="section">
+            <h2>Multi-Role Agent Setup</h2>
+            <p class="lead">When you use the <code>opencode-agents</code> feature, you get a complete multi-agent workflow with Human-in-the-Loop (HITL) approval — exactly what this repo runs on.</p>
+
+            <h4>The Agent Roster</h4>
+            <ol>
+                <li><strong>Build (orchestrator)</strong> — Routes every task through the architect; handles only trivial/operational matters directly. <em>Role: <code>build</code></em></li>
+                <li><strong>Architect</strong> — Decomposes every request into discrete, executable subtasks; produces the plan for human approval; delegates to specialists; verifies every claimed artifact exists before reporting success. <em>Role: <code>architect</code></em></li>
+                <li><strong>Coder</strong> — Writes and edits code, implements features, fixes bugs, follows existing code style. <em>Role: <code>coder</code></em></li>
+                <li><strong>Researcher</strong> — Explores the codebase, searches files/patterns, traces call chains, cites every claim with <code>file:line</code> evidence. <em>Role: <code>researcher</code></em></li>
+                <li><strong>Reviewer</strong> — Full audit of every change: correctness, security, style, performance, error handling. No code is complete without reviewer sign-off. <em>Role: <code>reviewer</code></em></li>
+                <li><strong>AI-Researcher</strong> — AI-specific research: llama.cpp configs, GGUF quantization, model performance; library-aware. <em>Role: <code>ai-researcher</code></em></li>
+                <li><strong>UI / Artist / 3D-Designer</strong> — Interfaces, visual assets, and print-ready geometry as code. <em>Roles: <code>ui</code>, <code>artist</code>, <code>3d-designer</code></em></li>
+            </ol>
+
+            <h4>Human-in-the-Loop (HITL) Workflow</h4>
+            <p>Before any code change is made, this gate is enforced:</p>
+            <ol>
+                <li><strong>Architect plans</strong> — breaks the request into discrete subtasks</li>
+                <li><strong>Human approves</strong> — explicit approval required <em>before</em> any code is written</li>
+                <li><strong>Coder implements</strong> — writes code following the approved plan</li>
+                <li><strong>Reviewer audits</strong> — correctness, security, style, performance, error handling</li>
+                <li><strong>Architect verifies</strong> — confirms the changes physically exist on disk before marking complete</li>
+            </ol>
+
+            <div class="gate">
+                <strong>HARD GATE — NEVER SKIP STEP 2:</strong> no code files may be created, edited, or modified until the human has explicitly approved an architect's plan. Operational tasks (starting services, running commands, reading files) are exempt.
+            </div>
+
+            <h4>What Consumers Get</h4>
+            <ul>
+                <li><strong>Complete agent roster</strong> — working multi-role delegation (build → architect → specialist → reviewer), not just prompt templates</li>
+                <li><strong>HITL enforcement</strong> — code changes blocked without explicit human approval; structured approvals via the <code>question</code> tool</li>
+                <li><strong>Anti-stall protocols</strong> — atomic delegations, immediate recovery from stuck subagents, bounded iteration, artifact isolation, checkpoint notes</li>
+                <li><strong>Library extensibility</strong> — add books via <code>library/&lt;role&gt;/</code> and register them; the shipped register is never clobbered by re-scaffolds</li>
+                <li><strong>Library opt-out</strong> — <code>WITH_LIBRARY=false</code> installs no shipped books; agents stay fully functional</li>
+                <li><strong>Scaled agent communication rules</strong> — isolated subagent context, uid-prefixed scratch files, depth awareness (max 2), no recursive delegation</li>
+            </ul>
         </div>
-        
+
+        <div class="section">
+            <h2>📱 Work From Anywhere with Tailscale</h2>
+            <p class="lead">Once the devcontainer boots, your llama-server, bifrost, and opencode endpoints are reachable from your phone over a secure mesh network — no public port exposure required.</p>
+
+            <div class="tailscale-grid">
+                <div class="tailscale-step">
+                    <h4>1. Start the container</h4>
+                    <p>Boot the devcontainer with the features above. The llama-server serves on <code>:8089</code>, bifrost on <code>:8082</code>, opencode serve on <code>:4096</code>.</p>
+                </div>
+                <div class="tailscale-step">
+                    <h4>2. Connect Tailscale</h4>
+                    <code>tailscale up --authkey=AK-...</code>
+                    <p>One command inside the container (or run the auto-start hook) authenticates this machine to your tailnet.</p>
+                </div>
+                <div class="tailscale-step">
+                    <h4>3. Find your IP</h4>
+                    <code>tailscale ip -4</code>
+                    <p>Prints the mesh IP (e.g. <code>100.x.x.x</code>). This is your always-on address from any device.</p>
+                </div>
+                <div class="tailscale-step">
+                    <h4>4. Open from your phone</h4>
+                    <p>Install the Tailscale app on your phone, sign in to the same account, and browse straight to your box:</p>
+                    <ul class="endpoints">
+                        <li><code>http://100.x.x.x:8082</code> — bifrost chat UI</li>
+                        <li><code>http://100.x.x.x:8089</code> — llama-server health &amp; API</li>
+                        <li><code>http://100.x.x.x:4096</code> — opencode serve (agentic IDE)</li>
+                    </ul>
+                </div>
+            </div>
+
+            <p style="margin-top: 1.5rem;"><strong>Zero public exposure.</strong> Everything stays inside the Tailscale overlay network — encrypted, authenticated, and only reachable by your own devices. No port forwarding, no cloud tunnel, no firewall holes. Your local LLM lab is a private personal server you carry in your pocket.</p>
+        </div>
+
+        <div class="section quick-start">
+            <h2>Quick Start</h2>
+            <p class="lead">Two ways to consume the collection in a new repo:</p>
+
+            <h4>Template path (recommended)</h4>
+            <code class="block">devcontainer templates apply -w &lt;your-repo&gt; \
+  -t ghcr.io/nmwael/agentic-devcontainer-feature/llm-lab</code>
+            <p>Generates <code>.devcontainer/devcontainer.json</code> with <code>GPU_MODE</code>, <code>MODEL</code>, <code>FEATURES_TAG</code>, <code>INCLUDE_AGENTS</code>/<code>INCLUDE_MODELS</code>/<code>INCLUDE_LIBRARY</code> options.</p>
+
+            <h4>Direct features path</h4>
+            <code class="block">"features": {
+    "ghcr.io/nmwael/agentic-devcontainer-feature/llama-server": "1",
+    "ghcr.io/nmwael/agentic-devcontainer-feature/gpu-bridge": "1",
+    "ghcr.io/nmwael/agentic-devcontainer-feature/bifrost-gateway": "1",
+    "ghcr.io/nmwael/agentic-devcontainer-feature/models": "1",
+    "ghcr.io/nmwael/agentic-devcontainer-feature/opencode-agents": "1"
+}</code>
+
+            <h4>Required runArgs for GPU</h4>
+            <code class="block">"runArgs": [
+    "--device=nvidia.com/gpu=all",
+    "--shm-size=2g",
+    "--cap-add=SYS_PTRACE",
+    "--security-opt=seccomp:unconfined"
+]</code>
+        </div>
+
+        <div class="section">
+            <h2>How to Use</h2>
+            <p class="lead">Three ways to engage with this repo — pick the one that fits.</p>
+            <ol>
+                <li><strong>Consumer (new repo)</strong> — Add the features block above to your <code>devcontainer.json</code>, or apply the <code>llm-lab</code> template.</li>
+                <li><strong>Self-consumption</strong> — This very repo boots the full stack from its own collection: llama-server at <code>:8089</code>, bifrost at <code>:8082</code>, opencode agents scaffolded, library books installed (or opt out with <code>WITH_LIBRARY=false</code>), models fetched via <code>fetch-models.sh</code>. A live reference implementation.</li>
+                <li><strong>Contributor</strong> — Read <code>CONTRIBUTING.md</code> for the development workflow, adding new features, and library contributions.</li>
+            </ol>
+        </div>
+
         <footer class="footer">
-            <p>Repository: <a href="https://github.com/nmwael/agentic-devcontainer-feature" target="_blank" style="color: var(--accent)">github.com/nmwael/agentic-devcontainer-feature</a></p>
-            <p>Powered by devcontainer Features • Published to GHCR</p>
+            <p>Repository: <a href="https://github.com/nmwael/agentic-devcontainer-feature" target="_blank">github.com/nmwael/agentic-devcontainer-feature</a></p>
+            <p>Powered by devcontainer Features • Published to GHCR • Multi-agent HITL workflow • Tailscale ready</p>
+            <p><a href="https://github.com/nmwael/agentic-devcontainer-feature/blob/main/README.md">README</a> • <a href="https://github.com/nmwael/agentic-devcontainer-feature/blob/main/CONTRIBUTING.md">CONTRIBUTING</a> • <a href="https://github.com/nmwael/agentic-devcontainer-feature/blob/main/LICENSE">LICENSE</a> • <a href="https://github.com/nmwael/agentic-devcontainer-feature/blob/main/SECURITY.md">SECURITY</a></p>
         </footer>
     </div>
 </body>
