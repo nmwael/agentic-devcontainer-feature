@@ -1,6 +1,10 @@
 {
+    "id": "llm-lab",
+    "version": "1.0.0",
     "name": "llm-lab",
     "description": "Local LLM lab devcontainer template — generates full agentic setup with features, GPU bridge, bifrost, models, and opencode agents.",
+    "documentationURL": "https://github.com/nmwael/agentic-devcontainer-feature/tree/main/src/templates/llm-lab",
+    "publisher": "nmwael",
     "schemaVersion": 1,
     "options": {
         "GPU_MODE": {
