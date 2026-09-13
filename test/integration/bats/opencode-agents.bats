@@ -23,7 +23,9 @@
     [ -d /usr/local/share/opencode-agents/library ]
 }
 
-@test "payload scaffold deployed into the workspace by install" {
+@test "scaffold.sh deploys the payload into the workspace when run" {
+    run /usr/local/share/opencode-agents/scaffold.sh
+    [ "$status" -eq 0 ]
     [ -f /workspaces/ci/AGENTS.md ]
     [ -f /workspaces/ci/AGENTS_LIFECYCLE.md ]
     [ -d /workspaces/ci/library ]
@@ -34,5 +36,5 @@
     run /bin/sh /tmp/feature/install.sh
     [ "$status" -eq 0 ]
     command -v opencode
-    [ -f /workspaces/ci/AGENTS.md ]
+    [ -x /usr/local/share/opencode-agents/scaffold.sh ]
 }

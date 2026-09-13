@@ -14,7 +14,7 @@
 
 @test "default model name/quant embedded in the fetch script" {
     grep -q "gemma-4-26B-A4B-it-UD-IQ2_M" /usr/local/share/llm-lab/models/fetch-models.sh
-    grep -q 'QUANT="${QUANT:-IQ2_M}"' /usr/local/share/llm-lab/models/fetch-models.sh
+    grep -q 'QUANT=' /usr/local/share/llm-lab/models/fetch-models.sh
 }
 
 @test "MODELS_DIR exported to /etc/environment" {

@@ -6,13 +6,19 @@
     [ -x /opt/llama-server/llama-server ] || [ -x /opt/llama-server/bin/llama-server ]
 }
 
-@test "llama-server binary is a real asset (not an empty degrade)" {
+@test "llama-server binary is a real asset (thin wrapper + runtime libs)" {
     if [ -f /opt/llama-server/llama-server ]; then
+        dir=/opt/llama-server
         size=$(stat -c %s /opt/llama-server/llama-server)
     else
+        dir=/opt/llama-server/bin
         size=$(stat -c %s /opt/llama-server/bin/llama-server)
     fi
-    [ "$size" -gt 1000000 ]
+    # Modern llama.cpp split builds: llama-server is a thin wrapper; the code
+    # lives in libllama.so* + libggml-*.so next to it.
+    [ "$size" -gt 100000 ]
+    find "$dir" -maxdepth 1 -name 'libllama.so*' | grep -q .
+    find "$dir" -maxdepth 1 -name 'libggml-*.so' | grep -q .
 }
 
 @test "llama-server symlinked onto PATH" {
