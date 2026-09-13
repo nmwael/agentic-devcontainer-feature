@@ -1,0 +1,23 @@
+{
+    "name": "Bifrost Gateway",
+    "id": "bifrost-gateway",
+    "version": "1.0.0",
+    "description": "Pinned @maximhq/bifrost install + config scaffold. Mirrors current npm-packages feature. Installs after llama-server (soft dependency).",
+    "options": {
+        "PORT": {
+            "type": "string",
+            "default": "8082",
+            "description": "Bifrost gateway port number"
+        },
+        "VERSION": {
+            "type": "string",
+            "default": "latest",
+            "description": "npm dist-tag or exact semver version for @maximhq/bifrost"
+        },
+        "LLAMA_PORT": {
+            "type": "string",
+            "default": "8089",
+            "description": "Llama server port for upstream routing"
+        }
+    }
+}

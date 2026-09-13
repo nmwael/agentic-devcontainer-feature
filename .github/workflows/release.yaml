@@ -1,0 +1,34 @@
+name: Release dev container features and templates (M1 spike)
+
+on:
+  push:
+    branches:
+      - feat/agentic-devcontainer-feature
+  workflow_dispatch:
+
+env:
+  DEVCONTAINER_CLI_VERSION: "0.89.0"
+  FEATURES_NAMESPACE: nmwael/agentic-devcontainer-feature
+  TEMPLATES_NAMESPACE: nmwael/agentic-devcontainer-feature-templates
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      packages: write
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install devcontainer CLI
+        run: npm install -g "@devcontainers/cli@${DEVCONTAINER_CLI_VERSION}"
+
+      - name: Publish hello feature
+        run: devcontainer features publish ./src -r ghcr.io -n "${FEATURES_NAMESPACE}" --log-level info
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_PAT }}
+
+      - name: Publish hello template
+        run: devcontainer templates publish ./src/templates -r ghcr.io -n "${TEMPLATES_NAMESPACE}" --log-level info
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_PAT }}

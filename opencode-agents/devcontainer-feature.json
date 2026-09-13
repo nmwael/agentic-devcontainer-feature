@@ -1,0 +1,23 @@
+{
+    "name": "Opencode Agents",
+    "id": "opencode-agents",
+    "version": "1.0.0",
+    "description": "Ships the complete primary agentic setup + library (AGENTS.md / AGENTS_LIFECYCLE.md, .opencode/agent/*.md, generic skills, library/ reference books). Consumer-extensible + opt-out via WITH_LIBRARY option.",
+    "options": {
+        "OVERWRITE": {
+            "type": "boolean",
+            "default": false,
+            "description": "Refresh existing scaffold files in the workspace, restricted to shipped-file manifest, never consumer files"
+        },
+        "WITH_LIBRARY": {
+            "type": "boolean",
+            "default": true,
+            "description": "Ship library books (true) or leave only extension docs + empty register (false = opt-out)"
+        },
+        "INSTALL_DIR": {
+            "type": "string",
+            "default": "/usr/local/share/opencode-agents",
+            "description": "Directory where agentic payload is unpacked"
+        }
+    }
+}

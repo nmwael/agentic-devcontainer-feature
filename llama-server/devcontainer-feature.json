@@ -1,0 +1,38 @@
+{
+    "name": "Llama Server",
+    "id": "llama-server",
+    "version": "1.0.0",
+    "description": "Prebuilt llama-server install providing OpenAI-compatible /v1 API. Gracefully degrades if binary unavailable.",
+    "options": {
+        "VERSION": {
+            "type": "string",
+            "default": "b10360",
+            "description": "Llama.cpp release ref selecting the asset tarball"
+        },
+        "CUDA_ARCHS": {
+            "type": "string",
+            "default": "80;86;89;90;120",
+            "description": "Comma-separated GPU architectures for prebuilt variant selection"
+        },
+        "ASSET_URL": {
+            "type": "string",
+            "default": "",
+            "description": "Override default asset URL; empty = derived from VERSION+CUDA_ARCHS"
+        },
+        "INSTALL_PATH": {
+            "type": "string",
+            "default": "/opt/llama-server",
+            "description": "Path where llama-server binary and libs are installed"
+        },
+        "COMPILE": {
+            "type": "boolean",
+            "default": false,
+            "description": "Source-build fallback when no matching prebuilt asset available"
+        },
+        "BUNDLE_CUDA_LIBS": {
+            "type": "boolean",
+            "default": true,
+            "description": "Bundle CUDA 13.3 runtime libs (cudart/cublas/cublasLt) into INSTALL_PATH"
+        }
+    }
+}

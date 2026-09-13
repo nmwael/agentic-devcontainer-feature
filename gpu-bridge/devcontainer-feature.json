@@ -1,0 +1,18 @@
+{
+    "name": "WSL2 GPU Bridge",
+    "id": "gpu-bridge",
+    "version": "1.0.0",
+    "description": "WSL2 GPU bridge as a feature; NO-OP on native Linux. Installs after llama-server.",
+    "options": {
+        "WSL2_ONLY": {
+            "type": "boolean",
+            "default": false,
+            "description": "True = hard-fail outside WSL2; false = stub that exits 0 anywhere"
+        },
+        "ENV_REWRITE": {
+            "type": "boolean",
+            "default": true,
+            "description": "Rewrite /etc/environment LD_LIBRARY_PATH"
+        }
+    }
+}

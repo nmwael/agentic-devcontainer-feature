@@ -1,0 +1,43 @@
+{
+    "name": "llm-lab",
+    "description": "Local LLM lab devcontainer template — generates full agentic setup with features, GPU bridge, bifrost, models, and opencode agents.",
+    "schemaVersion": 1,
+    "options": {
+        "GPU_MODE": {
+            "type": "enum",
+            "enum": ["wsl2", "native", "none"],
+            "default": "none",
+            "description": "WSL2 GPU bridge mode (wsl2), native Linux GPU (native), or no GPU (none)"
+        },
+        "MODEL": {
+            "type": "enum",
+            "enum": ["gemma-4-26B-A4B-it-UD-IQ2_M"],
+            "default": "gemma-4-26B-A4B-it-UD-IQ2_M",
+            "description": "Model to fetch and run (IQ2_M variant only for v1)"
+        },
+        "FEATURES_TAG": {
+            "type": "string",
+            "default": "1.0.0",
+            "description": "Version tag for the feature collection (ghcr.io namespace)"
+        },
+        "INCLUDE_AGENTS": {
+            "type": "boolean",
+            "default": true,
+            "description": "Include opencode-agents scaffold (AGENTS.md, skills, library)"
+        },
+        "INCLUDE_MODELS": {
+            "type": "boolean",
+            "default": true,
+            "description": "Include on-demand model fetch scaffolding"
+        },
+        "INCLUDE_LIBRARY": {
+            "type": "boolean",
+            "default": true,
+            "description": "Include library reference books (opt-out: WITH_LIBRARY=false)"
+        }
+    },
+    "platforms": ["linux", "wsl2"],
+    "patterns": {
+        "templateOption": "${templateOption:id}"
+    }
+}

@@ -1,0 +1,42 @@
+{
+    "scenarios": [
+        {
+            "name": "cpu-only-ubuntu2404",
+            "description": "CPU-only scenario on ubuntu:24.04 — proves graceful degradation without GPU",
+            "baseImage": "ubuntu:24.04",
+            "features": {
+                "llama-server": "0",
+                "gpu-bridge": "0",
+                "bifrost-gateway": "1",
+                "models": "1",
+                "opencode-agents": "1"
+            },
+            "checks": [
+                "llama-server not installed (graceful degradation)",
+                "gpu-bridge stub exits 0 (not WSL2)",
+                "bifrost-gateway npm packages install",
+                "models fetch-models.sh script available",
+                "opencode-agents scaffold present"
+            ]
+        },
+        {
+            "name": "cpu-only-cuda-runtime",
+            "description": "CPU-only scenario on nvidia/cuda:13.3.0-cudnn-runtime-ubuntu24.04 — tests no-GPU paths",
+            "baseImage": "nvidia/cuda:13.3.0-cudnn-runtime-ubuntu24.04",
+            "features": {
+                "llama-server": "1",
+                "gpu-bridge": "0",
+                "bifrost-gateway": "1",
+                "models": "1",
+                "opencode-agents": "1"
+            },
+            "checks": [
+                "llama-server installed (idempotent no-op on custom image)",
+                "gpu-bridge stub exits 0",
+                "bifrost-gateway operational",
+                "models fetch-models.sh script available",
+                "opencode-agents scaffold present"
+            ]
+        }
+    ]
+}
