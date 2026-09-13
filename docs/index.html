@@ -392,6 +392,7 @@
         <div class="section">
             <h2>📱 Work From Anywhere with Tailscale</h2>
             <p class="lead">Once the devcontainer boots, your llama-server, bifrost, and opencode endpoints are reachable from your phone over a secure mesh network — no public port exposure required.</p>
+            <p><strong>Your devcontainer is a devbox you control on the go.</strong> Open <code>opencode</code> from your phone (mobile browser via <code>opencode serve</code>) and you're talking to your full agentic setup — <code>@architect</code>, <code>@coder</code>, <code>@researcher</code> and the rest — wherever you are. Ask for a change, review a diff, kick off a build, or check the llama-server health, all from the palm of your hand, while the heavy compute stays on your box.</p>
 
             <div class="tailscale-grid">
                 <div class="tailscale-step">
@@ -412,14 +413,15 @@
                     <h4>4. Open from your phone</h4>
                     <p>Install the Tailscale app on your phone, sign in to the same account, and browse straight to your box:</p>
                     <ul class="endpoints">
+                        <li><code>http://100.x.x.x:4096</code> — opencode serve (agentic IDE — your devbox remote control)</li>
                         <li><code>http://100.x.x.x:8082</code> — bifrost chat UI</li>
                         <li><code>http://100.x.x.x:8089</code> — llama-server health &amp; API</li>
-                        <li><code>http://100.x.x.x:4096</code> — opencode serve (agentic IDE)</li>
                     </ul>
+                    <p>Use <code>opencode</code> from your phone's browser exactly like on desktop: pick a task, let the agent team plan and implement it on the devbox, and follow along live. It's a full devbox in your pocket — same agents, same library, same models, same repo state.</p>
                 </div>
             </div>
 
-            <p style="margin-top: 1.5rem;"><strong>Zero public exposure.</strong> Everything stays inside the Tailscale overlay network — encrypted, authenticated, and only reachable by your own devices. No port forwarding, no cloud tunnel, no firewall holes. Your local LLM lab is a private personal server you carry in your pocket.</p>
+            <p style="margin-top: 1.5rem;"><strong>Zero public exposure.</strong> Everything stays inside the Tailscale overlay network — encrypted, authenticated, and only reachable by your own devices. No port forwarding, no cloud tunnel, no firewall holes. Your local LLM lab is a private personal server you carry in your pocket — a full devbox, remote-controlled from your phone.</p>
         </div>
 
         <div class="section quick-start">
