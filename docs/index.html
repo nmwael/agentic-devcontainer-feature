@@ -522,6 +522,7 @@
         "--cap-add=SYS_PTRACE",
         "--security-opt=seccomp:unconfined"
     ],
+    "forwardPorts": [8082, 8089, 4096],
     "containerEnv": {
         "TS_AUTHKEY": "${localEnv:TS_AUTHKEY}"
     },

@@ -15,6 +15,7 @@
         "${templateOption:GPU_MODE != 'none' ? '--cap-add=SYS_PTRACE' : ''}",
         "${templateOption:GPU_MODE != 'none' ? '--security-opt=seccomp:unconfined' : ''}"
     ],
+    "forwardPorts": [8082, 8089, 4096],
     "customizations": {
         "vscode": {
             "extensions": [
