@@ -43,6 +43,8 @@ The `@3d-designer` books (`tdd-mechanical.mini.md`, `design_standards.mini.md`) 
 | @artist | no dedicated book yet |
 | @3d-designer | `3dprints/library/design_standards.mini.md` |
 
+*Machine-readable matrix: `manifest.json` (this table is generated from it).*
+
 Layout notes:
 - The llama.cpp book moved from `llama.cpp/` to `ai-researcher/`: llama.cpp is a research/ML-adjacent topic, owned by the `ai-researcher` agent.
 - The java book moved from `java/` to `coder/`: Java is a coder concern; per maintainer directive it is not shared with `researcher`/`reviewer`.
