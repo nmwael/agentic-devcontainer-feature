@@ -40,9 +40,11 @@ echo "Installing llama-server VERSION=$VERSION CUDA_ARCHS=$CUDA_ARCHS ARCH=$ARCH
 if [ -n "$ASSET_URL" ]; then
     ASSET_URL_FINAL="$ASSET_URL"
 else
-    # Default derived URL pattern — this would need the actual base
-    # For now, attempt the standard ggml-org pattern
-    ASSET_URL_FINAL="https://github.com/ggml-org/llama.cpp/releases/download/$VERSION/llama-server-${VERSION}-cuda13-${CUDA_ARCHS}.tar.gz"
+    # Default derived URL pattern — the official ubuntu-bin asset for this release
+    # (upstream publishes CPU builds here; CUDA builds are not published as
+    # ubuntu assets on recent releases, so GPU runtimes come from a cuda-runtime
+    # base image + BUNDLE_CUDA_LIBS, or an ASSET_URL override).
+    ASSET_URL_FINAL="https://github.com/ggml-org/llama.cpp/releases/download/$VERSION/llama-${VERSION}-bin-ubuntu-${ARCH_VARIANT}.tar.gz"
 fi
 
 echo "Downloading llama-server asset from: $ASSET_URL_FINAL"
@@ -50,7 +52,7 @@ echo "Downloading llama-server asset from: $ASSET_URL_FINAL"
 # Download to scratch /tmp
 SCRATCH="/tmp/llama-server-scratch-${VERSION}-${ARCH_VARIANT}"
 mkdir -p "$SCRATCH"
-rm -rf "$SCRATCH"/*
+rm -rf "${SCRATCH:?}"/*
 
 if ! curl -fL "$ASSET_URL_FINAL" -o "$SCRATCH/llama-server.tar.gz"; then
     echo "WARNING: Failed to download llama-server asset from $ASSET_URL_FINAL"
@@ -73,11 +75,16 @@ fi
 # Unpack to install path
 echo "Unpacking to $INSTALL_PATH ..."
 mkdir -p "$INSTALL_PATH"
-tar -xzf "$SCRATCH/llama-server.tar.gz" -C "$INSTALL_PATH" --strip-components=1
+# Assets differ in layout: some carry a top-level dir, some carry bin/….
+# Try --strip-components=1 (dir layout) and fall back to plain extraction.
+if ! tar -xzf "$SCRATCH/llama-server.tar.gz" -C "$INSTALL_PATH" --strip-components=1 2>/dev/null; then
+    tar -xzf "$SCRATCH/llama-server.tar.gz" -C "$INSTALL_PATH"
+fi
 
-# Create symlink onto PATH if INSTALL_PATH/bin exists
-if [ -f "$INSTALL_PATH/llama-server" ]; then
-    ln -sf "$INSTALL_PATH/llama-server" /usr/local/bin/llama-server
+# Locate the llama-server binary wherever the asset puts it (bin/ or root)
+LLAMA_BIN="$(find "$INSTALL_PATH" -type f -name llama-server | head -1)"
+if [ -n "$LLAMA_BIN" ]; then
+    ln -sf "$LLAMA_BIN" /usr/local/bin/llama-server
     echo "llama-server symlinked to /usr/local/bin/llama-server"
 fi
 

@@ -54,7 +54,6 @@ FETCH_EOF
 chmod 0755 "$FETCH_SCRIPT"
 
 # Write MODELS_DIR to /etc/environment or via containerEnv when the option is set
-ENV_LINE="MODELS_DIR=$MODELS_DIR"
 if ! grep -qF "MODELS_DIR" /etc/environment 2>/dev/null; then
     echo "export MODELS_DIR=$MODELS_DIR" >> /etc/environment
     echo "Added MODELS_DIR to /etc/environment"

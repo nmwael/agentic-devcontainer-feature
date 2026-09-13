@@ -1,7 +1,7 @@
 {
     "name": "On-Demand Models",
     "id": "models",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "description": "ON-DEMAND model fetch; weights (9-16 GB) are NEVER baked into image layers. Installs fetch-models.sh script.",
     "options": {
         "MODEL": {

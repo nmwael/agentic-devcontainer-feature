@@ -1,7 +1,7 @@
 {
     "name": "Llama Server",
     "id": "llama-server",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "description": "Prebuilt llama-server install providing OpenAI-compatible /v1 API. Gracefully degrades if binary unavailable.",
     "options": {
         "VERSION": {

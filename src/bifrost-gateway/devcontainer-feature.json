@@ -1,7 +1,7 @@
 {
     "name": "Bifrost Gateway",
     "id": "bifrost-gateway",
-    "version": "1.0.2",
+    "version": "1.0.3",
     "description": "Pinned @maximhq/bifrost install + config scaffold. Mirrors current npm-packages feature. Installs after llama-server (soft dependency).",
     "options": {
         "PORT": {

@@ -432,6 +432,14 @@ else
     fi
 fi
 
+# The official installer drops the binary into ~/.opencode/bin and only edits
+# shell rc files. Symlink into /usr/local/bin so non-interactive shells
+# (postStartCommand scripts, bats, crons, CI) also see `opencode` on PATH.
+if [ -x "$HOME/.opencode/bin/opencode" ]; then
+    ln -sf "$HOME/.opencode/bin/opencode" /usr/local/bin/opencode
+    echo "opencode symlinked to /usr/local/bin/opencode (non-interactive shells)"
+fi
+
 echo "Done! Opencode-agents feature activated."
 echo "Scaffold scripts placed at $INSTALL_DIR/scaffold.sh"
 echo "opencode.json.fragment placed at $INSTALL_DIR/opencode.json.fragment"

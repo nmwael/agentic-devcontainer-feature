@@ -43,7 +43,7 @@ cat > "/usr/local/bin/start-bifrost" <<LAUNCHER_EOF
 PORT_ENV="${BIFROST_PORT:-$PORT}"
 export BIFROST_PORT="$PORT_ENV"
 export LLAMA_PORT="${LLAMA_PORT:-8089}"
-exec node "$BIFROST_DIR/dist/index.js" "\$PORT_ENV"
+exec node "$BIFROST_DIR/node_modules/@maximhq/bifrost/bin.js" "\$PORT_ENV"
 LAUNCHER_EOF
 chmod 0755 "/usr/local/bin/start-bifrost"
 

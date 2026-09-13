@@ -1,0 +1,41 @@
+name: test
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'src/**'
+      - 'scripts/**'
+      - 'test/**'
+      - '.github/workflows/test.yaml'
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  static:
+    name: Static checks
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7.0.1
+
+      - name: Install test tooling
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends bats dash python3 shellcheck
+
+      - name: Static suite (shellcheck + dash + schema)
+        run: test/static/run-static.sh
+
+      - name: Bats metadata suite
+        run: bats --print-output-on-failure test/bats/metadata.bats
+
+  integration:
+    name: Container integration (bats per feature)
+    runs-on: ubuntu-latest
+    needs: static
+    steps:
+      - uses: actions/checkout@v7.0.1
+
+      - name: Per-feature container integration tests
+        run: test/integration/run.sh

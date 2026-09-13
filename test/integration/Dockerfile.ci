@@ -1,0 +1,31 @@
+# CI-only integration container: installs ONE feature under test, then runs
+# its bats suite against the installed artifacts. Built by test/integration/run.sh
+# with a staged build context containing:
+#   feature/    -> src/<feature> (install.sh, devcontainer-feature.json)
+#   test.bats   -> the per-feature bats file
+#   options.env -> `export KEY=value` lines derived from the feature's option
+#                  defaults (UPPERCASED, exactly what devcontainer passes at
+#                  build time)
+FROM ubuntu:24.04
+
+ENV DEBIAN_FRONTEND=noninteractive
+ENV _REMOTE_USER=vscode
+ENV _CONTAINER_USER=vscode
+
+# bats-core is the test runner; the rest is what the installers depend on.
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+        bash bats ca-certificates curl dash git nodejs npm python3 \
+    && rm -rf /var/lib/apt/lists/*
+
+COPY feature /tmp/feature
+COPY test.bats /tmp/test.bats
+COPY options.env /tmp/options.env
+
+WORKDIR /workspaces/ci
+
+# Install twice: devcontainer features must be idempotent / re-runnable.
+RUN . /tmp/options.env && /bin/sh /tmp/feature/install.sh
+RUN . /tmp/options.env && /bin/sh /tmp/feature/install.sh
+
+CMD ["bats", "/tmp/test.bats"]

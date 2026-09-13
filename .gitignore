@@ -2,3 +2,7 @@
 # This directory is gitignored - it is the extraction staging area.
 # The trimmed portable tree is pushed as the new repo's initial branch.
 wip/
+
+# Python bytecode
+__pycache__/
+*.pyc
