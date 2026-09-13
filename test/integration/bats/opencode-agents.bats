@@ -3,10 +3,15 @@
 # PATH for NON-interactive shells too (postStartCommand, crons, CI) - not just
 # login shells where the official installer's rc-file edit applies.
 
-@test "opencode CLI is on PATH for non-interactive shells" {
+@test "opencode CLI is on PATH for non-interactive shells (all users)" {
     command -v opencode
+    # Must be a real file at /usr/local/bin, NOT a symlink into ~/ (0700,
+    # untraversable by the remoteUser) — the 1.0.4 copy fix.
+    [ -f /usr/local/bin/opencode ]
+    [ ! -L /usr/local/bin/opencode ]
     [ -x /usr/local/bin/opencode ]
-    [ "$(readlink /usr/local/bin/opencode)" = "/root/.opencode/bin/opencode" ]
+    size=$(stat -c %s /usr/local/bin/opencode)
+    [ "$size" -gt 1000000 ]
 }
 
 @test "opencode CLI runs and reports a version" {

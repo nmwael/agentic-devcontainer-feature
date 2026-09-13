@@ -8,11 +8,12 @@ set -euo pipefail
 # WSL2 GPU bridge: the CUDA loader symlinks live under /usr/lib/wsl/drivers,
 # a per-container 9p mount that is NOT visible while `docker build` runs.
 # Re-apply them on every start so llama-server finds the real libcuda.
+# postStartCommand runs as the devcontainer user → sudo (NOPASSWD) here.
 if [ -d /usr/lib/wsl/drivers ] && [ -d /usr/lib/wsl/lib ]; then
     echo "[auto-startup] re-linking WSL2 GPU bridge loader libs..."
     for lib in libcuda.so.1 libcuda_loader.so libnvidia-ml.so.1 libnvidia-ptxjitcompiler.so.1 libnvdxgdmal.so.1; do
         f=$(find /usr/lib/wsl/drivers -name "$lib" 2>/dev/null | head -1)
-        [ -n "$f" ] && ln -sfn "$f" "/usr/lib/wsl/lib/$lib"
+        [ -n "$f" ] && sudo ln -sfn "$f" "/usr/lib/wsl/lib/$lib"
     done
 fi
 

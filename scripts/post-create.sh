@@ -7,14 +7,17 @@ set -euo pipefail
 
 echo "[post-create] agentic-devcontainer-feature self-consumption container"
 
-# Locale (python + some toolchains want a real UTF-8 locale)
+# Locale (python + some toolchains want a real UTF-8 locale).
+# postCreateCommand runs as the devcontainer user (vscode), so privileged
+# steps go through sudo (NOPASSWD from the Dockerfile).
 if ! locale -a 2>/dev/null | grep -qi "en_US.UTF-8"; then
     echo "[post-create] generating en_US.UTF-8 locale..."
-    ( echo "en_US.UTF-8 UTF-8" >> /etc/locale.gen && locale-gen >/dev/null 2>&1 ) || true
+    ( echo "en_US.UTF-8 UTF-8" | sudo tee -a /etc/locale.gen >/dev/null \
+        && sudo locale-gen >/dev/null 2>&1 ) || echo "[post-create] WARNING: locale-gen failed (sudo locale-gen manually)"
 fi
 
 # Component status
-for bin in llama-server opencode; do
+for bin in git llama-server opencode; do
     if command -v "$bin" >/dev/null 2>&1; then
         echo "[post-create] $bin: ready ($(command -v "$bin"))"
     else

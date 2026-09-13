@@ -418,8 +418,9 @@ OPENCODE_JSON_FRAGMENT_EOF
 # Install the opencode CLI itself (binary via the official installer).
 # This is what makes `opencode serve` / `opencode` usable in the box;
 # the payload above only ships the agent scaffold (AGENTS.md, library).
-if ! command -v curl >/dev/null 2>&1; then
-    apt-get install -y --no-install-recommends curl >/dev/null 2>&1 || echo "WARNING: curl unavailable"
+if ! command -v curl >/dev/null 2>&1 || ! command -v git >/dev/null 2>&1; then
+    apt-get install -y --no-install-recommends curl git >/dev/null 2>&1 \
+        || echo "WARNING: curl/git unavailable — CLI install needs curl; agent workflows need git"
 fi
 if command -v opencode >/dev/null 2>&1; then
     echo "opencode CLI already installed: $(opencode --version 2>/dev/null || echo present)"
@@ -433,11 +434,14 @@ else
 fi
 
 # The official installer drops the binary into ~/.opencode/bin and only edits
-# shell rc files. Symlink into /usr/local/bin so non-interactive shells
-# (postStartCommand scripts, bats, crons, CI) also see `opencode` on PATH.
+# rc files; ~/ is typically 0700 and NOT traversable by other container users
+# (e.g. remoteUser vscode), so a symlink into it breaks non-interactive shells.
+# Copy the binary to /usr/local/bin so EVERY user and context (remoteUser,
+# postStartCommand scripts, bats, crons, CI) sees `opencode` on PATH.
 if [ -x "$HOME/.opencode/bin/opencode" ]; then
-    ln -sf "$HOME/.opencode/bin/opencode" /usr/local/bin/opencode
-    echo "opencode symlinked to /usr/local/bin/opencode (non-interactive shells)"
+    cp -f "$HOME/.opencode/bin/opencode" /usr/local/bin/opencode
+    chmod 0755 /usr/local/bin/opencode
+    echo "opencode copied to /usr/local/bin/opencode (all users)"
 fi
 
 echo "Done! Opencode-agents feature activated."
