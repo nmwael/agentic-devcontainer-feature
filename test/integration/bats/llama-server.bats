@@ -14,9 +14,9 @@
         dir=/opt/llama-server/bin
         size=$(stat -c %s /opt/llama-server/bin/llama-server)
     fi
-    # Modern llama.cpp split builds: llama-server is a thin wrapper; the code
-    # lives in libllama.so* + libggml-*.so next to it.
-    [ "$size" -gt 100000 ]
+    # Modern llama.cpp split builds: llama-server is a thin wrapper (~18 KB at
+    # b10360); the code lives in libllama.so* + libggml-*.so next to it.
+    [ "$size" -gt 10000 ]
     find "$dir" -maxdepth 1 -name 'libllama.so*' | grep -q .
     find "$dir" -maxdepth 1 -name 'libggml-*.so' | grep -q .
 }
