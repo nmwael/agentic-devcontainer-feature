@@ -15,13 +15,17 @@ ENV DEBIAN_FRONTEND=noninteractive \
 # 1. Install sudo and ensure the configuration directory exists.
 #    python3.12 = FULL stdlib (json etc.); the base image only ships
 #    python3.12-minimal, and crewai/uv venv sync fails without it.
-#    git + locales = agent workspace baseline (postCreate runs as vscode,
-#    so shipping the locale prebuilt avoids touching /etc/locale.gen later).
+#    git + locales = agent workspace baseline. NOTE: this RUN is FAIL-LOUD —
+#    no `|| true` masking — so a build-time apt failure is visible instead of
+#    silently producing a broken image.
 RUN apt-get update && apt-get install -y --no-install-recommends sudo python3.12 git locales \
-    && sed -i 's/^# *en_US.UTF-8 UTF-8/en_US.UTF-8 UTF-8/' /etc/locale.gen \
-    && locale-gen >/dev/null 2>&1 || true \
     && mkdir -p /etc/sudoers.d \
     && rm -rf /var/lib/apt/lists/*
+
+# 2. Prebuild the en_US.UTF-8 locale so post-create's runtime fallback is a
+#    no-op (postCreateCommand runs as the devcontainer user, not root).
+#    locale-gen alone is tolerated: it is cosmetic if it ever hiccups.
+RUN sed -i 's/^# *en_US.UTF-8 UTF-8/en_US.UTF-8 UTF-8/' /etc/locale.gen && locale-gen >/dev/null 2>&1 || true
 
 # 2. Create the vscode user (idempotent UID/GID handling)
 RUN EXISTING_USER=$(getent passwd ${USER_UID} | cut -d: -f1) \

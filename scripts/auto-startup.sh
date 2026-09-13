@@ -13,13 +13,15 @@ if [ -d /usr/lib/wsl/drivers ] && [ -d /usr/lib/wsl/lib ]; then
     echo "[auto-startup] re-linking WSL2 GPU bridge loader libs..."
     for lib in libcuda.so.1 libcuda_loader.so libnvidia-ml.so.1 libnvidia-ptxjitcompiler.so.1 libnvdxgdmal.so.1; do
         f=$(find /usr/lib/wsl/drivers -name "$lib" 2>/dev/null | head -1)
-        [ -n "$f" ] && sudo ln -sfn "$f" "/usr/lib/wsl/lib/$lib"
+        # 2>/dev/null: sudo's "unable to send audit message" is cosmetic in
+        # containers (no CAP_AUDIT_WRITE); the symlink is still created.
+        [ -n "$f" ] && sudo ln -sfn "$f" "/usr/lib/wsl/lib/$lib" 2>/dev/null
     done
 fi
 
 # --- Tailscale (userspace networking), only if the tooling is present ---
 if command -v tailscaled >/dev/null 2>&1 && ! pgrep -x tailscaled >/dev/null 2>&1; then
-    sudo mkdir -p /var/run/tailscale && sudo chown "$(id -u):$(id -g)" /var/run/tailscale
+    sudo mkdir -p /var/run/tailscale 2>/dev/null && sudo chown "$(id -u):$(id -g)" /var/run/tailscale 2>/dev/null
     tailscaled -tun userspace-networking -state /tmp/tailscaled.state -socket /var/run/tailscale/tailscaled.sock &
     sleep 2
 fi
