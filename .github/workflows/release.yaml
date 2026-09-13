@@ -32,10 +32,9 @@ jobs:
             devcontainer features publish "./${feature}" -r ghcr.io -n "${FEATURES_NAMESPACE}" --log-level info
           done
         env:
-          GITHUB_TOKEN: ${{ secrets.GH_PAT }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Publish llm-lab template
         run: devcontainer templates publish ./llm-lab -r ghcr.io -n "${TEMPLATES_NAMESPACE}" --log-level info
         env:
-          GITHUB_TOKEN: ${{ secrets.GH_PAT }}
-
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
