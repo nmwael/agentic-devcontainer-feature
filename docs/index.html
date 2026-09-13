@@ -5,6 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>agentic-devcontainer-feature — All-in-one Local LLM Developer Box</title>
     <style>
+        html {
+            scroll-behavior: smooth;
+        }
         :root {
             --primary: #1a1a2e;
             --secondary: #16213e;
@@ -141,6 +144,7 @@
         }
 
         .section h2 {
+        scroll-margin-top: 1.5rem;
             font-size: 1.6rem;
             margin-bottom: 0.5rem;
             text-align: center;
@@ -325,17 +329,17 @@
         </header>
 
         <div class="section">
-            <h2>How to Use</h2>
+            <h2 id="how-to-use">How to Use</h2>
             <p class="lead">Three ways to engage with this repo — pick the one that fits.</p>
             <ol>
-                <li><strong>Consumer (new repo)</strong> — Add the features block from the Quick Start section below to your <code>devcontainer.json</code>, or apply the <code>llm-lab</code> template.</li>
+                <li><strong>Consumer (new repo)</strong> — Add the features block from the <a href="#quick-start">Quick Start</a> section below to your <code>devcontainer.json</code>, or apply the <code>llm-lab</code> template.</li>
                 <li><strong>Self-consumption</strong> — This very repo boots the full stack from its own collection: llama-server at <code>:8089</code>, bifrost at <code>:8082</code>, opencode agents scaffolded, library books installed (or opt out with <code>WITH_LIBRARY=false</code>), models fetched via <code>fetch-models.sh</code>. A live reference implementation.</li>
                 <li><strong>Contributor</strong> — Read <code>CONTRIBUTING.md</code> for the development workflow, adding new features, and library contributions.</li>
             </ol>
         </div>
 
         <div class="section">
-            <h2>What You Get</h2>
+            <h2 id="what-you-get">What You Get</h2>
             <p class="lead">Spin up a complete local-LLM developer environment in any repo — a single <code>features</code> block provisions the whole box:</p>
             <div class="features-grid">
                 <div class="feature-card">
@@ -408,7 +412,7 @@
         </div>
 
         <div class="section">
-            <h2>Full Toolchain — No More <code>command not found</code></h2>
+            <h2 id="full-toolchain">Full Toolchain — No More <code>command not found</code></h2>
             <p class="lead">The collection installs the actual binaries the agents use, not just config files. When you add these features, <code>opencode</code>, <code>llama-server</code>, and <code>start-bifrost</code> are real commands on your PATH — the agents call them directly, no manual setup.</p>
             <ul>
                 <li><strong>llama-server</strong> — prebuilt llama.cpp binary plus CUDA runtime libs at <code>/usr/local/bin/llama-server</code>; OpenAI-compatible <code>/v1</code> endpoint on <code>:8089</code>.</li>
@@ -422,7 +426,7 @@
         </div>
 
         <div class="section">
-            <h2>Multi-Role Agent Setup</h2>
+            <h2 id="multi-role-agent-setup">Multi-Role Agent Setup</h2>
             <p class="lead">When you use the <code>opencode-agents</code> feature, you get a complete multi-agent workflow with Human-in-the-Loop (HITL) approval — exactly what this repo runs on.</p>
 
             <h4>The Agent Roster</h4>
@@ -463,7 +467,7 @@
         </div>
 
         <div class="section">
-            <h2>📱 Work From Anywhere with Tailscale</h2>
+            <h2 id="work-from-anywhere">📱 Work From Anywhere with Tailscale</h2>
             <p class="lead">Once the devcontainer boots, your llama-server, bifrost, and opencode endpoints are reachable from your phone over a secure mesh network — no public port exposure required.</p>
             <p><strong>Your devcontainer is a devbox you control on the go.</strong> Open <code>opencode</code> from your phone — via the <a href="https://github.com/dzianisv/opencode-mobile" target="_blank" rel="noopener noreferrer">OpenCode Mobile</a> Android app (Google Play / F-Droid / APK) or any mobile browser pointed at <code>opencode serve</code> — and you're talking to your full agentic setup: <code>@architect</code>, <code>@coder</code>, <code>@researcher</code> and the rest, wherever you are. Ask for a change, review a diff, kick off a build, or check the llama-server health, all from the palm of your hand, while the heavy compute stays on your box.</p>
 
@@ -474,7 +478,7 @@
                 </div>
                 <div class="tailscale-step">
                     <h4>2. Connect Tailscale</h4>
-                    <p>Nothing to run — set <code>TS_AUTHKEY</code> in <code>containerEnv</code> (see Quick Start) and auto-startup runs <code>tailscale up --authkey=…</code> on every container start, joining your tailnet automatically.</p>
+                    <p>Nothing to run — set <code>TS_AUTHKEY</code> in <code>containerEnv</code> (see <a href="#quick-start">Quick Start</a>) and auto-startup runs <code>tailscale up --authkey=…</code> on every container start, joining your tailnet automatically.</p>
                 </div>
                 <div class="tailscale-step">
                     <h4>3. Find your IP</h4>
@@ -497,7 +501,7 @@
         </div>
 
         <div class="section quick-start">
-            <h2>Quick Start</h2>
+            <h2 id="quick-start">Quick Start</h2>
             <p class="lead">Two ways to consume the collection in a new repo:</p>
 
             <h4>Template path (recommended)</h4>
@@ -539,7 +543,7 @@
         }
     }
 }</code>
-            <p>Notes: <code>--device=nvidia.com/gpu=all</code> targets native Linux <em>and</em> WSL2 GPU modes. Set <code>TS_AUTHKEY</code> as a local env var to auto-join your Tailscale tailnet (see Work From Anywhere above). The official <code>ghcr.io/tailscale/codespace/tailscale</code> feature adds the VPN; <code>containerEnv: TS_AUTHKEY</code> makes it join automatically on every start. Omit <code>containerEnv</code>/<code>customizations</code> for the minimal lab. For the pre-built <code>vscode</code> user + sudo + python3.12, apply the <code>llm-lab</code> template instead (it ships a Dockerfile variant).</p>
+            <p>Notes: <code>--device=nvidia.com/gpu=all</code> targets native Linux <em>and</em> WSL2 GPU modes. Set <code>TS_AUTHKEY</code> as a local env var to auto-join your Tailscale tailnet (see <a href="#work-from-anywhere">Work From Anywhere above</a>). The official <code>ghcr.io/tailscale/codespace/tailscale</code> feature adds the VPN; <code>containerEnv: TS_AUTHKEY</code> makes it join automatically on every start. Omit <code>containerEnv</code>/<code>customizations</code> for the minimal lab. For the pre-built <code>vscode</code> user + sudo + python3.12, apply the <code>llm-lab</code> template instead (it ships a Dockerfile variant).</p>
 
             <h4>Configuration reference</h4>
             <p>Every option the features expose. Defaults are what you get from the pinned versions above — pass an object to override, e.g. <code>"ghcr.io/.../llama-server": { "version": "b10360", "cudaArchs": "80;86;89;90;120" }</code>. The <code>"1"</code> major tag always tracks the latest of the 1.x line.</p>
@@ -589,7 +593,7 @@
             <h5>containerEnv</h5>
             <table class="reference">
                 <tr><th>Variable</th><th>Example</th><th>Description</th></tr>
-                <tr><td>TS_AUTHKEY</td><td>${localEnv:TS_AUTHKEY}</td><td>Tailscale auth key — auto-joins your tailnet on boot (pair with the Work From Anywhere setup).</td></tr>
+                <tr><td>TS_AUTHKEY</td><td>${localEnv:TS_AUTHKEY}</td><td>Tailscale auth key — auto-joins your tailnet on boot (pair with the <a href="#work-from-anywhere">Work From Anywhere</a> setup).</td></tr>
                 <tr><td>TS_HOSTNAME</td><td>llm-lab</td><td>Tailscale node name — the box appears as <code>llm-lab</code> on your tailnet (set to override).</td></tr>
                 <tr><td>GOOGLE_API_KEY</td><td>${localEnv:GOOGLE_API_KEY}</td><td>Google (Gemini) API key for the AI provider tier.</td></tr>
                 <tr><td>NVIDIA_API_KEY</td><td>${localEnv:NVIDIA_API_KEY}</td><td>NVIDIA API key if you use NVIDIA-hosted model endpoints.</td></tr>
