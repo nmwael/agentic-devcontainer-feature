@@ -1,0 +1,48 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "model": "local-gemma4-26b/gemma4-26b-a4b-s4",
+  "small_model": "local-gemma4-26b/gemma4-26b-a4b-s4",
+  "provider": {
+    "local-gemma4-26b": {
+      "npm": "@ai-sdk/openai-compatible",
+      "name": "Bifrost (local gemma4-26b)",
+      "options": {
+        "baseURL": "http://127.0.0.1:8082/v1",
+        "headers": {
+          "x-bf-passthrough-extra-params": "true"
+        }
+      },
+      "models": {
+        "gemma4-26b-a4b":   { "name": "Gemma4 26B A4B (unpinned fallback)", "limit": { "context": 65536 } },
+        "gemma4-26b-a4b-s0": { "name": "Gemma4 26B A4B — Slot 0 (architect)", "limit": { "context": 65536 } },
+        "gemma4-26b-a4b-s1": { "name": "Gemma4 26B A4B — Slot 1 (coder)", "limit": { "context": 49152 } },
+        "gemma4-26b-a4b-s2": { "name": "Gemma4 26B A4B — Slot 2 (researcher)", "limit": { "context": 49152 } },
+        "gemma4-26b-a4b-s3": { "name": "Gemma4 26B A4B — Slot 3 (reviewer)", "limit": { "context": 49152 } },
+        "gemma4-26b-a4b-s4": { "name": "Gemma4 26B A4B — Slot 4 (build/ui/artist/ai-researcher)", "limit": { "context": 32768 } }
+      }
+    },
+    "opencode": {
+      "options": {
+        "setCacheKey": false
+      }
+    }
+  },
+  "agent": {
+    "architect":    { "model": "local-gemma4-26b/gemma4-26b-a4b-s0" },
+    "coder":        { "model": "local-gemma4-26b/gemma4-26b-a4b-s1" },
+    "researcher":   { "model": "local-gemma4-26b/gemma4-26b-a4b-s2" },
+    "reviewer":     { "model": "local-gemma4-26b/gemma4-26b-a4b-s3" },
+    "build":        { "model": "local-gemma4-26b/gemma4-26b-a4b-s4" },
+    "ui":           { "model": "local-gemma4-26b/gemma4-26b-a4b-s4" },
+    "artist":       { "model": "local-gemma4-26b/gemma4-26b-a4b-s4" },
+    "ai-researcher": { "model": "local-gemma4-26b/gemma4-26b-a4b-s4" }
+  },
+  "enabled_providers": ["local-gemma4-26b", "opencode"],
+  "subagent_depth": 2,
+  "server": {
+    "port": 4096
+  },
+  "limit": {
+    "context": 65536
+  }
+}

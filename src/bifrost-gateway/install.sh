@@ -53,14 +53,9 @@ chmod 0755 "/usr/local/bin/start-bifrost"
 CONFIG_DIR="/usr/local/share/llm-lab/bifrost/config"
 mkdir -p "$CONFIG_DIR"
 
-cat > "$CONFIG_DIR/bifrost.json" <<CONFIG_EOF
-{
-    "upstream": "http://127.0.0.1:${LLAMA_PORT}/v1",
-    "slot_routing": "gemma4-26b-a4b-sN",
-    "setCacheKey": false,
-    "x-bf-passthrough-extra-params": ""
-}
-CONFIG_EOF
+TPL_DIR="$(dirname "$0")/templates"
+cp -f "$TPL_DIR/bifrost.json" "$CONFIG_DIR/bifrost.json"
+sed -i "s/__LLAMA_PORT__/$LLAMA_PORT/g" "$CONFIG_DIR/bifrost.json"
 
 echo "Bifrost config scaffolded to $CONFIG_DIR/bifrost.json (copy to your project's config/bifrost.json to customize)"
 

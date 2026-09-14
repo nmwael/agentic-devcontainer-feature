@@ -42,8 +42,13 @@
     run env WORKSPACE="$fresh" /usr/local/share/opencode-agents/scaffold.sh
     [ "$status" -eq 0 ]
     [ -s "$fresh/opencode.json" ]
+    python3 -m json.tool "$fresh/opencode.json" >/dev/null
     grep -q '"provider"' "$fresh/opencode.json"
-    grep -q '"slot"' "$fresh/opencode.json"
+    grep -q '"subagent_depth"' "$fresh/opencode.json"
+    grep -q '"enabled_providers"' "$fresh/opencode.json"
+    grep -q '"local-gemma4-26b"' "$fresh/opencode.json"
+    grep -q '"4096"' "$fresh/opencode.json"
+    grep -q 'gemma4-26b-a4b-s0' "$fresh/opencode.json"
     rm -rf "$fresh"
 }
 
@@ -53,7 +58,9 @@
     run env WORKSPACE="$work" /usr/local/share/opencode-agents/scaffold.sh
     [ "$status" -eq 0 ]
     [ -s "$work/opencode.json" ]
+    python3 -m json.tool "$work/opencode.json" >/dev/null
     grep -q '"provider"' "$work/opencode.json"
+    grep -q '"subagent_depth"' "$work/opencode.json"
     printf '{"custom":true}\n' > "$work/opencode.json"
     run env WORKSPACE="$work" /usr/local/share/opencode-agents/scaffold.sh
     grep -q '"custom":true' "$work/opencode.json"
