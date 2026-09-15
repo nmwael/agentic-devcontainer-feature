@@ -1,23 +1,38 @@
 {
     "name": "On-Demand Models",
     "id": "models",
-    "version": "1.0.1",
-    "description": "ON-DEMAND model fetch; weights (9-16 GB) are NEVER baked into image layers. Installs fetch-models.sh script.",
+    "version": "1.1.0",
+    "description": "ON-DEMAND multi-model config; weights (9-16 GB) are NEVER baked into image layers. Owns stack.json manifest (single source of truth for bifrost upstreams and opencode role->model mapping). Legacy single-model options MODEL/QUANT are deprecated in favor of MODELS.",
     "options": {
-        "MODEL": {
+        "MODELS": {
             "type": "string",
-            "default": "gemma-4-26B-A4B-it-UD-IQ2_M",
-            "description": "Hugging Face model repo/filename identifier"
+            "default": "",
+            "description": "JSON array of model specs [{name,provider,hf,quant,port,context,parallel}, ...]. Empty = default single-model (gemma4-26b-a4b). May also be provided via $PWD/.devcontainer/llm-lab-models.json."
         },
-        "QUANT": {
+        "ROLES": {
             "type": "string",
-            "default": "IQ2_M",
-            "description": "Quantization level for the model"
+            "default": "",
+            "description": "JSON object mapping agent role -> {model, slot}. Empty = default 8-role mapping onto the first model. May also be provided via $PWD/.devcontainer/llm-lab-roles.json."
+        },
+        "BIFROST_PORT": {
+            "type": "string",
+            "default": "8082",
+            "description": "Bifrost gateway port recorded in stack.json (opencode providers route through it)"
         },
         "MODELS_DIR": {
             "type": "string",
             "default": "",
             "description": "Custom directory for models; defaults to $PWD/models"
+        },
+        "MODEL": {
+            "type": "string",
+            "default": "gemma-4-26B-A4B-it-UD-IQ2_M",
+            "description": "(legacy) Hugging Face model repo/filename identifier — superseded by MODELS"
+        },
+        "QUANT": {
+            "type": "string",
+            "default": "IQ2_M",
+            "description": "(legacy) Quantization level for the model — superseded by MODELS"
         }
     }
 }

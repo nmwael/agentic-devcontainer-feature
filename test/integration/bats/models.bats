@@ -21,6 +21,34 @@
     grep -q "MODELS_DIR" /etc/environment
 }
 
+@test "stack.json manifest written with schema and defaults" {
+    [ -f /usr/local/share/llm-lab/stack.json ]
+    python3 - <<'PY'
+import json
+with open('/usr/local/share/llm-lab/stack.json') as f:
+    s = json.load(f)
+assert s['schema'] == 1
+assert isinstance(s['models'], list) and len(s['models']) >= 1
+assert isinstance(s['roles'], dict)
+assert s['bifrost_port'] == 8082
+assert s['opencode_port'] == 4096
+m0 = s['models'][0]
+assert m0['name'] == 'gemma4-26b-a4b'
+assert m0['provider'] == 'local-gemma4-26b'
+assert m0['port'] == 8089
+# every role maps onto an existing model with slot < its parallel count
+by_name = {m['name']: m for m in s['models']}
+for role, r in s['roles'].items():
+    assert r['model'] in by_name, f"role {role} references unknown model {r['model']}"
+    assert r['slot'] < by_name[r['model']]['parallel'], f"role {role} slot OOB"
+PY
+}
+
+@test "models.json backward-compat mirror written" {
+    [ -f /usr/local/share/llm-lab/models/models.json ]
+    python3 -c "import json; d=json.load(open('/usr/local/share/llm-lab/models/models.json')); assert d['model'] == 'gemma-4-26B-A4B-it-UD-IQ2_M'"
+}
+
 @test "no model weights were downloaded at install time" {
     [ ! -d /workspaces/ci/models ] || [ -z "$(ls -A /workspaces/ci/models 2>/dev/null)" ]
 }

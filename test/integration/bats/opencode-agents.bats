@@ -69,6 +69,64 @@
     rm -rf "$work"
 }
 
+@test "stack.json -> opencode.json generator shipped and executable" {
+    [ -f /usr/local/share/opencode-agents/generate-opencode.jq ]
+    [ -x /usr/local/share/opencode-agents/generate-opencode.sh ]
+    run dash -n /usr/local/share/opencode-agents/generate-opencode.sh
+    [ "$status" -eq 0 ]
+}
+
+@test "generate-opencode.sh materializes opencode.json from a simulated stack.json" {
+    stack=$(mktemp)
+    out=$(mktemp --suffix=.json)
+    python3 - <<'PY' >"$stack"
+import json
+print(json.dumps({
+    "schema": 1,
+    "models_dir": "/models",
+    "bifrost_port": 8082,
+    "opencode_port": 4096,
+    "subagent_depth": 2,
+    "models": [
+        {"name": "gemma4-26b-a4b", "provider": "local-gemma4-26b",
+         "hf": "gemma-4-26B-A4B-it-UD-IQ2_M", "quant": "IQ2_M",
+         "port": 8089, "context": 65536, "parallel": 5}
+    ],
+    "roles": {
+        "architect": {"model": "gemma4-26b-a4b", "slot": 0},
+        "coder":     {"model": "gemma4-26b-a4b", "slot": 1},
+        "researcher": {"model": "gemma4-26b-a4b", "slot": 2},
+        "reviewer":  {"model": "gemma4-26b-a4b", "slot": 3},
+        "build":     {"model": "gemma4-26b-a4b", "slot": 4},
+        "ui":        {"model": "gemma4-26b-a4b", "slot": 4},
+        "artist":    {"model": "gemma4-26b-a4b", "slot": 4},
+        "ai-researcher": {"model": "gemma4-26b-a4b", "slot": 4}
+    }
+}))
+PY
+    run /usr/local/share/opencode-agents/generate-opencode.sh "$stack" "$out"
+    [ "$status" -eq 0 ]
+    python3 -m json.tool "$out" >/dev/null
+    grep -q '"local-gemma4-26b"' "$out"
+    grep -q '"port": 4096' "$out"
+    grep -q 'gemma4-26b-a4b-s0' "$out"
+    grep -q '"enabled_providers"' "$out"
+    grep -q '"subagent_depth"' "$out"
+    grep -q '"agent"' "$out"
+    rm -f "$stack" "$out"
+}
+
+@test "scaffold.sh generates from stack.json when present (fragment when absent)" {
+    stack=$(mktemp)
+    python3 -c "import json; json.dump({'bifrost_port':8082,'opencode_port':4096,'subagent_depth':2,'models':[{'name':'gemma4-26b-a4b','provider':'local-gemma4-26b','hf':'gemma-4-26B-A4B-it-UD-IQ2_M','quant':'IQ2_M','port':8089,'context':65536,'parallel':5}],'roles':{'build':{'model':'gemma4-26b-a4b','slot':4}}}, open('$stack','w'))"
+    fresh=$(mktemp -d)
+    run env WORKSPACE="$fresh" STACK_JSON="$stack" /usr/local/share/opencode-agents/scaffold.sh
+    [ "$status" -eq 0 ]
+    [ -s "$fresh/opencode.json" ]
+    grep -q '"local-gemma4-26b"' "$fresh/opencode.json"
+    rm -rf "$fresh" "$stack"
+}
+
 @test "second install is a no-op (idempotent)" {
     run /bin/sh /tmp/feature/install.sh
     [ "$status" -eq 0 ]

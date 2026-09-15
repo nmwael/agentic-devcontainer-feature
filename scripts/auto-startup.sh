@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 # postStartCommand: brought up on every container start.
-# Launches the LLM stack — llama-server :8089, bifrost proxy :8082,
-# opencode serve :4096 — plus Tailscale if the tooling is present.
-# Idempotent: every step guards on "already running".
+# Launches the LLM stack — one llama-server per model in stack.json (defaults
+# :8089), bifrost proxy (:8082), opencode serve (:4096) — plus Tailscale if the
+# tooling is present. Idempotent: every step guards on "already running".
 set -euo pipefail
 
 # WSL2 GPU bridge: the CUDA loader symlinks live under /usr/lib/wsl/drivers,
@@ -51,53 +51,85 @@ if command -v tailscale >/dev/null 2>&1; then
     fi
 fi
 
-# --- llama-server :8089 ---
+# --- llama-server: one per model in stack.json (or single fallback) ---
 MODELS_DIR="${MODELS_DIR:-$PWD/models}"
-MODEL_FILE=""
-if ls "$MODELS_DIR"/*.gguf >/dev/null 2>&1; then
-    MODEL_FILE="$(ls "$MODELS_DIR"/*.gguf | head -1)"
-fi
+STACK_JSON="${STACK_JSON:-/usr/local/share/llm-lab/stack.json}"
+
+start_llama_server() {
+    local model_file="$1" port="$2" ctx="$3" label="$4"
+    if [ -z "$model_file" ] || ! command -v llama-server >/dev/null 2>&1; then
+        echo "[auto-startup] WARNING: no model file or llama-server missing for $label — skipping"
+        return
+    fi
+    if curl -sf -o /dev/null --max-time 2 "http://127.0.0.1:$port/health"; then
+        echo "[auto-startup] llama-server already up on :$port ($label)"
+        return
+    fi
+    echo "[auto-startup] starting llama-server on :$port with $model_file ($label)"
+    nohup llama-server -m "$model_file" --host 0.0.0.0 --port "$port" \
+        --ctx-size "$ctx" >/tmp/llama-server-"$label".log 2>&1 &
+    local i=0
+    while [ $i -lt 15 ]; do
+        curl -sf -o /dev/null --max-time 2 "http://127.0.0.1:$port/health" &&
+            {
+                echo "[auto-startup] llama-server ready on :$port ($label)"
+                return
+            }
+        i=$((i + 1))
+        sleep 2
+    done
+    echo "[auto-startup] WARNING: llama-server on :$port timed out after 30s ($label — see /tmp/llama-server-$label.log)"
+}
 
 if [ -n "${SKIP_LLAMA_START:-}" ]; then
     echo "[auto-startup] SKIP_LLAMA_START set — skipping llama-server"
-elif [ -n "$MODEL_FILE" ] && command -v llama-server >/dev/null 2>&1; then
-    if curl -sf -o /dev/null --max-time 2 http://127.0.0.1:8089/health; then
-        echo "[auto-startup] llama-server already up on :8089"
-    else
-        echo "[auto-startup] starting llama-server with $MODEL_FILE"
-        nohup llama-server -m "$MODEL_FILE" --host 0.0.0.0 --port 8089 >/tmp/llama-server.log 2>&1 &
-        i=0
-        while [ $i -lt 15 ]; do
-            curl -sf -o /dev/null --max-time 2 http://127.0.0.1:8089/health &&
-                {
-                    echo "[auto-startup] llama-server ready on :8089"
-                    break
-                }
-            i=$((i + 1))
-            sleep 2
-        done
-        if [ $i -eq 15 ]; then
-            echo "[auto-startup] WARNING: llama-server health check timed out (see /tmp/llama-server.log)"
+elif [ -f "$STACK_JSON" ] && command -v jq >/dev/null 2>&1; then
+    model_count=$(jq '.models | length' "$STACK_JSON")
+    echo "[auto-startup] stack.json present — starting $model_count llama-server(s)"
+    i=0
+    while [ $i -lt "$model_count" ]; do
+        mname=$(jq -r ".models[$i].name" "$STACK_JSON")
+        mhf=$(jq -r ".models[$i].hf" "$STACK_JSON")
+        mquant=$(jq -r ".models[$i].quant" "$STACK_JSON")
+        mport=$(jq -r ".models[$i].port" "$STACK_JSON")
+        mctx=$(jq -r ".models[$i].context" "$STACK_JSON")
+        # Match .gguf by HF slug or model name substring
+        mfile=""
+        if ls "$MODELS_DIR"/*"$mhf"*"$mquant"*.gguf >/dev/null 2>&1; then
+            mfile=$(ls "$MODELS_DIR"/*"$mhf"*"$mquant"*.gguf | head -1)
+        elif ls "$MODELS_DIR"/*"$mname"*.gguf >/dev/null 2>&1; then
+            mfile=$(ls "$MODELS_DIR"/*"$mname"*.gguf | head -1)
         fi
-    fi
+        start_llama_server "$mfile" "$mport" "$mctx" "$mname"
+        i=$((i + 1))
+    done
 else
-    echo "[auto-startup] WARNING: no .gguf model in $MODELS_DIR or llama-server missing — skipping model server"
+    # Legacy single-server fallback: MODELS_DIR/*.gguf → port 8089
+    MODEL_FILE=""
+    if ls "$MODELS_DIR"/*.gguf >/dev/null 2>&1; then
+        MODEL_FILE="$(ls "$MODELS_DIR"/*.gguf | head -1)"
+    fi
+    start_llama_server "$MODEL_FILE" 8089 65536 "default"
 fi
 
-# --- bifrost proxy :8082 -> :8089 (launcher installed by the bifrost-gateway feature) ---
+# --- bifrost proxy (launcher installed by the bifrost-gateway feature) ---
 # Backgrounded + bounded poll: the first start downloads the ~120 MB Go binary,
 # which must never block postStartCommand forever.
+BIFROST_PORT="${BIFROST_PORT:-8082}"
+if [ -f "$STACK_JSON" ] && command -v jq >/dev/null 2>&1; then
+    BIFROST_PORT=$(jq -r '.bifrost_port // 8082' "$STACK_JSON")
+fi
 if command -v start-bifrost >/dev/null 2>&1; then
-    if curl -sf -o /dev/null --max-time 2 http://127.0.0.1:8082/; then
-        echo "[auto-startup] bifrost already up on :8082"
+    if curl -sf -o /dev/null --max-time 2 "http://127.0.0.1:$BIFROST_PORT/"; then
+        echo "[auto-startup] bifrost already up on :$BIFROST_PORT"
     else
-        echo "[auto-startup] starting bifrost on :8082 (background)"
+        echo "[auto-startup] starting bifrost on :$BIFROST_PORT (background)"
         nohup start-bifrost >/tmp/bifrost.log 2>&1 &
         i=0
         while [ $i -lt 30 ]; do
-            curl -sf -o /dev/null --max-time 2 http://127.0.0.1:8082/ &&
+            curl -sf -o /dev/null --max-time 2 "http://127.0.0.1:$BIFROST_PORT/" &&
                 {
-                    echo "[auto-startup] bifrost ready on :8082"
+                    echo "[auto-startup] bifrost ready on :$BIFROST_PORT"
                     break
                 }
             i=$((i + 1))
@@ -111,13 +143,17 @@ else
     echo "[auto-startup] bifrost launcher not installed — skipping"
 fi
 
-# --- opencode serve :4096 (opencode mobile / Tailscale remote control) ---
+# --- opencode serve (opencode mobile / Tailscale remote control) ---
+OPENCODE_PORT="${OPENCODE_PORT:-4096}"
+if [ -f "$STACK_JSON" ] && command -v jq >/dev/null 2>&1; then
+    OPENCODE_PORT=$(jq -r '.opencode_port // 4096' "$STACK_JSON")
+fi
 if command -v opencode >/dev/null 2>&1; then
-    if curl -sf -o /dev/null --max-time 2 http://127.0.0.1:4096/; then
-        echo "[auto-startup] opencode serve already up on :4096"
+    if curl -sf -o /dev/null --max-time 2 "http://127.0.0.1:$OPENCODE_PORT/"; then
+        echo "[auto-startup] opencode serve already up on :$OPENCODE_PORT"
     else
-        echo "[auto-startup] starting opencode serve on :4096"
-        nohup opencode serve --port 4096 --hostname 0.0.0.0 >/tmp/opencode-serve.log 2>&1 &
+        echo "[auto-startup] starting opencode serve on :$OPENCODE_PORT"
+        nohup opencode serve --port "$OPENCODE_PORT" --hostname 0.0.0.0 >/tmp/opencode-serve.log 2>&1 &
         sleep 2
     fi
 else

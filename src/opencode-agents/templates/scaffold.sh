@@ -6,11 +6,19 @@ echo "Opencode-agents scaffold: copying payload to workspace"
 INSTALL_DIR="${INSTALL_DIR:-/usr/local/share/opencode-agents}"
 OVERWRITE="${OVERWRITE:-false}"
 WORKSPACE="${WORKSPACE:-$(pwd)}"
+STACK_JSON="${STACK_JSON:-/usr/local/share/llm-lab/stack.json}"
 
-# Materialize opencode.json from the shipped fragment — before the guard so
-# existing workspaces get a usable config too. Only fills when absent, empty,
-# or "{}" (a default init); a real consumer config is NEVER touched.
-if [ ! -s "$WORKSPACE/opencode.json" ] ||
+# Materialize opencode.json — stack.json (written by the models feature) is the
+# primary source; falls back to the shipped static fragment for environments
+# without the models feature or jq.
+if [ -f "$STACK_JSON" ] && command -v jq >/dev/null 2>&1; then
+    if sh "$INSTALL_DIR/generate-opencode.sh" "$STACK_JSON" "$WORKSPACE/opencode.json" 2>/dev/null; then
+        echo "opencode.json generated from stack.json ($STACK_JSON)"
+    else
+        echo "WARNING: generation from stack.json failed — falling back to shipped fragment"
+        cp -f "$INSTALL_DIR/opencode.json.fragment" "$WORKSPACE/opencode.json"
+    fi
+elif [ ! -s "$WORKSPACE/opencode.json" ] ||
     [ "$(tr -d '[:space:]' <"$WORKSPACE/opencode.json" 2>/dev/null)" = "{}" ]; then
     cp -f "$INSTALL_DIR/opencode.json.fragment" "$WORKSPACE/opencode.json"
     echo "opencode.json generated from fragment (slot-pinned models)"

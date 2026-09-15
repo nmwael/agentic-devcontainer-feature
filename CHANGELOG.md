@@ -11,6 +11,12 @@ All notable changes to this project are documented in this file. The format is b
   - `bifrost-gateway` — pinned `@maximhq/bifrost` install + config scaffold exposing llama-servers as OpenAI-compatible providers
   - `models` — on-demand GGUF fetch from HuggingFace (idempotent, resumable, never baked into images)
   - `opencode-agents` — full multi-agent setup (AGENTS.md, `.opencode/agent/*`, library books, HITL contract) with `WITH_LIBRARY` opt-out
+- **Full multi-upstream (Option C) — v1.1.0**: consumers declare N models; the whole stack serves them simultaneously via a shared `stack.json` manifest:
+  - **`models` 1.1.0** — new `MODELS`/`ROLES`/`BIFROST_PORT` options (legacy `MODEL`/`QUANT` deprecated); owns and writes `stack.json` (`schema:1`, `models`, `roles`, `models_dir`, `bifrost_port`, `opencode_port`, `subagent_depth`) with integrity validation (role→model exists, slot < parallel); `fetch-models.sh` iterates the model list
+  - **`bifrost-gateway` 1.1.0** — `write-bifrost-config.sh` materializes a v2 multi-provider config (one provider per llama-server upstream, `keys[].models` route `"{name}*"`), re-runnable after a stack change; installs into the feature dir
+  - **`opencode-agents` 1.1.0** — `generate-opencode.sh` + `generate-opencode.jq` materialize `opencode.json` from `stack.json` (per-slot provider models, role pins, `model`/`small_model` = build role, `server.port`, `limit.context`); `scaffold.sh` generates from stack.json when present, falls back to the shipped fragment; provisions `jq`
+  - **`scripts/auto-startup.sh`** — starts one `llama-server` per model in `stack.json` (per-model port + `--ctx-size`), ports for bifrost/opencode read from the manifest (env-var + defaults preserved)
+  - **`llm-lab` template 1.1.0** — `MODELS`/`ROLES` passthrough options forwarded to the `models` feature
 - **`llm-lab` template** — generates `.devcontainer/devcontainer.json` with `GPU_MODE`, `MODEL`, `FEATURES_TAG`, `INCLUDE_AGENTS`/`INCLUDE_MODELS`/`INCLUDE_LIBRARY` options
 - **Self-consuming devcontainer** (`.devcontainer/`) — this repo bootstraps its own full stack
 - **Extraction pipeline** — the upstream lab repo regenerates this tree reproducibly

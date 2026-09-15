@@ -62,8 +62,24 @@ fi
 cp -f "$TPL_DIR/scaffold.sh" "$INSTALL_DIR/scaffold.sh"
 chmod 0755 "$INSTALL_DIR/scaffold.sh"
 
-# Copy opencode.json.fragment
+# Copy opencode.json.fragment (legacy fallback)
 cp -f "$TPL_DIR/opencode.json.fragment" "$INSTALL_DIR/opencode.json.fragment"
+
+# Copy stack.json → opencode.json generator (used by scaffold.sh when stack.json is present)
+cp -f "$TPL_DIR/generate-opencode.jq" "$INSTALL_DIR/generate-opencode.jq"
+cp -f "$TPL_DIR/generate-opencode.sh" "$INSTALL_DIR/generate-opencode.sh"
+chmod 0755 "$INSTALL_DIR/generate-opencode.sh"
+
+# jq provisioning — the generator materializes opencode.json from the shared
+# stack.json manifest; jq is NOT guaranteed in base images.
+if ! command -v jq >/dev/null 2>&1; then
+    echo "jq not found — provisioning via apt (for stack.json -> opencode.json generator)..."
+    if apt-get update -qq && apt-get install -y --no-install-recommends jq >/dev/null 2>&1; then
+        echo "jq ready"
+    else
+        echo "WARNING: jq install failed — scaffold falls back to the shipped fragment"
+    fi
+fi
 
 # Install the opencode CLI itself (binary via the official installer).
 if ! command -v curl >/dev/null 2>&1 || ! command -v git >/dev/null 2>&1; then

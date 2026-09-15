@@ -1,6 +1,6 @@
 {
     "id": "llm-lab",
-    "version": "1.0.4",
+    "version": "1.1.0",
     "name": "llm-lab",
     "description": "Local LLM lab devcontainer template \u2014 generates full agentic setup with features, GPU bridge, bifrost, models, and opencode agents.",
     "documentationURL": "https://github.com/nmwael/agentic-devcontainer-feature/tree/main/src/templates/llm-lab",
@@ -24,6 +24,16 @@
             ],
             "default": "gemma-4-26B-A4B-it-UD-IQ2_M",
             "description": "Model to fetch and run (IQ2_M variant only for v1)"
+        },
+        "MODELS": {
+            "type": "string",
+            "default": "",
+            "description": "JSON array of model specs [{name,provider,hf,quant,port,context,parallel}, ...] to serve simultaneously (multi-upstream). Empty = default single-model (gemma4-26b-a4b). Overrides MODEL."
+        },
+        "ROLES": {
+            "type": "string",
+            "default": "",
+            "description": "JSON object mapping agent role -> {model, slot} across the MODELS. Empty = default 8-role mapping onto the first model."
         },
         "FEATURES_TAG": {
             "type": "string",
