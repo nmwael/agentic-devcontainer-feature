@@ -38,35 +38,14 @@ fi
 
 echo "Running in WSL2 — installing GPU bridge..."
 
-# Copy ensure-bridge.sh logic to the feature directory
+# Copy ensure-bridge.sh from the feature root and run it
 FEATURE_DIR="/usr/local/share/llm-lab/gpu-bridge"
 mkdir -p "$FEATURE_DIR"
-
-# The ensure-bridge logic: idempotent symlink of driver loader libs
-# /usr/lib/wsl/drivers/*/ → /usr/lib/wsl/lib for various CUDA libs
-DRIVERS_DIR="/usr/lib/wsl/drivers"
-LIB_WSL="/usr/lib/wsl/lib"
-
-# Create the feature directory structure
-mkdir -p "$FEATURE_DIR/drivers"
-
-# Symlink CUDA loader libraries from WSL drivers to WSL lib
-# These libs are needed for llama-server to work under WSL2
-# NOTE: POSIX-sh only — devcontainer features run under /bin/sh (dash on
-# Ubuntu/Debian), so no bash arrays. Iterate a whitespace list instead.
-LIBS_TO_LINK="libcuda.so.1 libcuda_loader.so libnvidia-ml.so.1 libnvidia-ptxjitcompiler.so.1 libnvdxgdmal.so.1"
-
-for lib in $LIBS_TO_LINK; do
-    # Find the actual file in WSL drivers
-    if [ -d "$DRIVERS_DIR" ]; then
-        DRIVER_FILE=$(find "$DRIVERS_DIR" -name "$lib" 2>/dev/null | head -1)
-        if [ -n "$DRIVER_FILE" ] && [ -e "$LIB_WSL/$lib" ]; then
-            # Symlink: driver lib -> WSL lib (idempotent, safe to re-run)
-            ln -sfn "$DRIVER_FILE" "$LIB_WSL/$lib"
-            echo "Linked $DRIVER_FILE -> $LIB_WSL/$lib"
-        fi
-    fi
-done
+SCRIPT_SRC="$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)"
+cp -f "$SCRIPT_SRC/ensure-bridge.sh" "$FEATURE_DIR/ensure-bridge.sh"
+chmod 0755 "$FEATURE_DIR/ensure-bridge.sh"
+"$FEATURE_DIR/ensure-bridge.sh"
+ln -sf "$FEATURE_DIR/ensure-bridge.sh" /usr/local/bin/ensure-bridge.sh
 
 # Apply /etc/environment LD_LIBRARY_PATH rewrite
 if [ "$ENV_REWRITE" = "true" ]; then
@@ -78,12 +57,5 @@ if [ "$ENV_REWRITE" = "true" ]; then
     fi
 fi
 
-# postStartCommand hook: re-symlinks and verify /dev/dxg
-# This would be called via devcontainer postStartCommand, but we run it here for features
-if [ -L "$LIB_WSL/libcuda_loader.so" ]; then
-    echo "Verifying WSL GPU bridge components..."
-    ls -la "$LIB_WSL/"*cuda* 2>/dev/null || echo "WARNING: Some CUDA loader libs not found in /usr/lib/wsl/lib"
-fi
-
 echo "Done! gpu-bridge feature activated."
-echo "Run 'ensure-bridge.sh' or restart the container to apply changes."
+echo "Run 'ensure-bridge.sh' (installed at /usr/local/bin/ensure-bridge.sh) or restart the container to apply changes."

@@ -1,0 +1,39 @@
+{
+  "features": {
+    "ghcr.io/devcontainers-extra/features/apt-get-packages": {
+      "version": "1.0.8",
+      "resolved": "ghcr.io/devcontainers-extra/features/apt-get-packages@sha256:776fa11c30c50fa91d5e1bf050444b0f130827457109c349db92e8e126b750ec",
+      "integrity": "sha256:776fa11c30c50fa91d5e1bf050444b0f130827457109c349db92e8e126b750ec"
+    },
+    "ghcr.io/nmwael/agentic-devcontainer-feature/bifrost-gateway": {
+      "version": "1.0.3",
+      "resolved": "ghcr.io/nmwael/agentic-devcontainer-feature/bifrost-gateway@sha256:ad0e5fb87e5d2c27abd192005d2e6739cec54c06ee30476c806e1cb359bea1a3",
+      "integrity": "sha256:ad0e5fb87e5d2c27abd192005d2e6739cec54c06ee30476c806e1cb359bea1a3"
+    },
+    "ghcr.io/nmwael/agentic-devcontainer-feature/gpu-bridge": {
+      "version": "1.0.1",
+      "resolved": "ghcr.io/nmwael/agentic-devcontainer-feature/gpu-bridge@sha256:5df32fb06a0eb02268acf37bd3335d5d69c47f8c6c351c25193937b1ee27e2d7",
+      "integrity": "sha256:5df32fb06a0eb02268acf37bd3335d5d69c47f8c6c351c25193937b1ee27e2d7"
+    },
+    "ghcr.io/nmwael/agentic-devcontainer-feature/llama-server": {
+      "version": "1.0.2",
+      "resolved": "ghcr.io/nmwael/agentic-devcontainer-feature/llama-server@sha256:81f2905c2da55b79efa1936d131fe5cb3d3fe67a261ab0bcd648c99b45be120e",
+      "integrity": "sha256:81f2905c2da55b79efa1936d131fe5cb3d3fe67a261ab0bcd648c99b45be120e"
+    },
+    "ghcr.io/nmwael/agentic-devcontainer-feature/models": {
+      "version": "1.0.1",
+      "resolved": "ghcr.io/nmwael/agentic-devcontainer-feature/models@sha256:b0ddcc28650e8ba9a015cc7e2546236c1f749e1f2530f3a379adf76aebe7ebdd",
+      "integrity": "sha256:b0ddcc28650e8ba9a015cc7e2546236c1f749e1f2530f3a379adf76aebe7ebdd"
+    },
+    "ghcr.io/nmwael/agentic-devcontainer-feature/opencode-agents": {
+      "version": "1.0.5",
+      "resolved": "ghcr.io/nmwael/agentic-devcontainer-feature/opencode-agents@sha256:ee18fc2f0e36efa283177dc0f2f5f189854ae6fb6b2a21b658c629e8d23a1135",
+      "integrity": "sha256:ee18fc2f0e36efa283177dc0f2f5f189854ae6fb6b2a21b658c629e8d23a1135"
+    },
+    "ghcr.io/tailscale/codespace/tailscale": {
+      "version": "1.0.8",
+      "resolved": "ghcr.io/tailscale/codespace/tailscale@sha256:fa5ce7ca298e7ab95842fef99e107a01b090b8ca8a687789220f3f3c887ccdb2",
+      "integrity": "sha256:fa5ce7ca298e7ab95842fef99e107a01b090b8ca8a687789220f3f3c887ccdb2"
+    }
+  }
+}

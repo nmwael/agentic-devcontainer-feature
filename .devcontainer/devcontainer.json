@@ -4,15 +4,15 @@
     "features": {
         "ghcr.io/nmwael/agentic-devcontainer-feature/llama-server": "1",
         "ghcr.io/nmwael/agentic-devcontainer-feature/gpu-bridge": "1.0.1",
-        "ghcr.io/nmwael/agentic-devcontainer-feature/bifrost-gateway": "1",
+        "ghcr.io/nmwael/agentic-devcontainer-feature/bifrost-gateway:1.0.4": "1",
         "ghcr.io/nmwael/agentic-devcontainer-feature/models": "1",
-        "ghcr.io/nmwael/agentic-devcontainer-feature/opencode-agents": "1",
+        "ghcr.io/nmwael/agentic-devcontainer-feature/opencode-agents:1.0.6": "1",
         "ghcr.io/tailscale/codespace/tailscale": {
             "version": "latest"
         },
         "ghcr.io/devcontainers-extra/features/apt-get-packages": {
             "version": "1",
-            "packages": "gh"
+            "packages": "gh,jq"
         }
     },
     "runArgs": [

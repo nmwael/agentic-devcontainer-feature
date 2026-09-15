@@ -135,12 +135,39 @@ def main():
                 check_template(name, path)
                 templs += 1
 
+    # Validate shipped config templates under src/<feature>/templates/*.json
+    cfg_templs = 0
+    for dirpath, dirnames, filenames in os.walk(SRC):
+        rel = os.path.relpath(dirpath, SRC)
+        # Only look inside directories named "templates" one level under src/
+        parts = rel.split(os.sep)
+        if len(parts) != 2 or parts[1] != "templates":
+            continue
+        for fname in sorted(filenames):
+            if not fname.endswith(".json"):
+                continue
+            fpath = os.path.join(dirpath, fname)
+            data = read_json(fpath)
+            if data is None:
+                continue
+            if not isinstance(data, dict):
+                fail(f"{fpath}: config template must be a JSON object")
+                continue
+            if fname == "models.json":
+                for key in ("model", "quant", "models_dir"):
+                    if key not in data:
+                        fail(f"{fpath}: missing required key '{key}'")
+            elif fname == "bifrost.json":
+                if "upstream" not in data:
+                    fail(f"{fpath}: missing required key 'upstream'")
+            cfg_templs += 1
+
     if errors:
         print(f"schema-check FAILED ({len(errors)} issue(s)):")
         for e in errors:
             print(f"  - {e}")
         sys.exit(1)
-    print(f"schema-check OK: {feats} feature(s), {templs} template(s) validated")
+    print(f"schema-check OK: {feats} feature(s), {templs} template(s), {cfg_templs} config template(s) validated")
 
 
 if __name__ == "__main__":

@@ -1,0 +1,5 @@
+{
+  "model": "gemma-4-26B-A4B-it-UD-IQ2_M",
+  "quant": "IQ2_M",
+  "models_dir": ""
+}

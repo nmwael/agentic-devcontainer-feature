@@ -39,7 +39,7 @@ cp -f "$TPL_DIR/AGENTS_LIFECYCLE.md" "$INSTALL_DIR/AGENTS_LIFECYCLE.md"
 
 # Copy .opencode/agent/*.md files
 mkdir -p "$INSTALL_DIR/.opencode/agent"
-for f in "$TPL_DIR/.opencode/agent"/*.md 2>/dev/null; do
+for f in "$TPL_DIR/.opencode/agent"/*.md; do
     [ -f "$f" ] && cp -f "$f" "$INSTALL_DIR/.opencode/agent/"
 done
 

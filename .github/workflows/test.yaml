@@ -22,7 +22,7 @@ jobs:
       - name: Install test tooling
         run: |
           sudo apt-get update
-          sudo apt-get install -y --no-install-recommends bats dash python3 shellcheck
+          sudo apt-get install -y --no-install-recommends bats dash jq python3 shellcheck
 
       - name: Static suite (shellcheck + dash + schema)
         run: test/static/run-static.sh

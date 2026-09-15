@@ -1,5 +1,5 @@
 {
-  "upstream": "http://127.0.0.1:__LLAMA_PORT__/v1",
+  "upstream": "http://127.0.0.1:8089/v1",
   "slot_routing": "gemma4-26b-a4b-sN",
   "setCacheKey": false,
   "x-bf-passthrough-extra-params": ""
