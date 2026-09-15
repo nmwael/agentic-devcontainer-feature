@@ -56,7 +56,7 @@ MODELS_DIR="${MODELS_DIR:-$PWD/models}"
 STACK_JSON="${STACK_JSON:-/usr/local/share/llm-lab/stack.json}"
 
 start_llama_server() {
-    local model_file="$1" port="$2" ctx="$3" label="$4"
+    local model_file="$1" port="$2" ctx="$3" label="$4" alias="$5" parallel="$6"
     if [ -z "$model_file" ] || ! command -v llama-server >/dev/null 2>&1; then
         echo "[auto-startup] WARNING: no model file or llama-server missing for $label — skipping"
         return
@@ -65,9 +65,13 @@ start_llama_server() {
         echo "[auto-startup] llama-server already up on :$port ($label)"
         return
     fi
-    echo "[auto-startup] starting llama-server on :$port with $model_file ($label)"
+    # --alias/--parallel keep the model id emitted by generate-opencode.jq (the
+    # {name}[-s{slot}] family) in sync with the running server's advertised
+    # model + slot count — see AGENTS.md (model id <-> --alias sync invariant).
+    echo "[auto-startup] starting llama-server on :$port with $model_file ($label, alias=$alias, slots=$parallel)"
     nohup llama-server -m "$model_file" --host 0.0.0.0 --port "$port" \
-        --ctx-size "$ctx" >/tmp/llama-server-"$label".log 2>&1 &
+        --ctx-size "$ctx" --alias "$alias" --parallel "$parallel" \
+        >/tmp/llama-server-"$label".log 2>&1 &
     local i=0
     while [ $i -lt 15 ]; do
         curl -sf -o /dev/null --max-time 2 "http://127.0.0.1:$port/health" &&
@@ -93,6 +97,7 @@ elif [ -f "$STACK_JSON" ] && command -v jq >/dev/null 2>&1; then
         mquant=$(jq -r ".models[$i].quant" "$STACK_JSON")
         mport=$(jq -r ".models[$i].port" "$STACK_JSON")
         mctx=$(jq -r ".models[$i].context" "$STACK_JSON")
+        mparallel=$(jq -r ".models[$i].parallel // 5" "$STACK_JSON")
         # Match .gguf by HF slug or model name substring
         mfile=""
         if ls "$MODELS_DIR"/*"$mhf"*"$mquant"*.gguf >/dev/null 2>&1; then
@@ -100,16 +105,18 @@ elif [ -f "$STACK_JSON" ] && command -v jq >/dev/null 2>&1; then
         elif ls "$MODELS_DIR"/*"$mname"*.gguf >/dev/null 2>&1; then
             mfile=$(ls "$MODELS_DIR"/*"$mname"*.gguf | head -1)
         fi
-        start_llama_server "$mfile" "$mport" "$mctx" "$mname"
+        start_llama_server "$mfile" "$mport" "$mctx" "$mname" "$mname" "$mparallel"
         i=$((i + 1))
     done
 else
-    # Legacy single-server fallback: MODELS_DIR/*.gguf → port 8089
+    # Legacy single-server fallback: MODELS_DIR/*.gguf → port 8089. Alias stays
+    # in sync with the shipped fragment's model id family (gemma4-26b-a4b).
+    SLOTS="${SLOTS:-5}"
     MODEL_FILE=""
     if ls "$MODELS_DIR"/*.gguf >/dev/null 2>&1; then
         MODEL_FILE="$(ls "$MODELS_DIR"/*.gguf | head -1)"
     fi
-    start_llama_server "$MODEL_FILE" 8089 65536 "default"
+    start_llama_server "$MODEL_FILE" 8089 65536 "default" "${LEGACY_ALIAS:-gemma4-26b-a4b}" "$SLOTS"
 fi
 
 # --- bifrost proxy (launcher installed by the bifrost-gateway feature) ---

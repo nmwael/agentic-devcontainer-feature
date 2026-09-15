@@ -18,11 +18,12 @@ devcontainer templates apply -w <your-repo> -t ghcr.io/nmwael/agentic-devcontain
 ```
 This generates `.devcontainer/devcontainer.json` with:
 - `GPU_MODE` [wsl2, native, none]
-- `MODEL` [gemma-4-26B-A4B-it-UD-IQ2_M]
+- `MODEL` [gemma-4-26B-A4B-it-UD-IQ2_M] — legacy single-model option
+- `MODELS` / `ROLES` — JSON multi-upstream overrides (N models served simultaneously, default = single-model `gemma4-26b-a4b`)
 - `FEATURES_TAG` [1.0.0]
 - `INCLUDE_AGENTS` / `INCLUDE_MODELS` / `INCLUDE_LIBRARY` booleans
 - `runArgs` with `--device=nvidia.com/gpu=all`, forwardPorts
-- `opencode.json` in the workspace (scaffold materializes the shipped slot-pinned-models fragment; fills only empty/absent configs)
+- `opencode.json` generated into the workspace from `stack.json` (generate-opencode.sh/.jq; the bundled slot-pinned fragment is the no-manifest fallback — fills only empty/absent configs)
 
 ### Direct Features Path
 Add to your `devcontainer.json` features block:
@@ -60,16 +61,17 @@ Plus `--device=nvidia.com/gpu=all` in `runArgs`.
 - **Provides:** Pinned `@maximhq/bifrost` install + config scaffold
 - **Installs:** `npm install --prefix /usr/local/share/llm-lab/bifrost @maximhq/bifrost@<pin>`
 - **Launches:** `start-bifrost` script honoring `BIFROST_PORT` / config
-- **Config scaffold:** Creates `config/bifrost.json` from template (upstream `http://127.0.0.1:${LLAMA_PORT}/v1`, slot routing `gemma4-26b-a4b-sN`, `setCacheKey:false`, `x-bf-passthrough-extra-params`)
-- **Options:** `PORT` [8082], `VERSION` [latest], `LLAMA_PORT` [8089]
+- **Config:** `write-bifrost-config.sh` materializes `config/bifrost.json` (v2 schema) from `stack.json` — one provider per llama-server upstream, routed by `keys[].models = ["{name}*"]`, `setCacheKey:false`, `x-bf-passthrough-extra-params`
+- **Options:** `PORT` [8082], `VERSION` [latest], `LLAMA_PORT` [8089, legacy single-upstream fallback]
 - **containerEnv:** `BIFROST_PORT`
 - **installsAfter:** [llama-server] (soft)
 - **Use case:** Bifrost gateway exposing llama-servers as OpenAI-compatible providers
 
 ### models
-- **Provides:** On-demand model fetch; weights are NEVER baked into image layers
-- **Installs:** `fetch-models.sh` script to `/usr/local/share/llm-lab/models/`
-- **Options:** `MODEL` [gemma-4-26B-A4B-it-UD-IQ2_M], `QUANT` [IQ2_M], `MODELS_DIR` [default: $PWD/models]
+- **Provides:** On-demand model fetch + the shared `stack.json` manifest (write once, consumed by bifrost, opencode-agents, auto-startup); weights are NEVER baked into image layers
+- **Installs:** `fetch-models.sh` (iterates `stack.json.models[]`) to `/usr/local/share/llm-lab/models/`, plus `stack.json` at `/usr/local/share/llm-lab/stack.json`
+- **Options:** `MODELS`/`ROLES` [JSON multi-upstream, schema-1], `BIFROST_PORT` [8082], `MODEL` [gemma-4-26B-A4B-it-UD-IQ2_M] / `QUANT` [IQ2_M] (legacy single-model), `MODELS_DIR` [default: $PWD/models]
+- **stack.json schema:** `models[] = { name, provider, hf, quant, port, context, parallel }`; each entry becomes its own llama-server, opencode provider, and bifrost upstream
 - **fetch-models.sh:** Idempotent: skip if file exists + size/checksum match; `curl -L --retry 5 --continue-at -`
 - **MODELS_DIR:** Derived from workspace when unset (default `$PWD/models` → bind-mount friendly)
 - **Use case:** Download and cache GGUF models without bloating the image
@@ -83,7 +85,7 @@ Plus `--device=nvidia.com/gpu=all` in `runArgs`.
 - **Payload contents:** AGENTS.md + AGENTS_LIFECYCLE.md, `.opencode/agent/*.md` (6 role definitions), library/ subsets (architect, ai-researcher, coder, researcher, reviewer, ai-researcher), release-it.mini.md
 - **EXCLUDED:** domainbooks/, 3dprints/library/, repo-specific project_stack.md, boxforsine flows/SCAD, cad-validate/verify-pair skills
 - **Library Extensions Guide:** Documents how consumers can add books by dropping files into `library/<role>/` and registering in `library/README.md`'s consumer section; the shipped register is never overwritten once the consumer edits it (no-clobber guarantee)
-- **opencode.json.fragment:** Primary agents + subagents with slot-pinned models, permissions, compaction, subagent_depth
+- **Config generation:** `generate-opencode.sh` + `generate-opencode.jq` emit `opencode.json` from `stack.json` — one provider per model (`provider.models[].name = <name>-s<slot>`, `limit.context` from the model `context` field), primary+subagents with role→slot pinning, permissions, compaction, `subagent_depth`; the bundled `opencode.json.fragment` is the no-manifest fallback
 - **Options:** `OVERWRITE` [false], `WITH_LIBRARY` [true], `INSTALL_DIR` [/usr/local/share/opencode-agents]
 - **Use case:** Full opencode agentic setup with behavioral HITL contract
 
@@ -96,7 +98,7 @@ This repository can **self-consume** — meaning you can use the feature collect
 3. **Or reference features directly:** Add the 5 features to `.devcontainer/devcontainer.json`
 
 When self-consuming, the repo will boot with:
-- Llama server running at `:8089`
+- One llama-server per `stack.json` model (default `gemma4-26b-a4b` at `:8089`)
 - Bifrost gateway at `:8082`
 - Opencode agents scaffolded with AGENTS.md/AGENTS_LIFECYCLE.md
 - Library books installed (unless `WITH_LIBRARY=false`)
@@ -164,7 +166,7 @@ This repository is the extracted, standalone feature collection in the canonical
 | **llama-server** | VERSION, CUDA_ARCHS, BUNDLE_CUDA_LIBS | /opt/llama-server | None (idempotent) |
 | **gpu-bridge** | WSL2_ONLY, ENV_REWRITE | /usr/local/share/llm-lab/gpu-bridge | Re-symlinks + /dev/dxg verify |
 | **bifrost-gateway** | PORT, VERSION, LLAMA_PORT | /usr/local/share/llm-lab/bifrost | None (config scaffold) |
-| **models** | MODEL, QUANT, MODELS_DIR | /usr/local/share/llm-lab/models | None (script install) |
+| **models** | MODELS, ROLES, BIFROST_PORT, MODEL, QUANT, MODELS_DIR | /usr/local/share/llm-lab/models | None (script install + manifest) |
 | **opencode-agents** | OVERWRITE, WITH_LIBRARY, INSTALL_DIR | /usr/local/share/opencode-agents | scaffold.sh copies payload |
 
 ## Website

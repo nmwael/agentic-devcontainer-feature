@@ -333,7 +333,7 @@
             <p class="lead">Three ways to engage with this repo — pick the one that fits.</p>
             <ol>
                 <li><strong>Consumer (new repo)</strong> — Add the features block from the <a href="#quick-start">Quick Start</a> section below to your <code>devcontainer.json</code>, or apply the <code>llm-lab</code> template.</li>
-                <li><strong>Self-consumption</strong> — This very repo boots the full stack from its own collection: llama-server at <code>:8089</code>, bifrost at <code>:8082</code>, opencode agents scaffolded, library books installed (or opt out with <code>WITH_LIBRARY=false</code>), models fetched via <code>fetch-models.sh</code>. A live reference implementation.</li>
+                <li><strong>Self-consumption</strong> — This very repo boots the full stack from its own collection: one llama-server per <code>stack.json</code> model (default <code>:8089</code>), bifrost at <code>:8082</code>, opencode agents scaffolded, library books installed (or opt out with <code>WITH_LIBRARY=false</code>), models fetched via <code>fetch-models.sh</code>. A live reference implementation.</li>
                 <li><strong>Contributor</strong> — Read <code>CONTRIBUTING.md</code> for the development workflow, adding new features, and library contributions.</li>
             </ol>
         </div>
@@ -376,8 +376,8 @@
                     <p>Bifrost v2.1.1 gateway exposing llama-servers as OpenAI-compatible providers on <code>:8082</code>.</p>
                     <ul>
                         <li>Installs <code>@maximhq/bifrost</code> npm package</li>
-                        <li>Scaffolds <code>config/bifrost.json</code> from template</li>
-                        <li>Slot routing: <code>gemma4-26b-a4b-sN</code></li>
+                        <li>Materializes <code>config/bifrost.json</code> from <code>stack.json</code> via <code>write-bifrost-config.sh</code></li>
+                        <li>Multi-upstream routing: one provider per model (<code>{name}*</code> wildcard)</li>
                         <li>Options: <code>PORT</code>, <code>VERSION</code>, <code>LLAMA_PORT</code></li>
                     </ul>
                 </div>
@@ -389,9 +389,10 @@
                     <p>On-demand GGUF model fetch from HuggingFace — weights are NEVER baked into image layers.</p>
                     <ul>
                         <li>Installs <code>fetch-models.sh</code> to <code>/usr/local/share/llm-lab/models/</code></li>
+                        <li>Writes the shared <code>stack.json</code> manifest — one entry per served model</li>
                         <li>Idempotent: skip if file exists + checksum matches</li>
                         <li>Resumable downloads: <code>curl --retry 5 --continue-at -</code></li>
-                        <li>Options: <code>MODEL</code>, <code>QUANT</code>, <code>MODELS_DIR</code></li>
+                        <li>Options: <code>MODELS</code>, <code>ROLES</code>, <code>BIFROST_PORT</code>, <code>MODEL</code>, <code>QUANT</code>, <code>MODELS_DIR</code></li>
                     </ul>
                 </div>
                 <div class="feature-card">
@@ -415,7 +416,7 @@
             <h2 id="full-toolchain">Full Toolchain — No More <code>command not found</code></h2>
             <p class="lead">The collection installs the actual binaries the agents use, not just config files. When you add these features, <code>opencode</code>, <code>llama-server</code>, and <code>start-bifrost</code> are real commands on your PATH — the agents call them directly, no manual setup.</p>
             <ul>
-                <li><strong>llama-server</strong> — prebuilt llama.cpp binary plus CUDA runtime libs at <code>/usr/local/bin/llama-server</code>; OpenAI-compatible <code>/v1</code> endpoint on <code>:8089</code>.</li>
+                <li><strong>llama-server</strong> — prebuilt llama.cpp binary plus CUDA runtime libs at <code>/usr/local/bin/llama-server</code>; OpenAI-compatible <code>/v1</code> endpoint per stack.json model (default <code>:8089</code>).</li>
                 <li><strong>bifrost gateway</strong> — <code>bifrost-gateway</code> (v1.0.2+) provisions its own node/npm runtime when the base image lacks one, then installs <code>@maximhq/bifrost</code> and the <code>start-bifrost</code> launcher.</li>
                 <li><strong>opencode CLI</strong> — <code>opencode-agents</code> (v1.0.2+) installs the official opencode binary, so <code>opencode</code>, <code>opencode serve</code>, and the agent roster all work immediately.</li>
                 <li><strong>Tooling baseline</strong> — python3.12, git, curl, sudo, and a shell arrive with the box: everything the multi-agent workflows reference exists in the container.</li>
@@ -457,7 +458,7 @@
             <h4>What Consumers Get</h4>
             <ul>
                 <li><strong>Complete agent roster</strong> — working multi-role delegation (build → architect → specialist → reviewer), not just prompt templates</li>
-                <li><strong>Workspace <code>opencode.json</code></strong> — scaffold materializes a slot-pinned provider/agent config from the shipped fragment (fills empty/<code>{}</code> files, never a real consumer config)</li>
+                <li><strong>Workspace <code>opencode.json</code></strong> — generated from <code>stack.json</code> by <code>generate-opencode.sh/.jq</code> (one provider per model, role→slot pinning, per-model <code>limit.context</code>); the shipped fragment is the no-manifest fallback (fills empty/<code>{}</code> files, never a real consumer config)</li>
                 <li><strong>HITL enforcement</strong> — code changes blocked without explicit human approval; structured approvals via the <code>question</code> tool</li>
                 <li><strong>Anti-stall protocols</strong> — atomic delegations, immediate recovery from stuck subagents, bounded iteration, artifact isolation, checkpoint notes</li>
                 <li><strong>Library extensibility</strong> — add books via <code>library/&lt;role&gt;/</code> and register them; the shipped register is never clobbered by re-scaffolds</li>
@@ -474,7 +475,7 @@
             <div class="tailscale-grid">
                 <div class="tailscale-step">
                     <h4>1. Start the container</h4>
-                    <p>Boot the devcontainer with the features above. The llama-server serves on <code>:8089</code>, bifrost on <code>:8082</code>, opencode serve on <code>:4096</code>.</p>
+                    <p>Boot the devcontainer with the features above. llama-server(s) serve on their per-model ports from <code>stack.json</code> (default <code>:8089</code>), bifrost on <code>:8082</code>, opencode serve on <code>:4096</code>.</p>
                 </div>
                 <div class="tailscale-step">
                     <h4>2. Connect Tailscale</h4>
@@ -507,7 +508,7 @@
             <h4>Template path (recommended)</h4>
             <code class="block">devcontainer templates apply -w &lt;your-repo&gt; \
   -t ghcr.io/nmwael/agentic-devcontainer-feature/llm-lab</code>
-            <p>Generates <code>.devcontainer/devcontainer.json</code> with <code>GPU_MODE</code>, <code>MODEL</code>, <code>FEATURES_TAG</code>, <code>INCLUDE_AGENTS</code>/<code>INCLUDE_MODELS</code>/<code>INCLUDE_LIBRARY</code> options.</p>
+            <p>Generates <code>.devcontainer/devcontainer.json</code> with <code>GPU_MODE</code>, <code>MODEL</code> (legacy single-model), <code>MODELS</code>/<code>ROLES</code> (JSON multi-upstream), <code>FEATURES_TAG</code>, <code>INCLUDE_AGENTS</code>/<code>INCLUDE_MODELS</code>/<code>INCLUDE_LIBRARY</code> options.</p>
 
             <h4>Full example: complete devcontainer.json</h4>
             <p>Copy this whole file into <code>.devcontainer/devcontainer.json</code> — a one-file, GPU-capable local LLM lab:</p>
@@ -571,14 +572,17 @@
                 <tr><th>Option</th><th>Default</th><th>Description</th></tr>
                 <tr><td>PORT</td><td>8082</td><td>Bifrost gateway port number.</td></tr>
                 <tr><td>VERSION</td><td>latest</td><td>npm dist-tag or exact semver version for @maximhq/bifrost.</td></tr>
-                <tr><td>LLAMA_PORT</td><td>8089</td><td>Llama server port used for upstream routing.</td></tr>
+                <tr><td>LLAMA_PORT</td><td>8089</td><td>Legacy single-upstream llama-server port used when no <code>stack.json</code> is present.</td></tr>
             </table>
 
             <h5>On-Demand Models</h5>
             <table class="reference">
                 <tr><th>Option</th><th>Default</th><th>Description</th></tr>
-                <tr><td>MODEL</td><td>gemma-4-26B-A4B-it-UD-IQ2_M</td><td>Hugging Face model repo/filename identifier.</td></tr>
-                <tr><td>QUANT</td><td>IQ2_M</td><td>Quantization level for the model.</td></tr>
+                <tr><td>MODELS</td><td>(empty)</td><td>JSON array <code>[{name,provider,hf,quant,port,context,parallel}]</code> — N models served simultaneously; empty = default single-model <code>gemma4-26b-a4b</code>. Overrides MODEL.</td></tr>
+                <tr><td>ROLES</td><td>(empty)</td><td>JSON object mapping agent role → <code>{model, slot}</code> across the MODELS.</td></tr>
+                <tr><td>BIFROST_PORT</td><td>8082</td><td>Bifrost gateway port written into the shared <code>stack.json</code> manifest.</td></tr>
+                <tr><td>MODEL</td><td>gemma-4-26B-A4B-it-UD-IQ2_M</td><td>Legacy single-model: Hugging Face repo/filename identifier.</td></tr>
+                <tr><td>QUANT</td><td>IQ2_M</td><td>Legacy single-model quantization level.</td></tr>
                 <tr><td>MODELS_DIR</td><td>(empty)</td><td>Custom directory for models; empty defaults to the repo's models/ folder.</td></tr>
             </table>
 
@@ -604,7 +608,9 @@
             <table class="reference">
                 <tr><th>Option</th><th>Default</th><th>Description</th></tr>
                 <tr><td>GPU_MODE</td><td>none</td><td>wsl2 = GPU bridge for Windows/WSL2 hosts; native = native Linux GPU passthrough; none = CPU-only.</td></tr>
-                <tr><td>MODEL</td><td>gemma-4-26B-A4B-it-UD-IQ2_M</td><td>Model to fetch and run (IQ2_M variant only in v1).</td></tr>
+                <tr><td>MODEL</td><td>gemma-4-26B-A4B-it-UD-IQ2_M</td><td>Legacy single-model: model to fetch and run (IQ2_M variant only in v1).</td></tr>
+                <tr><td>MODELS</td><td>(empty)</td><td>JSON multi-upstream override passed through to the models feature.</td></tr>
+                <tr><td>ROLES</td><td>(empty)</td><td>JSON role→{model,slot} mapping passed through to the models feature.</td></tr>
                 <tr><td>FEATURES_TAG</td><td>1</td><td>Version tag of the feature collection to pin (ghcr.io namespace); "1" tracks the latest of the 1.x line.</td></tr>
                 <tr><td>INCLUDE_AGENTS</td><td>true</td><td>Scaffold opencode-agents (AGENTS.md, skills, library).</td></tr>
                 <tr><td>INCLUDE_MODELS</td><td>true</td><td>Include on-demand model fetch scaffolding.</td></tr>

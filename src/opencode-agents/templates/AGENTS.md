@@ -12,9 +12,9 @@ Design-flow reference: [`SELF_DISCOVERING_FLOWS.md`](SELF_DISCOVERING_FLOWS.md) 
 
 ## Conventions when modifying
 
-- The model id under `provider.models` in `opencode.json` and the `--alias` value in `serve.sh` MUST stay in sync, or completion requests will 404.
-- Increase `--ctx-size` (`CTX` env) on `serve.sh` if you hit "context length exceeded" mid-session. The `limit.context` in `opencode.json` should match the value you set so opencode's context tracker is accurate.
-- Keep `models/` gitignored. Never commit `.gguf` files; they're large and prone to bloat the repo. Use `scripts/fetch-model.sh` for reproducibility.
+- The model id under `provider.models` in `opencode.json` and the `--alias` value in `scripts/auto-startup.sh` MUST stay in sync, or completion requests will 404. Both derive from the `name` field in the shared `stack.json` manifest (owned by the `models` feature).
+- The `limit.context` in `opencode.json` is generated from the `context` field in `stack.json` by `generate-opencode.jq`. When you need to change a model's context window, update `stack.json` (or the `MODELS` option in the `models` feature) and regenerate — not the `opencode.json` fragment directly.
+- Keep `models/` gitignored. Never commit `.gguf` files; they're large and prone to bloat the repo. Use `/usr/local/share/llm-lab/models/fetch-models.sh` for reproducibility (iterates `stack.json` models).
 - CUDA architectures baked in: 80, 86, 89, 90, 120 (Ampere, Ada, Hopper, Blackwell). Older cards (Turing `75`) should add `75` to `CMAKE_CUDA_ARCHITECTURES` in the Dockerfile if you encounter "no kernel image available" errors on GPU init.
 
 ## Library
@@ -33,7 +33,7 @@ Design-flow reference: [`SELF_DISCOVERING_FLOWS.md`](SELF_DISCOVERING_FLOWS.md) 
 - No cloud API keys / no Anthropic / no OpenAI. Local-only.
 - No web search (`websearch`) — opencode gates that tool behind the hosted `opencode` provider or `OPENCODE_ENABLE_EXA=1` (Exa cloud, no API key); deliberately not enabled here. Agents use `webfetch` for web content instead.
 - No downloaded models in the image — they live in the bind-mounted workspace so rebuilds are fast and you can swap models without rebuilding.
-- No automatic server start on container boot. Launching the model server is intentional (`bash scripts/serve.sh`) so it doesn't block development between model swaps.
+- No automatic server start on container boot. Launching the model server is intentional (`bash scripts/auto-startup.sh`) so it doesn't block development between model swaps.
 - The `wip/` directory is gitignored scratch space for current tasks (e.g. `wip/stack_check.py` provider-validation script, `wip/delegation_probe/` delegation-test artifacts). Nothing in it is part of the shipped stack.
 
 ## Multi-Step Correction & Debugging Protocol

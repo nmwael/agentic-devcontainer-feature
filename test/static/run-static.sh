@@ -54,4 +54,16 @@ for f in "${TEMPLATE_JSONS[@]}"; do
 done
 echo "  ${COUNT} template JSON file(s) valid"
 
+echo "==[5/5] auto-startup llama-server flags =="
+# Model-id sync contract: llama-server MUST receive --alias/--parallel matching
+# the opencode provider models generated from stack.json, or bifrost routing
+# 404s (see AGENTS.md conventions).
+if ! grep -q -- '--alias' scripts/auto-startup.sh ||
+    ! grep -q -- '--parallel' scripts/auto-startup.sh ||
+    ! grep -q -- '--ctx-size' scripts/auto-startup.sh; then
+    echo "  FAIL: scripts/auto-startup.sh must pass --alias/--parallel/--ctx-size to llama-server"
+    exit 1
+fi
+echo "  ok: auto-startup.sh passes --alias/--parallel/--ctx-size"
+
 echo "STATIC SUITE PASSED"

@@ -39,7 +39,7 @@ MODELS_DIR="${MODELS_DIR:-$PWD/models}"
 if ls "$MODELS_DIR"/*.gguf >/dev/null 2>&1; then
     echo "[post-create] models: found in $MODELS_DIR ($(ls "$MODELS_DIR"/*.gguf | wc -l) .gguf)"
 else
-    echo "[post-create] models: none in $MODELS_DIR yet — set MODEL/QUANT options or drop a .gguf in models/"
+    echo "[post-create] models: none in $MODELS_DIR yet — set MODELS option or drop a .gguf in models/"
 fi
 
 # Scaffold the agent payload into the workspace (AGENTS.md, library, .opencode/agent)
@@ -51,4 +51,4 @@ else
     echo "[post-create] scaffold.sh not found at $SCAFFOLD"
 fi
 
-echo "[post-create] done. Stack starts on container start (llama-server :8089, bifrost :8082, opencode serve :4096)."
+echo "[post-create] done. Stack starts on container start (llama-server(s) per stack.json, default :8089; bifrost :8082; opencode serve :4096)."
