@@ -9,7 +9,7 @@
             "models": {},
             "opencode-agents": {},
             "ghcr.io/devcontainers-extra/features/apt-get-packages": {
-                "packages": "gh,jq,shfmt"
+                "packages": "gh,jq,shfmt,bats"
             }
         }
     }
