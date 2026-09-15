@@ -75,6 +75,14 @@
             margin: 0.5rem;
         }
 
+        .hero-summary {
+            max-width: 820px;
+            margin: 1.5rem auto 0;
+            color: var(--muted);
+            line-height: 1.7;
+            font-size: 1.05rem;
+        }
+
         .features-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
@@ -290,6 +298,49 @@
         }
         table.reference code { font-size: 0.85rem; }
 
+        .page-nav {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+            justify-content: center;
+            margin: -1.5rem 0 0;
+            padding: 1rem 1.25rem;
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+        }
+
+        .page-nav .nav-lead {
+            flex-basis: 100%;
+            text-align: center;
+            color: var(--muted);
+            font-size: 0.85rem;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            margin-bottom: 0.25rem;
+        }
+
+        .page-nav a {
+            color: var(--text);
+            text-decoration: none;
+            background: var(--secondary);
+            border: 1px solid var(--border);
+            padding: 0.45rem 0.85rem;
+            border-radius: 2rem;
+            font-size: 0.85rem;
+            transition: border-color 0.3s ease, color 0.3s ease;
+        }
+
+        .page-nav a:hover {
+            border-color: var(--accent);
+            color: var(--accent-light);
+        }
+
+        .page-nav a .nav-depth {
+            color: var(--muted);
+            font-size: 0.75rem;
+        }
+
         .github-corner:hover .octo-arm { animation: octocat-wave 560ms ease-in-out; }
         @keyframes octocat-wave {
             0%, 100% { transform: rotate(0); }
@@ -326,7 +377,18 @@
                 <span class="badge">Multi-Agent HITL</span>
                 <span class="badge">Tailscale Ready</span>
             </div>
+            <p class="hero-summary">Add one <code>features</code> block to any repo and you get a complete local-LLM developer box: a prebuilt CUDA llama-server, on-demand GGUF model fetch, a multi-upstream OpenAI-compatible gateway, and a full multi-agent coding setup with human approval — all wired to a single <code>stack.json</code> manifest and reachable from any device over Tailscale. No cloud APIs required, no baked-in weights: everything runs and downloads locally.</p>
         </header>
+
+        <nav class="page-nav" aria-label="Page sections — details deepen as you scroll">
+            <p class="nav-lead">Jump to — details deepen as you scroll</p>
+            <a href="#how-to-use">How to Use <span class="nav-depth">— begin</span></a>
+            <a href="#what-you-get">What You Get <span class="nav-depth">— overview</span></a>
+            <a href="#multi-role-agent-setup">Multi-Agent Setup <span class="nav-depth">— workflow</span></a>
+            <a href="#work-from-anywhere">Work From Anywhere <span class="nav-depth">— access</span></a>
+            <a href="#full-toolchain">Full Toolchain <span class="nav-depth">— binaries</span></a>
+            <a href="#quick-start">Quick Start <span class="nav-depth">— reference</span></a>
+        </nav>
 
         <div class="section">
             <h2 id="how-to-use">How to Use</h2>
@@ -413,20 +475,6 @@
         </div>
 
         <div class="section">
-            <h2 id="full-toolchain">Full Toolchain — No More <code>command not found</code></h2>
-            <p class="lead">The collection installs the actual binaries the agents use, not just config files. When you add these features, <code>opencode</code>, <code>llama-server</code>, and <code>start-bifrost</code> are real commands on your PATH — the agents call them directly, no manual setup.</p>
-            <ul>
-                <li><strong>llama-server</strong> — prebuilt llama.cpp binary plus CUDA runtime libs at <code>/usr/local/bin/llama-server</code>; OpenAI-compatible <code>/v1</code> endpoint per stack.json model (default <code>:8089</code>).</li>
-                <li><strong>Bifrost gateway</strong> — <code>bifrost-gateway</code> (v1.1+) provisions its own node/npm runtime when the base image lacks one, then installs <code>@maximhq/bifrost</code> and the <code>start-bifrost</code> launcher.</li>
-                <li><strong>opencode CLI</strong> — <code>opencode-agents</code> (v1.1+) installs the official opencode binary, so <code>opencode</code>, <code>opencode serve</code>, and the agent roster all work immediately.</li>
-                <li><strong>Tooling baseline</strong> — python3.12, git, curl, sudo, and a shell arrive with the box: everything the multi-agent workflows reference exists in the container.</li>
-                <li><strong>Agent scaffold</strong> — <code>AGENTS.md</code>, <code>.opencode/agent/*.md</code> role definitions, and the <code>library/</code> reference books land in your workspace on first start.</li>
-                <li><strong>Tailscale VPN</strong> — the official <code>tailscale/codespace</code> feature installs <code>tailscaled</code> + <code>tailscale</code>; auto-startup joins your tailnet automatically via <code>TS_AUTHKEY</code> (userspace networking, no TUN required).</li>
-            </ul>
-            <p>That's why the sample <code>devcontainer.json</code> above is complete: five features = models, runtime, gateway, agents, and tools — no extra setup steps, no missing binaries.</p>
-        </div>
-
-        <div class="section">
             <h2 id="multi-role-agent-setup">Multi-Role Agent Setup</h2>
             <p class="lead">When you use the <code>opencode-agents</code> feature, you get a complete multi-agent workflow with Human-in-the-Loop (HITL) approval — exactly what this repo runs on.</p>
 
@@ -499,6 +547,20 @@
             </div>
 
             <p style="margin-top: 1.5rem;"><strong>Zero public exposure.</strong> Everything stays inside the Tailscale overlay network — encrypted, authenticated, and only reachable by your own devices. No port forwarding, no cloud tunnel, no firewall holes. Your local LLM lab is a private personal server you carry in your pocket — a full devbox, remote-controlled from your phone.</p>
+        </div>
+
+        <div class="section">
+            <h2 id="full-toolchain">Full Toolchain — No More <code>command not found</code></h2>
+            <p class="lead">The collection installs the actual binaries the agents use, not just config files. When you add these features, <code>opencode</code>, <code>llama-server</code>, and <code>start-bifrost</code> are real commands on your PATH — the agents call them directly, no manual setup.</p>
+            <ul>
+                <li><strong>llama-server</strong> — prebuilt llama.cpp binary plus CUDA runtime libs at <code>/usr/local/bin/llama-server</code>; OpenAI-compatible <code>/v1</code> endpoint per stack.json model (default <code>:8089</code>).</li>
+                <li><strong>Bifrost gateway</strong> — <code>bifrost-gateway</code> (v1.1+) provisions its own node/npm runtime when the base image lacks one, then installs <code>@maximhq/bifrost</code> and the <code>start-bifrost</code> launcher.</li>
+                <li><strong>opencode CLI</strong> — <code>opencode-agents</code> (v1.1+) installs the official opencode binary, so <code>opencode</code>, <code>opencode serve</code>, and the agent roster all work immediately.</li>
+                <li><strong>Tooling baseline</strong> — python3.12, git, curl, sudo, and a shell arrive with the box: everything the multi-agent workflows reference exists in the container.</li>
+                <li><strong>Agent scaffold</strong> — <code>AGENTS.md</code>, <code>.opencode/agent/*.md</code> role definitions, and the <code>library/</code> reference books land in your workspace on first start.</li>
+                <li><strong>Tailscale VPN</strong> — the official <code>tailscale/codespace</code> feature installs <code>tailscaled</code> + <code>tailscale</code>; auto-startup joins your tailnet automatically via <code>TS_AUTHKEY</code> (userspace networking, no TUN required).</li>
+            </ul>
+            <p>That's why the sample <code>devcontainer.json</code> below is complete: five features = models, runtime, gateway, agents, and tools — no extra setup steps, no missing binaries.</p>
         </div>
 
         <div class="section quick-start">
