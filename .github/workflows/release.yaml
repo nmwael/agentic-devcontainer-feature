@@ -43,6 +43,6 @@ jobs:
           echo "Applying llm-lab template v${TPL_VERSION} into $SMOKE"
           devcontainer templates apply -w "$SMOKE" \
             --template-id "ghcr.io/${TEMPLATES_NAMESPACE}/llm-lab:${TPL_VERSION}" \
-            --log-level warning
+            --log-level info
           echo "Building the generated dev container (validates templateOption rendering + feature resolution)"
-          devcontainer build --workspace-folder "$SMOKE" --log-level warning
+          devcontainer build --workspace-folder "$SMOKE" --log-level info

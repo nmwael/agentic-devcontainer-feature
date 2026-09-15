@@ -11,7 +11,6 @@ if [ -d /usr/lib/wsl/lib ]; then
     [ -x /usr/local/bin/ensure-bridge.sh ] || fail "WSL2 detected but ensure-bridge.sh missing on PATH"
     ok "WSL2 detected — ensure-bridge.sh on PATH"
 else
-    [ -f /proc/version ] && grep -qi "microsoft" /proc/version && IS_WSL=v1 || IS_WSL=
     ok "not WSL2 — gpu-bridge is a no-op stub (container boot + test execution prove it)"
 fi
 
