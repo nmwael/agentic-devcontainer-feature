@@ -100,8 +100,11 @@ elif [ -f "$STACK_JSON" ] && command -v jq >/dev/null 2>&1; then
         mparallel=$(jq -r ".models[$i].parallel // 5" "$STACK_JSON")
         # Match .gguf by HF slug or model name substring
         mfile=""
-        if ls "$MODELS_DIR"/*"$mhf"*"$mquant"*.gguf >/dev/null 2>&1; then
-            mfile=$(ls "$MODELS_DIR"/*"$mhf"*"$mquant"*.gguf | head -1)
+        # fetch-models.sh names files <hf with "/" -> "_">_<quant>.gguf; mirror that
+        # normalization so slash-containing HF slugs match on disk.
+        mslug=$(printf '%s' "$mhf" | tr '/' '_')
+        if ls "$MODELS_DIR"/*"$mslug"*"$mquant"*.gguf >/dev/null 2>&1; then
+            mfile=$(ls "$MODELS_DIR"/*"$mslug"*"$mquant"*.gguf | head -1)
         elif ls "$MODELS_DIR"/*"$mname"*.gguf >/dev/null 2>&1; then
             mfile=$(ls "$MODELS_DIR"/*"$mname"*.gguf | head -1)
         fi

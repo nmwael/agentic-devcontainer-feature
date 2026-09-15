@@ -24,13 +24,20 @@ All notable changes to this project are documented in this file. The format is b
 - **Docs** — README, CONTRIBUTING, LICENSE (MIT), SECURITY, CHANGELOG
 
 ### Changed
-- **`opencode-agents` 1.1.1** — shipped `AGENTS.md` conventions repointed from the (nonexistent) `serve.sh` to `scripts/auto-startup.sh` and the shared `stack.json` manifest (`--alias` ↔ model-id sync, `limit.context` from the store `context` field, `fetch-models.sh` path); mirrors the repo-root file
-- **`llm-lab` template 1.0.4** — ships `apt-get-packages` feature (`gh,jq,shfmt`) in its generated `devcontainer.json`
+- **`opencode-agents` 1.1.2** — shipped `AGENTS.md` conventions repointed from the (nonexistent) `serve.sh` to `scripts/auto-startup.sh` and the shared `stack.json` manifest (`--alias` ↔ model-id sync, `limit.context` from the store `context` field, `fetch-models.sh` path); generator display-name and fragment slot contexts converged; mirrors the repo-root file
+- **`llm-lab` template 1.1.0** — ships `apt-get-packages` feature (`gh,jq,shfmt`) in its generated `devcontainer.json`
 - **Config templates now JSON-only, substituted via `jq`** — `models.json` added to `src/models/templates/` and `__LLAMA_PORT__` placeholder removed from `bifrost.json` (valid standalone JSON); placeholder-bearing scripts became static scripts at the feature roots (`fetch-models.sh`, `start-bifrost.sh`, `ensure-bridge.sh`) reading env/config at runtime; installers provision `jq` if missing (graceful degrade to template defaults); `jq` added to the devcontainer `apt-get-packages` feature (`gh,jq`)
 - **Template extraction** — shell scripts generated via inline heredocs (`fetch-models.sh`, `start-bifrost`, `ensure-bridge.sh`) extracted into dedicated `src/<feature>/templates/` files with `__PLACEHOLDER__` + `sed` substitution for the `models`/`bifrost-gateway`/`gpu-bridge` features, matching the `bifrost.json` convention; fixed a `2>/dev/null` for-loop glob bug in `opencode-agents` install.sh
 - llama-server CUDA arches include Blackwell (`120`) alongside Ampere/Ada/Hopper (`80;86;89;90;120`)
 
 ### Fixed
+- **All-feature divergence sweep** — full audit of code vs docs caught and fixed:
+  - `bifrost-gateway` **1.1.1** — the `PORT` option is now authoritative (baked into the deployed launcher default); `write-bifrost-config.sh` upstream `base_url` now includes the `/v1` path (llama-server's OpenAI endpoint) in both the manifest and legacy fallback branches
+  - `opencode-agents` **1.1.2** — `generate-opencode.jq` provider display name no longer emits a double `local`; shipped `opencode.json.fragment` slot contexts unified to the uniform per-model `context` (mirrors the generator; dropped the historical 49152/32768 per-slot curation)
+  - `models` **1.1.1** — `fetch-models.sh` idempotency comment aligned with behavior (existence check, not checksum)
+  - `scripts/auto-startup.sh` — `.gguf` discovery mirrors `fetch-models.sh` naming (`/` → `_` in HF slugs), so slash-containing repos launch correctly
+  - `llm-lab` template **1.1.1** — previously inert `FEATURES_TAG`/`MODEL`/`INCLUDE_LIBRARY` options are now wired into the generated `devcontainer.json`
+  - Self-consuming devcontainer pins fixed (malformed `:1.0.x` feature keys) and `devcontainer-lock.json` refreshed to the published 1.1.x digests
 - **`scripts/auto-startup.sh`** — now passes `--alias <name>` and `--parallel <slots>` to every `llama-server` (per-model from `stack.json`, legacy fallback `gemma4-26b-a4b`/`SLOTS`) so `/v1/models` advertises the model family and slot count matches the declared `parallel` — closes the model-id/alias 404 gap (regression guard added to the static suite)
 - Template `devcontainer.json` now always includes the `llama-server` feature at `"1"` regardless of other options
 

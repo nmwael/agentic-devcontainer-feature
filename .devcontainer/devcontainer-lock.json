@@ -6,9 +6,9 @@
       "integrity": "sha256:776fa11c30c50fa91d5e1bf050444b0f130827457109c349db92e8e126b750ec"
     },
     "ghcr.io/nmwael/agentic-devcontainer-feature/bifrost-gateway": {
-      "version": "1.0.3",
-      "resolved": "ghcr.io/nmwael/agentic-devcontainer-feature/bifrost-gateway@sha256:ad0e5fb87e5d2c27abd192005d2e6739cec54c06ee30476c806e1cb359bea1a3",
-      "integrity": "sha256:ad0e5fb87e5d2c27abd192005d2e6739cec54c06ee30476c806e1cb359bea1a3"
+      "version": "1.1.0",
+      "resolved": "ghcr.io/nmwael/agentic-devcontainer-feature/bifrost-gateway@sha256:4eb09764d4477e070b22487dbd97585595b351d941d61d7dae3d7661ac18d61f",
+      "integrity": "sha256:4eb09764d4477e070b22487dbd97585595b351d941d61d7dae3d7661ac18d61f"
     },
     "ghcr.io/nmwael/agentic-devcontainer-feature/gpu-bridge": {
       "version": "1.0.1",
@@ -21,14 +21,14 @@
       "integrity": "sha256:81f2905c2da55b79efa1936d131fe5cb3d3fe67a261ab0bcd648c99b45be120e"
     },
     "ghcr.io/nmwael/agentic-devcontainer-feature/models": {
-      "version": "1.0.1",
-      "resolved": "ghcr.io/nmwael/agentic-devcontainer-feature/models@sha256:b0ddcc28650e8ba9a015cc7e2546236c1f749e1f2530f3a379adf76aebe7ebdd",
-      "integrity": "sha256:b0ddcc28650e8ba9a015cc7e2546236c1f749e1f2530f3a379adf76aebe7ebdd"
+      "version": "1.1.0",
+      "resolved": "ghcr.io/nmwael/agentic-devcontainer-feature/models@sha256:f0f861202cf161d49f04d90acafcc4a8e47220215324050ad47dffcdbd2acd26",
+      "integrity": "sha256:f0f861202cf161d49f04d90acafcc4a8e47220215324050ad47dffcdbd2acd26"
     },
     "ghcr.io/nmwael/agentic-devcontainer-feature/opencode-agents": {
-      "version": "1.0.5",
-      "resolved": "ghcr.io/nmwael/agentic-devcontainer-feature/opencode-agents@sha256:ee18fc2f0e36efa283177dc0f2f5f189854ae6fb6b2a21b658c629e8d23a1135",
-      "integrity": "sha256:ee18fc2f0e36efa283177dc0f2f5f189854ae6fb6b2a21b658c629e8d23a1135"
+      "version": "1.1.1",
+      "resolved": "ghcr.io/nmwael/agentic-devcontainer-feature/opencode-agents@sha256:2589a17a8f48b0412ec55ee8f1e4e9875bef4bb1636344fb57a99dcd315a45c5",
+      "integrity": "sha256:2589a17a8f48b0412ec55ee8f1e4e9875bef4bb1636344fb57a99dcd315a45c5"
     },
     "ghcr.io/tailscale/codespace/tailscale": {
       "version": "1.0.8",

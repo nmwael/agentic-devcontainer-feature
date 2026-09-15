@@ -373,7 +373,7 @@
                         <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
                     </svg>
                     <h3>Bifrost Gateway</h3>
-                    <p>Bifrost v2.1.1 gateway exposing llama-servers as OpenAI-compatible providers on <code>:8082</code>.</p>
+                    <p>Bifrost gateway exposing llama-servers as OpenAI-compatible providers on <code>:8082</code>.</p>
                     <ul>
                         <li>Installs <code>@maximhq/bifrost</code> npm package</li>
                         <li>Materializes <code>config/bifrost.json</code> from <code>stack.json</code> via <code>write-bifrost-config.sh</code></li>
@@ -390,7 +390,7 @@
                     <ul>
                         <li>Installs <code>fetch-models.sh</code> to <code>/usr/local/share/llm-lab/models/</code></li>
                         <li>Writes the shared <code>stack.json</code> manifest — one entry per served model</li>
-                        <li>Idempotent: skip if file exists + checksum matches</li>
+                        <li>Idempotent: skip if file already exists</li>
                         <li>Resumable downloads: <code>curl --retry 5 --continue-at -</code></li>
                         <li>Options: <code>MODELS</code>, <code>ROLES</code>, <code>BIFROST_PORT</code>, <code>MODEL</code>, <code>QUANT</code>, <code>MODELS_DIR</code></li>
                     </ul>
@@ -403,7 +403,7 @@
                     <p>Installs the opencode CLI plus the full agentic setup: <code>AGENTS.md</code>, <code>.opencode/agent/*.md</code>, library books, HITL contract.</p>
                     <ul>
                         <li>Installs the opencode CLI — <code>opencode</code> on PATH</li>
-                        <li>6 primary agent role definitions</li>
+                        <li>7 primary agent role definitions</li>
                         <li>Library of reference books with attribution</li>
                         <li>Opt-out: <code>WITH_LIBRARY=false</code></li>
                         <li>Options: <code>OVERWRITE</code>, <code>WITH_LIBRARY</code>, <code>INSTALL_DIR</code></li>
@@ -417,8 +417,8 @@
             <p class="lead">The collection installs the actual binaries the agents use, not just config files. When you add these features, <code>opencode</code>, <code>llama-server</code>, and <code>start-bifrost</code> are real commands on your PATH — the agents call them directly, no manual setup.</p>
             <ul>
                 <li><strong>llama-server</strong> — prebuilt llama.cpp binary plus CUDA runtime libs at <code>/usr/local/bin/llama-server</code>; OpenAI-compatible <code>/v1</code> endpoint per stack.json model (default <code>:8089</code>).</li>
-                <li><strong>bifrost gateway</strong> — <code>bifrost-gateway</code> (v1.0.2+) provisions its own node/npm runtime when the base image lacks one, then installs <code>@maximhq/bifrost</code> and the <code>start-bifrost</code> launcher.</li>
-                <li><strong>opencode CLI</strong> — <code>opencode-agents</code> (v1.0.2+) installs the official opencode binary, so <code>opencode</code>, <code>opencode serve</code>, and the agent roster all work immediately.</li>
+                <li><strong>Bifrost gateway</strong> — <code>bifrost-gateway</code> (v1.1+) provisions its own node/npm runtime when the base image lacks one, then installs <code>@maximhq/bifrost</code> and the <code>start-bifrost</code> launcher.</li>
+                <li><strong>opencode CLI</strong> — <code>opencode-agents</code> (v1.1+) installs the official opencode binary, so <code>opencode</code>, <code>opencode serve</code>, and the agent roster all work immediately.</li>
                 <li><strong>Tooling baseline</strong> — python3.12, git, curl, sudo, and a shell arrive with the box: everything the multi-agent workflows reference exists in the container.</li>
                 <li><strong>Agent scaffold</strong> — <code>AGENTS.md</code>, <code>.opencode/agent/*.md</code> role definitions, and the <code>library/</code> reference books land in your workspace on first start.</li>
                 <li><strong>Tailscale VPN</strong> — the official <code>tailscale/codespace</code> feature installs <code>tailscaled</code> + <code>tailscale</code>; auto-startup joins your tailnet automatically via <code>TS_AUTHKEY</code> (userspace networking, no TUN required).</li>
@@ -516,11 +516,11 @@
     "name": "local-llm-lab",
     "image": "nvidia/cuda:13.3.0-cudnn-runtime-ubuntu24.04",
     "features": {
-        "ghcr.io/nmwael/agentic-devcontainer-feature/llama-server": "1.0.2",
-        "ghcr.io/nmwael/agentic-devcontainer-feature/gpu-bridge": "1.0.1",
-        "ghcr.io/nmwael/agentic-devcontainer-feature/bifrost-gateway": "1.0.3",
-        "ghcr.io/nmwael/agentic-devcontainer-feature/models": "1.0.1",
-        "ghcr.io/nmwael/agentic-devcontainer-feature/opencode-agents": "1.0.5",
+        "ghcr.io/nmwael/agentic-devcontainer-feature/llama-server": "1",
+        "ghcr.io/nmwael/agentic-devcontainer-feature/gpu-bridge": "1",
+        "ghcr.io/nmwael/agentic-devcontainer-feature/bifrost-gateway": "1",
+        "ghcr.io/nmwael/agentic-devcontainer-feature/models": "1",
+        "ghcr.io/nmwael/agentic-devcontainer-feature/opencode-agents": "1",
         "ghcr.io/tailscale/codespace/tailscale": {
             "version": "latest"
         }

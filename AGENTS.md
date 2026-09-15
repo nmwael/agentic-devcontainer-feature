@@ -21,9 +21,9 @@ Design-flow reference: [`SELF_DISCOVERING_FLOWS.md`](SELF_DISCOVERING_FLOWS.md) 
 
 `library/` holds condensed reference books, one per agent role. `library/README.md` maps roles to books and records sources/attribution. Delegated agents are expected to read their role's book(s) before answering questions in their domain. Layout:
 
-- `architect/` — architecture patterns (3 books)
+- `architect/` — architecture patterns (4 books)
 - `ai-researcher/` — llama.cpp reference (original, grounded in this repo)
-- `coder/` — coding craft + Java reference (4 books)
+- `coder/` — coding craft + Java reference (5 books)
 - `researcher/` — software design philosophy (1 book)
 - `reviewer/` — code quality & legacy code (2 books)
 - `release-it.mini.md` — shared by all agents
@@ -100,3 +100,7 @@ Agents can run in parallel when their work is independent (e.g., two unrelated c
 - When multiple agents work in parallel, wait for all to complete before responding.
 - If the task requires an explicit Human-in-the-Loop (HITL) approval (e.g., the Architect's plan before code modification), the agent must state: "I am waiting for approval."
 - For all other situations where a subtask is complete and further direction is needed from the user, the agent must state: "I am waiting for instructions."
+
+## Verification Protocol
+
+**Mandatory Change Verification**: Before any task is marked as 'completed', the Architect MUST verify that all claimed code changes actually exist on the filesystem. This is done by performing a `git status` or `ls -R` check to confirm the existence of new/modified files and verifying their content against the agent's report. A task is not complete until the physical artifacts are verified.

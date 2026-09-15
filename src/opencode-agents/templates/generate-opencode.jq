@@ -19,7 +19,7 @@
             . + {
                 ($m.provider): {
                     npm: "@ai-sdk/openai-compatible",
-                    name: ("Bifrost (local " + $m.provider + ")"),
+                    name: ("Bifrost (local " + $m.name + ")"),
                     options: {
                         baseURL: ("http://127.0.0.1:" + ($bp | tostring) + "/v1"),
                         headers: { "x-bf-passthrough-extra-params": "true" }

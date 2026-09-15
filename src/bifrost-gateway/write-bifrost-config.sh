@@ -24,7 +24,7 @@ if command -v jq >/dev/null 2>&1; then
                    reduce $s[0].models[] as $m ({};
                        .[$m.name] = {
                            keys:    [ { name: "local", value: "no-key", models: [($m.name + "*")], weight: 1.0 } ],
-                           network_config: { base_url: ("http://127.0.0.1:" + ($m.port | tostring)) },
+                           network_config: { base_url: ("http://127.0.0.1:" + ($m.port | tostring) + "/v1") },
                            custom_provider_config: { base_provider_type: "openai" }
                        }
                    )
@@ -38,7 +38,7 @@ if command -v jq >/dev/null 2>&1; then
                providers: {
                    llama: {
                        keys:    [ { name: "local", value: "no-key", models: ["*"], weight: 1.0 } ],
-                       network_config: { base_url: ("http://127.0.0.1:" + $port) },
+                       network_config: { base_url: ("http://127.0.0.1:" + $port + "/v1") },
                        custom_provider_config: { base_provider_type: "openai" }
                    }
                },

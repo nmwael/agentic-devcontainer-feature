@@ -21,9 +21,9 @@ Design-flow reference: [`SELF_DISCOVERING_FLOWS.md`](SELF_DISCOVERING_FLOWS.md) 
 
 `library/` holds condensed reference books, one per agent role. `library/README.md` maps roles to books and records sources/attribution. Delegated agents are expected to read their role's book(s) before answering questions in their domain. Layout:
 
-- `architect/` — architecture patterns (3 books)
+- `architect/` — architecture patterns (4 books)
 - `ai-researcher/` — llama.cpp reference (original, grounded in this repo)
-- `coder/` — coding craft + Java reference (4 books)
+- `coder/` — coding craft + Java reference (5 books)
 - `researcher/` — software design philosophy (1 book)
 - `reviewer/` — code quality & legacy code (2 books)
 - `release-it.mini.md` — shared by all agents

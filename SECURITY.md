@@ -43,5 +43,6 @@ Out of scope (run at your own risk, follow upstream advisories):
 
 | Version | Supported          |
 |---------|--------------------|
-| 1.0.0   | :white_check_mark: |
+| 1.1.x   | :white_check_mark: |
+| 1.0.x   | :white_check_mark: |
 | < 1.0   | :x:                |

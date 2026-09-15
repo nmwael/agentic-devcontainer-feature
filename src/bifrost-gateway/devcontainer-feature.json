@@ -1,7 +1,7 @@
 {
     "name": "Bifrost Gateway",
     "id": "bifrost-gateway",
-    "version": "1.1.0",
+    "version": "1.1.1",
     "description": "Pinned @maximhq/bifrost install + config scaffold. Routes each configured llama-server upstream (from stack.json, written by the models feature) as a v2 bifrost provider. Installs after llama-server (soft dependency).",
     "options": {
         "PORT": {

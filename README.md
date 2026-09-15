@@ -20,7 +20,7 @@ This generates `.devcontainer/devcontainer.json` with:
 - `GPU_MODE` [wsl2, native, none]
 - `MODEL` [gemma-4-26B-A4B-it-UD-IQ2_M] — legacy single-model option
 - `MODELS` / `ROLES` — JSON multi-upstream overrides (N models served simultaneously, default = single-model `gemma4-26b-a4b`)
-- `FEATURES_TAG` [1.0.0]
+- `FEATURES_TAG` [1]
 - `INCLUDE_AGENTS` / `INCLUDE_MODELS` / `INCLUDE_LIBRARY` booleans
 - `runArgs` with `--device=nvidia.com/gpu=all`, forwardPorts
 - `opencode.json` generated into the workspace from `stack.json` (generate-opencode.sh/.jq; the bundled slot-pinned fragment is the no-manifest fallback — fills only empty/absent configs)
@@ -61,9 +61,9 @@ Plus `--device=nvidia.com/gpu=all` in `runArgs`.
 - **Provides:** Pinned `@maximhq/bifrost` install + config scaffold
 - **Installs:** `npm install --prefix /usr/local/share/llm-lab/bifrost @maximhq/bifrost@<pin>`
 - **Launches:** `start-bifrost` script honoring `BIFROST_PORT` / config
-- **Config:** `write-bifrost-config.sh` materializes `config/bifrost.json` (v2 schema) from `stack.json` — one provider per llama-server upstream, routed by `keys[].models = ["{name}*"]`, `setCacheKey:false`, `x-bf-passthrough-extra-params`
+- **Config:** `write-bifrost-config.sh` materializes `config/bifrost.json` (v2 schema) from `stack.json` — one provider per llama-server upstream (base_url `:port/v1`), routed by `keys[].models = ["{name}*"]`
 - **Options:** `PORT` [8082], `VERSION` [latest], `LLAMA_PORT` [8089, legacy single-upstream fallback]
-- **containerEnv:** `BIFROST_PORT`
+- **Honors env:** `BIFROST_PORT` (overrides the `PORT` option/`stack.json.bifrost_port` at launch)
 - **installsAfter:** [llama-server] (soft)
 - **Use case:** Bifrost gateway exposing llama-servers as OpenAI-compatible providers
 
@@ -72,7 +72,7 @@ Plus `--device=nvidia.com/gpu=all` in `runArgs`.
 - **Installs:** `fetch-models.sh` (iterates `stack.json.models[]`) to `/usr/local/share/llm-lab/models/`, plus `stack.json` at `/usr/local/share/llm-lab/stack.json`
 - **Options:** `MODELS`/`ROLES` [JSON multi-upstream, schema-1], `BIFROST_PORT` [8082], `MODEL` [gemma-4-26B-A4B-it-UD-IQ2_M] / `QUANT` [IQ2_M] (legacy single-model), `MODELS_DIR` [default: $PWD/models]
 - **stack.json schema:** `models[] = { name, provider, hf, quant, port, context, parallel }`; each entry becomes its own llama-server, opencode provider, and bifrost upstream
-- **fetch-models.sh:** Idempotent: skip if file exists + size/checksum match; `curl -L --retry 5 --continue-at -`
+- **fetch-models.sh:** Idempotent: skip if the target file already exists; `curl -L --retry 5 --continue-at -`
 - **MODELS_DIR:** Derived from workspace when unset (default `$PWD/models` → bind-mount friendly)
 - **Use case:** Download and cache GGUF models without bloating the image
 
@@ -82,7 +82,7 @@ Plus `--device=nvidia.com/gpu=all` in `runArgs`.
   - `WITH_LIBRARY=true` (default): Ships library books with attribution/README + LICENSE notices
   - `WITH_LIBRARY=false`: Installs NO shipped library books (zero redistribution surface); leaving only extension docs + empty register; the rest of the agentic setup is unaffected and functional
 - **Scaffold mechanism:** `scaffold.sh` copies payload into workspace (idempotent, skip-if-exists unless `OVERWRITE=true`)
-- **Payload contents:** AGENTS.md + AGENTS_LIFECYCLE.md, `.opencode/agent/*.md` (6 role definitions), library/ subsets (architect, ai-researcher, coder, researcher, reviewer, ai-researcher), release-it.mini.md
+- **Payload contents:** AGENTS.md + AGENTS_LIFECYCLE.md, `.opencode/agent/*.md` (7 role definitions), library/skills + library/ai-researcher (2 mini-books), release-it.mini.md, EXTENSIONS.md
 - **EXCLUDED:** domainbooks/, 3dprints/library/, repo-specific project_stack.md, boxforsine flows/SCAD, cad-validate/verify-pair skills
 - **Library Extensions Guide:** Documents how consumers can add books by dropping files into `library/<role>/` and registering in `library/README.md`'s consumer section; the shipped register is never overwritten once the consumer edits it (no-clobber guarantee)
 - **Config generation:** `generate-opencode.sh` + `generate-opencode.jq` emit `opencode.json` from `stack.json` — one provider per model (`provider.models[].name = <name>-s<slot>`, `limit.context` from the model `context` field), primary+subagents with role→slot pinning, permissions, compaction, `subagent_depth`; the bundled `opencode.json.fragment` is the no-manifest fallback

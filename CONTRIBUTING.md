@@ -22,7 +22,7 @@ This repo is the **extracted, canonical source** of the feature collection, in t
 └── .devcontainer/       # Self-consuming devcontainer (dogfooding)
 ```
 
-The upstream source-of-truth repo (`opencode-local-lab`) regenerates this tree with `scripts/extract-features.sh`; production changes should be made there and re-extracted, or made here directly if they only concern the extracted repo.
+This repo is the extracted, standalone source of the feature collection. Production changes are made directly here under `src/` (see the Development Workflow below).
 
 ## Prerequisites
 

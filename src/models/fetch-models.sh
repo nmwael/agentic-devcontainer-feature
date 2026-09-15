@@ -40,7 +40,7 @@ fetch_one() {
     quant="$2"
     echo "Fetching model: $hf quant=$quant to $MODELS_DIR"
 
-    # Idempotent check: skip if file exists with matching size and checksum
+    # Idempotent check: skip if the target file already exists
     EXPECTED_FILE="${MODELS_DIR}/$(printf '%s' "$hf" | tr '/' '_')_${quant}.gguf"
     if [ -f "$EXPECTED_FILE" ]; then
         echo "Model file already exists at $EXPECTED_FILE — skipping download (idempotent)."
