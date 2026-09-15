@@ -44,8 +44,8 @@ if command -v tailscale >/dev/null 2>&1; then
         # the box findable as llm-lab (tailscale ip -4 / tailscale status).
         TS_HOSTNAME="${TS_HOSTNAME:-llm-lab}"
         sudo tailscale up --authkey="$TS_AUTHKEY" --hostname="$TS_HOSTNAME" \
-            --accept-routes --accept-dns --operator="$(id -un)" 2>/dev/null \
-            || echo "[auto-startup] WARNING: tailscale up (authkey) failed"
+            --accept-routes --accept-dns --operator="$(id -un)" 2>/dev/null ||
+            echo "[auto-startup] WARNING: tailscale up (authkey) failed"
     else
         echo "[auto-startup] TS_AUTHKEY unset — skipping tailscale up (run 'tailscale up' for interactive login)"
     fi
@@ -68,9 +68,13 @@ elif [ -n "$MODEL_FILE" ] && command -v llama-server >/dev/null 2>&1; then
         nohup llama-server -m "$MODEL_FILE" --host 0.0.0.0 --port 8089 >/tmp/llama-server.log 2>&1 &
         i=0
         while [ $i -lt 15 ]; do
-            curl -sf -o /dev/null --max-time 2 http://127.0.0.1:8089/health \
-                && { echo "[auto-startup] llama-server ready on :8089"; break; }
-            i=$((i + 1)); sleep 2
+            curl -sf -o /dev/null --max-time 2 http://127.0.0.1:8089/health &&
+                {
+                    echo "[auto-startup] llama-server ready on :8089"
+                    break
+                }
+            i=$((i + 1))
+            sleep 2
         done
         if [ $i -eq 15 ]; then
             echo "[auto-startup] WARNING: llama-server health check timed out (see /tmp/llama-server.log)"
@@ -91,9 +95,13 @@ if command -v start-bifrost >/dev/null 2>&1; then
         nohup start-bifrost >/tmp/bifrost.log 2>&1 &
         i=0
         while [ $i -lt 30 ]; do
-            curl -sf -o /dev/null --max-time 2 http://127.0.0.1:8082/ \
-                && { echo "[auto-startup] bifrost ready on :8082"; break; }
-            i=$((i + 1)); sleep 2
+            curl -sf -o /dev/null --max-time 2 http://127.0.0.1:8082/ &&
+                {
+                    echo "[auto-startup] bifrost ready on :8082"
+                    break
+                }
+            i=$((i + 1))
+            sleep 2
         done
         if [ $i -ge 30 ]; then
             echo "[auto-startup] WARNING: bifrost not ready after 60s — continuing in background (see /tmp/bifrost.log)"

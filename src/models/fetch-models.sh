@@ -7,7 +7,9 @@ set -e
 SCRIPT_DIR=$(CDPATH='' cd -- "$(dirname -- "$0")" && pwd)
 CFG="$SCRIPT_DIR/models.json"
 
-CFG_MODEL=""; CFG_QUANT=""; CFG_DIR=""
+CFG_MODEL=""
+CFG_QUANT=""
+CFG_DIR=""
 if command -v jq >/dev/null 2>&1 && [ -f "$CFG" ]; then
     CFG_MODEL=$(jq -r '.model // empty' "$CFG" 2>/dev/null || true)
     CFG_QUANT=$(jq -r '.quant // empty' "$CFG" 2>/dev/null || true)

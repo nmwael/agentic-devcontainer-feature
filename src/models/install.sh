@@ -41,7 +41,7 @@ CONFIG_FILE="$FEATURE_MODELS_DIR/models.json"
 if command -v jq >/dev/null 2>&1; then
     jq --arg m "$MODEL" --arg q "$QUANT" --arg d "$MODELS_DIR" \
         '.model = $m | .quant = $q | .models_dir = $d' \
-        "$SCRIPT_SRC/templates/models.json" > "$CONFIG_FILE"
+        "$SCRIPT_SRC/templates/models.json" >"$CONFIG_FILE"
 else
     cp -f "$SCRIPT_SRC/templates/models.json" "$CONFIG_FILE"
     echo "WARNING: jq unavailable — models.json keeps template defaults"
@@ -54,7 +54,7 @@ chmod 0755 "$FETCH_SCRIPT"
 
 # Write MODELS_DIR to /etc/environment or via containerEnv when the option is set
 if ! grep -qF "MODELS_DIR" /etc/environment 2>/dev/null; then
-    echo "export MODELS_DIR=$MODELS_DIR" >> /etc/environment
+    echo "export MODELS_DIR=$MODELS_DIR" >>/etc/environment
     echo "Added MODELS_DIR to /etc/environment"
 fi
 

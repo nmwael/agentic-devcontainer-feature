@@ -10,8 +10,8 @@ WORKSPACE="${WORKSPACE:-$(pwd)}"
 # Materialize opencode.json from the shipped fragment — before the guard so
 # existing workspaces get a usable config too. Only fills when absent, empty,
 # or "{}" (a default init); a real consumer config is NEVER touched.
-if [ ! -s "$WORKSPACE/opencode.json" ] || \
-   [ "$(tr -d '[:space:]' < "$WORKSPACE/opencode.json" 2>/dev/null)" = "{}" ]; then
+if [ ! -s "$WORKSPACE/opencode.json" ] ||
+    [ "$(tr -d '[:space:]' <"$WORKSPACE/opencode.json" 2>/dev/null)" = "{}" ]; then
     cp -f "$INSTALL_DIR/opencode.json.fragment" "$WORKSPACE/opencode.json"
     echo "opencode.json generated from fragment (slot-pinned models)"
 else

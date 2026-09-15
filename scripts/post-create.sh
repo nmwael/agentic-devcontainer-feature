@@ -14,8 +14,8 @@ if ! locale -a 2>/dev/null | grep -qi "en_US.UTF-8"; then
     echo "[post-create] generating en_US.UTF-8 locale..."
     # stderr suppressed: sudo emits a cosmetic "unable to send audit message"
     # warning in containers (no CAP_AUDIT_WRITE); the command still succeeds.
-    if ! echo "en_US.UTF-8 UTF-8" | sudo tee -a /etc/locale.gen >/dev/null 2>&1 \
-        || ! sudo locale-gen >/dev/null 2>&1; then
+    if ! echo "en_US.UTF-8 UTF-8" | sudo tee -a /etc/locale.gen >/dev/null 2>&1 ||
+        ! sudo locale-gen >/dev/null 2>&1; then
         echo "[post-create] WARNING: locale-gen failed (sudo locale-gen manually)"
     fi
 fi

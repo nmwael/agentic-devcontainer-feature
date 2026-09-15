@@ -26,7 +26,7 @@ for feature in "${FEATURES[@]}"; do
     cp -r "src/$feature" "$ctx/feature"
     cp "test/integration/bats/$feature.bats" "$ctx/test.bats"
     cp "test/integration/Dockerfile.ci" "$ctx/Dockerfile"
-    python3 test/integration/options2env.py "src/$feature/devcontainer-feature.json" > "$ctx/options.env"
+    python3 test/integration/options2env.py "src/$feature/devcontainer-feature.json" >"$ctx/options.env"
 
     if docker build -q -t "ci-feature-$feature" "$ctx" >"$LOG_DIR/$feature.build.log" 2>&1; then
         if docker run --rm "ci-feature-$feature" >"$LOG_DIR/$feature.run.log" 2>&1; then

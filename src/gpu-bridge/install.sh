@@ -52,7 +52,7 @@ if [ "$ENV_REWRITE" = "true" ]; then
     ENV_LINE="/usr/lib/wsl/lib:/opt/llama-server:/usr/local/cuda/compat:/usr/local/nvidia/lib:/usr/local/nvidia/lib64:/usr/local/cuda/lib64"
     if ! grep -qF "$_REMOTE_USER" /etc/environment 2>/dev/null; then
         # Append the LLAMA-specific path
-        echo "LD_LIBRARY_PATH=$ENV_LINE" >> /etc/environment
+        echo "LD_LIBRARY_PATH=$ENV_LINE" >>/etc/environment
         echo "Updated /etc/environment with LD_LIBRARY_PATH"
     fi
 fi

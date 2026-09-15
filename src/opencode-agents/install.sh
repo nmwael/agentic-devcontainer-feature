@@ -67,8 +67,8 @@ cp -f "$TPL_DIR/opencode.json.fragment" "$INSTALL_DIR/opencode.json.fragment"
 
 # Install the opencode CLI itself (binary via the official installer).
 if ! command -v curl >/dev/null 2>&1 || ! command -v git >/dev/null 2>&1; then
-    apt-get install -y --no-install-recommends curl git >/dev/null 2>&1 \
-        || echo "WARNING: curl/git unavailable — CLI install needs curl; agent workflows need git"
+    apt-get install -y --no-install-recommends curl git >/dev/null 2>&1 ||
+        echo "WARNING: curl/git unavailable — CLI install needs curl; agent workflows need git"
 fi
 if command -v opencode >/dev/null 2>&1; then
     echo "opencode CLI already installed: $(opencode --version 2>/dev/null || echo present)"

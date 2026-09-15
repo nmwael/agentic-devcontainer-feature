@@ -19,9 +19,9 @@ BUNDLE_CUDA_LIBS="${BUNDLE_CUDA_LIBS:-true}"
 # Detect architecture
 ARCH=$(uname -m)
 case "$ARCH" in
-    x86_64) ARCH_VARIANT="x64" ;;
-    aarch64) ARCH_VARIANT="arm64" ;;
-    *) ARCH_VARIANT="x64" ;;
+x86_64) ARCH_VARIANT="x64" ;;
+aarch64) ARCH_VARIANT="arm64" ;;
+*) ARCH_VARIANT="x64" ;;
 esac
 
 LLAMA_DIR="${INSTALL_PATH}"
@@ -109,7 +109,7 @@ if [ "$BUNDLE_CUDA_LIBS" = "true" ]; then
 fi
 
 # Write VERSION file
-echo "$VERSION" > "$INSTALL_PATH/VERSION"
+echo "$VERSION" >"$INSTALL_PATH/VERSION"
 
 echo "Done! llama-server installed at $INSTALL_PATH"
 echo "Run 'llama-server --version' to verify."

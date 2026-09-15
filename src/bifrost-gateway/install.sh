@@ -50,7 +50,7 @@ mkdir -p "$CONFIG_DIR"
 
 if command -v jq >/dev/null 2>&1; then
     jq --arg p "$LLAMA_PORT" '.upstream = ("http://127.0.0.1:" + $p + "/v1")' \
-        "$SCRIPT_SRC/templates/bifrost.json" > "$CONFIG_DIR/bifrost.json"
+        "$SCRIPT_SRC/templates/bifrost.json" >"$CONFIG_DIR/bifrost.json"
 else
     cp -f "$SCRIPT_SRC/templates/bifrost.json" "$CONFIG_DIR/bifrost.json"
     echo "WARNING: jq unavailable — bifrost.json keeps default upstream port 8089"
@@ -59,7 +59,7 @@ fi
 echo "Bifrost config scaffolded to $CONFIG_DIR/bifrost.json (copy to your project's config/bifrost.json to customize)"
 
 # Stamp version
-echo "$VERSION" > "$BIFROST_DIR/version"
+echo "$VERSION" >"$BIFROST_DIR/version"
 
 echo "Done! Bifrost gateway installed."
 echo "Run 'start-bifrost' to launch the gateway."
