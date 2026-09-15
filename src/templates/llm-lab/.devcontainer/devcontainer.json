@@ -3,17 +3,17 @@
     "dockerFile": "Dockerfile",
     "features": {
         "ghcr.io/nmwael/agentic-devcontainer-feature/llama-server": "${templateOption:FEATURES_TAG}",
-        "ghcr.io/nmwael/agentic-devcontainer-feature/gpu-bridge": "${templateOption:GPU_MODE == 'wsl2' ? '1' : '0'}",
+        "ghcr.io/nmwael/agentic-devcontainer-feature/gpu-bridge": "1",
         "ghcr.io/nmwael/agentic-devcontainer-feature/bifrost-gateway": "${templateOption:FEATURES_TAG}",
         "ghcr.io/nmwael/agentic-devcontainer-feature/models": {
-            "version": "${templateOption:INCLUDE_MODELS ? '1' : '0'}",
+            "version": "${templateOption:FEATURES_TAG}",
             "MODELS": "${templateOption:MODELS}",
             "ROLES": "${templateOption:ROLES}",
             "MODEL": "${templateOption:MODEL}"
         },
         "ghcr.io/nmwael/agentic-devcontainer-feature/opencode-agents": {
-            "version": "${templateOption:INCLUDE_AGENTS ? '1' : '0'}",
-            "WITH_LIBRARY": "${templateOption:INCLUDE_LIBRARY ? 'true' : 'false'}"
+            "version": "${templateOption:FEATURES_TAG}",
+            "WITH_LIBRARY": "${templateOption:INCLUDE_LIBRARY}"
         },
         "ghcr.io/devcontainers-extra/features/apt-get-packages": {
             "version": "1",
@@ -21,11 +21,7 @@
         }
     },
     "runArgs": [
-        "${templateOption:GPU_MODE == 'wsl2' ? '--device=nvidia.com/gpu=all' : ''}",
-        "${templateOption:GPU_MODE == 'native' ? '--device=nvidia.com/gpu=all' : ''}",
-        "--shm-size=2g",
-        "${templateOption:GPU_MODE != 'none' ? '--cap-add=SYS_PTRACE' : ''}",
-        "${templateOption:GPU_MODE != 'none' ? '--security-opt=seccomp:unconfined' : ''}"
+        "--shm-size=2g"
     ],
     "forwardPorts": [8082, 8089, 4096],
     "customizations": {
