@@ -1,0 +1,11 @@
+{
+    "multi-upstream": {
+        "image": "ubuntu:24.04",
+        "features": {
+            "models": {
+                "MODELS": "[{\"name\":\"e5-26b\",\"provider\":\"local-e5-26b\",\"hf\":\"Qwen/Qwen3-26B\",\"quant\":\"Q4_K_M\",\"port\":18081,\"context\":65536,\"parallel\":3},{\"name\":\"gemma4-9b\",\"provider\":\"local-gemma4-9b\",\"hf\":\"google/gemma-3-9b\",\"quant\":\"Q4_K_M\",\"port\":18082,\"context\":32768,\"parallel\":2}]",
+                "ROLES": "{\"architect\":{\"model\":\"e5-26b\",\"slot\":0},\"coder\":{\"model\":\"gemma4-9b\",\"slot\":1},\"build\":{\"model\":\"e5-26b\",\"slot\":1}}"
+            }
+        }
+    }
+}

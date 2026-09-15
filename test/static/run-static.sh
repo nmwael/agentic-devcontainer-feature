@@ -25,6 +25,8 @@ CHECK_SCRIPTS=(
     test/static/run-static.sh
     test/integration/run.sh
     test/bats/helpers.bash
+    test/*/*.sh
+    test/_global/*.sh
 )
 
 echo "==[1/4] shellcheck (warning severity) =="
@@ -65,5 +67,31 @@ if ! grep -q -- '--alias' scripts/auto-startup.sh ||
     exit 1
 fi
 echo "  ok: auto-startup.sh passes --alias/--parallel/--ctx-size"
+
+echo "==[6/6] devcontainer-CLI test mirror contract =="
+# `devcontainer features test` requires test/<feature>/test.sh for every feature
+# in src/, and a matching <scenario>.sh for every key in each scenarios.json.
+FEATURES=(llama-server gpu-bridge bifrost-gateway models opencode-agents)
+ok=true
+for feature in "${FEATURES[@]}"; do
+    [ -f "test/$feature/test.sh" ] || { echo "  FAIL: missing test/$feature/test.sh"; ok=false; }
+    if [ -f "test/$feature/scenarios.json" ]; then
+        for scenario in $(jq -r 'keys[]' "test/$feature/scenarios.json"); do
+            [ -f "test/$feature/$scenario.sh" ] || {
+                echo "  FAIL: missing test/$feature/$scenario.sh (scenario '$scenario')"
+                ok=false
+            }
+        done
+    fi
+done
+[ -f "test/_global/scenarios.json" ] || { echo "  FAIL: missing test/_global/scenarios.json"; ok=false; }
+for scenario in $(jq -r 'keys[]' test/_global/scenarios.json); do
+    [ -f "test/_global/$scenario.sh" ] || { echo "  FAIL: missing test/_global/$scenario.sh"; ok=false; }
+done
+if [ "$ok" = "true" ]; then
+    echo "  ok: all features mirrored; every scenario key has a matching script"
+else
+    exit 1
+fi
 
 echo "STATIC SUITE PASSED"

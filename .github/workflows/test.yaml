@@ -39,3 +39,33 @@ jobs:
 
       - name: Per-feature container integration tests
         run: test/integration/run.sh
+
+  devcontainer-cli:
+    name: "devcontainer CLI features test (${{ matrix.name }})"
+    runs-on: ubuntu-latest
+    needs: static
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { name: llama-server }
+          - { name: gpu-bridge }
+          - { name: bifrost-gateway }
+          - { name: models }
+          - { name: opencode-agents }
+          - { name: full-stack, global: true }
+    steps:
+      - uses: actions/checkout@v7.0.1
+
+      - name: Install devcontainer CLI
+        run: npm install -g "@devcontainers/cli@0.89.0"
+
+      - name: Run features test
+        run: |
+          if [ "${{ matrix.global }}" = "true" ]; then
+            devcontainer features test --global-scenarios-only \
+              --base-image ubuntu:24.04 --remote-user vscode
+          else
+            devcontainer features test -f "${{ matrix.name }}" \
+              --base-image ubuntu:24.04 --remote-user vscode
+          fi

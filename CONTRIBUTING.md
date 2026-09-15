@@ -48,6 +48,26 @@ This repo is the extracted, standalone source of the feature collection. Product
    ```
 5. **Review the diff**, keep changes small and focused on one feature per PR.
 
+## Testing
+
+The repo is verified by three tiers:
+
+1. **Static checks** – `test/static/run-static.sh` (shellcheck, JSON schema, dash syntax)
+2. **Bats metadata suite** – `test/bats/metadata.bats`
+3. **devcontainer CLI features test** – `devcontainer features test` mirrors the repo layout
+
+   The devcontainer CLI test contract is:
+   * `test/<feature>/test.sh` must exist and be executable for every `src/<feature>`
+   * For each key in `test/<feature>/scenarios.json`, a script `test/<feature>/<key>.sh` must exist and be executable
+   * `test/_global/scenarios.json` + `test/_global/<key>.sh` validate cross-feature composition (the full-stack scenario)
+
+Run locally (requires devcontainer CLI ≥ 0.89.0):
+```bash
+devcontainer features test -f ./src/llama-server --base-image ubuntu:24.04 --remote-user vscode
+devcontainer features test --global-scenarios-only --base-image ubuntu:24.04 --remote-user vscode
+```
+CI runs the same matrix on every push/PR.
+
 ## Adding a New Feature
 
 1. Create `src/<feature-name>/` with:

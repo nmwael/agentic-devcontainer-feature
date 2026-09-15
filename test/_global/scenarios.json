@@ -1,0 +1,16 @@
+{
+    "full-stack": {
+        "image": "ubuntu:24.04",
+        "remoteUser": "vscode",
+        "features": {
+            "llama-server": {},
+            "gpu-bridge": {},
+            "bifrost-gateway": {},
+            "models": {},
+            "opencode-agents": {},
+            "ghcr.io/devcontainers-extra/features/apt-get-packages": {
+                "packages": "gh,jq,shfmt"
+            }
+        }
+    }
+}

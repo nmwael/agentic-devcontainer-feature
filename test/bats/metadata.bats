@@ -110,3 +110,46 @@ assert isinstance(data, dict) and "features" in data, "template devcontainer.jso
         "$REPO_ROOT"/scripts/*.sh \
         "$REPO_ROOT"/src/templates/llm-lab/test/test.sh
 }
+
+@test "every feature has a mirrored devcontainer-CLI test.sh" {
+    for feature in "${FEATURES[@]}"; do
+        [ -f "$REPO_ROOT/test/$feature/test.sh" ] || {
+            echo "missing test/$feature/test.sh (devcontainer features test contract)"
+            return 1
+        }
+        [ -x "$REPO_ROOT/test/$feature/test.sh" ] || {
+            echo "test/$feature/test.sh must be executable"
+            return 1
+        }
+    done
+    [ -f "$REPO_ROOT/test/_global/scenarios.json" ] || {
+        echo "missing test/_global/scenarios.json"
+        return 1
+    }
+    # Every key in a scenarios.json must have a matching <name>.sh (same dir).
+    for sf in "$REPO_ROOT"/test/*/scenarios.json "$REPO_ROOT"/test/_global/scenarios.json; do
+        [ -f "$sf" ] || continue
+        dir="$(dirname "$sf")"
+        for name in $(jq -r 'keys[]' "$sf"); do
+            [ -f "$dir/$name.sh" ] || {
+                echo "scenario '$name' in $sf has no matching $(basename "$dir")/$name.sh"
+                return 1
+            }
+        done
+    done
+}
+
+@test "devcontainer-CLI test scripts are dash-executable-bash and shellcheck-clean" {
+    local f
+    for f in "$REPO_ROOT"/test/*/*.sh "$REPO_ROOT"/test/_global/*.sh; do
+        [ -f "$f" ] || continue
+        bash -n "$f" || {
+            echo "bash syntax error in $f"
+            return 1
+        }
+        shellcheck -x -S warning "$f" || {
+            echo "shellcheck findings in $f"
+            return 1
+        }
+    done
+}

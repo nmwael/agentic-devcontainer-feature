@@ -34,3 +34,15 @@ jobs:
         run: devcontainer templates publish ./src/templates -r ghcr.io -n "${TEMPLATES_NAMESPACE}" --log-level info
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Smoke-test published llm-lab template
+        run: |
+          set -euo pipefail
+          TPL_VERSION="$(jq -r .version src/templates/llm-lab/devcontainer-template.json)"
+          SMOKE="$(mktemp -d)"
+          echo "Applying llm-lab template v${TPL_VERSION} into $SMOKE"
+          devcontainer templates apply -w "$SMOKE" \
+            --template-id "ghcr.io/${TEMPLATES_NAMESPACE}/llm-lab:${TPL_VERSION}" \
+            --log-level warning
+          echo "Building the generated dev container (validates templateOption rendering + feature resolution)"
+          devcontainer build --workspace-folder "$SMOKE" --log-level warning

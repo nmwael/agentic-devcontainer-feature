@@ -5,6 +5,11 @@ All notable changes to this project are documented in this file. The format is b
 ## [Unreleased]
 
 ### Added
+- **devcontainer CLI test tier** — `devcontainer features test` mirrors the repo layout (`test/<feature>/test.sh`, `duplicate.sh`, `scenarios.json` + per-scenario scripts, `_global` full-stack scenario) and is run in CI via a matrix job (llama-server, gpu-bridge, bifrost-gateway, models, opencode-agents, full-stack)
+- **Static guardrails** for the mirrored test suite: `run-static.sh` validates the test mirror contract (every feature has `test.sh`, every scenario key has a matching `.sh`) and shellcheck covers all `test/**.sh` scripts; `metadata.bats` enforces the contract.
+- **Template smoke in release** — after publishing `llm-lab`, CI applies the published template to a throwaway workspace and builds the generated dev container to validate option rendering and feature resolution.
+
+### Added
 - **Feature collection** (5 features, v0.x → 1.0.0 target):
   - `llama-server` — prebuilt llama.cpp server, OpenAI-compatible `/v1` API, CUDA support, idempotent install
   - `gpu-bridge` — WSL2 GPU driver symlink bridge with `/dev/dxg` verification on start

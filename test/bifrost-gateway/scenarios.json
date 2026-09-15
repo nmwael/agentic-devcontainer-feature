@@ -1,0 +1,10 @@
+{
+    "legacy-fallback": {
+        "image": "ubuntu:24.04",
+        "features": {
+            "bifrost-gateway": {
+                "LLAMA_PORT": "8091"
+            }
+        }
+    }
+}
