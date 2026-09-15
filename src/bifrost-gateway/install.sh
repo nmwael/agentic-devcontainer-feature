@@ -38,7 +38,7 @@ npm install --prefix "$BIFROST_DIR" "@maximhq/bifrost@$VERSION" 2>/dev/null || {
 }
 
 # Install the static launcher script start-bifrost from the feature root
-SCRIPT_SRC="$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)"
+SCRIPT_SRC="$(CDPATH='' cd -- "$(dirname -- "$0")" && pwd)"
 cp -f "$SCRIPT_SRC/start-bifrost.sh" "/usr/local/bin/start-bifrost"
 chmod 0755 "/usr/local/bin/start-bifrost"
 

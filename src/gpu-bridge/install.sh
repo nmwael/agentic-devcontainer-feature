@@ -41,7 +41,7 @@ echo "Running in WSL2 — installing GPU bridge..."
 # Copy ensure-bridge.sh from the feature root and run it
 FEATURE_DIR="/usr/local/share/llm-lab/gpu-bridge"
 mkdir -p "$FEATURE_DIR"
-SCRIPT_SRC="$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)"
+SCRIPT_SRC="$(CDPATH='' cd -- "$(dirname -- "$0")" && pwd)"
 cp -f "$SCRIPT_SRC/ensure-bridge.sh" "$FEATURE_DIR/ensure-bridge.sh"
 chmod 0755 "$FEATURE_DIR/ensure-bridge.sh"
 "$FEATURE_DIR/ensure-bridge.sh"

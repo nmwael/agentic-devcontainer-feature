@@ -4,7 +4,7 @@
 # POSIX sh only (dash) — no bash pattern-substitution expansions.
 set -e
 
-SCRIPT_DIR=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
+SCRIPT_DIR=$(CDPATH='' cd -- "$(dirname -- "$0")" && pwd)
 CFG="$SCRIPT_DIR/models.json"
 
 CFG_MODEL=""; CFG_QUANT=""; CFG_DIR=""

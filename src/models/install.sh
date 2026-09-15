@@ -34,7 +34,7 @@ if ! command -v jq >/dev/null 2>&1; then
     fi
 fi
 
-SCRIPT_SRC="$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)"
+SCRIPT_SRC="$(CDPATH='' cd -- "$(dirname -- "$0")" && pwd)"
 
 # Generate models.json from the JSON template via jq (values override template defaults)
 CONFIG_FILE="$FEATURE_MODELS_DIR/models.json"
