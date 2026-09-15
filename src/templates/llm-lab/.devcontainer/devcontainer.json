@@ -23,6 +23,7 @@
     "runArgs": [
         "--shm-size=2g"
     ],
+    "remoteUser": "root",
     "forwardPorts": [8082, 8089, 4096],
     "customizations": {
         "vscode": {
