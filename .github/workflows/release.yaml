@@ -35,6 +35,17 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Regenerate devcontainer lock file
+        run: |
+          # Regenerate lock file to pin newly published feature/template digests
+          devcontainer build --workspace-folder . --log-level info || true
+          # Optional: commit lock file changes back to repo (requires write permission)
+          # git config user.name "github-actions"
+          # git config user.email "github-actions@github.com"
+          # git add .devcontainer/devcontainer-lock.json
+          # git diff --quiet && git diff --staged --quiet || git commit -m "chore: update devcontainer lock file"
+          # git push
+
       - name: Smoke-test published llm-lab template
         run: |
           set -euo pipefail
