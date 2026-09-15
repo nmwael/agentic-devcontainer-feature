@@ -47,7 +47,7 @@
     grep -q '"subagent_depth"' "$fresh/opencode.json"
     grep -q '"enabled_providers"' "$fresh/opencode.json"
     grep -q '"local-gemma4-26b"' "$fresh/opencode.json"
-    grep -q '"4096"' "$fresh/opencode.json"
+    grep -q '"port": 4096' "$fresh/opencode.json"
     grep -q 'gemma4-26b-a4b-s0' "$fresh/opencode.json"
     rm -rf "$fresh"
 }

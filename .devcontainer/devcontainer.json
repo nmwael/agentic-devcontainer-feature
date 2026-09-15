@@ -12,7 +12,7 @@
         },
         "ghcr.io/devcontainers-extra/features/apt-get-packages": {
             "version": "1",
-            "packages": "gh,jq,shfmt"
+            "packages": "gh,jq,ripgrep,shfmt"
         }
     },
     "runArgs": [
