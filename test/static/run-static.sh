@@ -16,7 +16,7 @@ FEATURE_SCRIPTS=(
     src/models/fetch-models.sh
     src/bifrost-gateway/start-bifrost.sh
     src/gpu-bridge/ensure-bridge.sh
-    src/templates/llm-lab/test/test.sh
+    test/templates/llm-lab/test.sh
 )
 
 CHECK_SCRIPTS=(

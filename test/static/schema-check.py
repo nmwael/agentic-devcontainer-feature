@@ -103,9 +103,9 @@ def check_template(name, path):
     if not found:
         fail(f"{name}: no devcontainer.json at template root or .devcontainer/")
 
-    test_sh = os.path.join(path, "test", "test.sh")
+    test_sh = os.path.join(ROOT, "test", "templates", name, "test.sh")
     if not os.path.isfile(test_sh):
-        fail(f"{name}: test/test.sh missing")
+        fail(f"{name}: test/templates/{name}/test.sh missing")
     else:
         check_shebang(test_sh)
 

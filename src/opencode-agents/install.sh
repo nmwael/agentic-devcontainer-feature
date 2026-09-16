@@ -9,6 +9,17 @@ echo "Activating feature 'opencode-agents'"
 echo "The effective dev container remoteUser is '$_REMOTE_USER'"
 echo "The effective dev container containerUser is '$_CONTAINER_USER'"
 
+# The opencode CLI is provided by the ghcr.io/devcontainers-extra/features/opencode
+# feature (id 'opencode'), declared in the template's features block. This feature
+# only ships the agentic scaffold — it does NOT install the binary, so the
+# environment-variable 'VERSION' (the feature version tag) can never leak into the
+# official installer. If the CLI is genuinely absent, surface a clear pointer.
+if command -v opencode >/dev/null 2>&1; then
+    echo "opencode CLI present (provided by the opencode devcontainer feature): $(opencode --version 2>/dev/null || echo present)"
+else
+    echo "WARNING: opencode CLI not on PATH — add ghcr.io/devcontainers-extra/features/opencode to the features block (id 'opencode', version option 'latest')."
+fi
+
 OVERWRITE="${OVERWRITE:-false}"
 WITH_LIBRARY="${WITH_LIBRARY:-true}"
 INSTALL_DIR="${INSTALL_DIR:-/usr/local/share/opencode-agents}"
@@ -81,20 +92,15 @@ if ! command -v jq >/dev/null 2>&1; then
     fi
 fi
 
-# Install the opencode CLI itself (binary via the official installer).
-if ! command -v curl >/dev/null 2>&1 || ! command -v git >/dev/null 2>&1; then
-    apt-get install -y --no-install-recommends curl git >/dev/null 2>&1 ||
-        echo "WARNING: curl/git unavailable — CLI install needs curl; agent workflows need git"
-fi
+# opencode CLI is provided by the ghcr.io/devcontainers-extra/features/opencode
+# feature (id 'opencode', version option 'latest'), wired in the template's
+# features block. This feature ships ONLY the agentic scaffold — it does NOT
+# install the binary, so the environment-variable 'VERSION' (the feature
+# version tag) can never leak into the official installer's requested_version.
 if command -v opencode >/dev/null 2>&1; then
-    echo "opencode CLI already installed: $(opencode --version 2>/dev/null || echo present)"
+    echo "opencode CLI present (provided by the opencode devcontainer feature): $(opencode --version 2>/dev/null || echo present)"
 else
-    echo "Installing opencode CLI (official installer)..."
-    if curl -fsSL https://opencode.ai/install | bash; then
-        echo "opencode CLI installed: $(opencode --version 2>/dev/null || echo present)"
-    else
-        echo "WARNING: opencode CLI install failed — run 'curl -fsSL https://opencode.ai/install | bash' manually"
-    fi
+    echo "WARNING: opencode CLI not on PATH — add ghcr.io/devcontainers-extra/features/opencode to the features block (option version=latest)"
 fi
 
 # Copy opencode binary to /usr/local/bin so EVERY user sees it

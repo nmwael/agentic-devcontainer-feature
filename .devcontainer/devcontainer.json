@@ -13,15 +13,23 @@
         "ghcr.io/devcontainers-extra/features/apt-get-packages": {
             "version": "1",
             "packages": "gh,jq,ripgrep,shfmt,bats"
+        },
+        "ghcr.io/devcontainers/features/docker-in-docker:4": {
+            "moby": false
         }
     },
     "runArgs": [
         "--device=nvidia.com/gpu=all",
         "--shm-size=2g",
         "--cap-add=SYS_PTRACE",
-        "--security-opt=seccomp:unconfined"
+        "--security-opt=seccomp:unconfined",
+        "--privileged"
     ],
-    "forwardPorts": [8082, 8089, 4096],
+    "forwardPorts": [
+        8082,
+        8089,
+        4096
+    ],
     "customizations": {
         "vscode": {
             "extensions": [

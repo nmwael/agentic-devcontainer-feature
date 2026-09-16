@@ -102,13 +102,13 @@ import json, sys
 data = json.load(open(sys.argv[1]))
 assert isinstance(data, dict) and "features" in data, "template devcontainer.json must carry a features map"
 ' "$devcontainer_json"
-    [ -f "$tpl_root/test/test.sh" ] || return 1
+    [ -f "$REPO_ROOT/test/templates/llm-lab/test.sh" ] || return 1
 }
 
 @test "scripts/ and test harness shell scripts are shellcheck-clean" {
     shellcheck -x -S warning \
         "$REPO_ROOT"/scripts/*.sh \
-        "$REPO_ROOT"/src/templates/llm-lab/test/test.sh
+        "$REPO_ROOT"/test/templates/llm-lab/test.sh
 }
 
 @test "every feature has a mirrored devcontainer-CLI test.sh" {

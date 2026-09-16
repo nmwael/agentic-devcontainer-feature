@@ -15,11 +15,15 @@
             "version": "${templateOption:FEATURES_TAG}",
             "WITH_LIBRARY": "${templateOption:INCLUDE_LIBRARY}"
         },
+        "ghcr.io/devcontainers-extra/features/opencode": {
+            "version": "latest"
+        },
         "ghcr.io/devcontainers-extra/features/apt-get-packages": {
             "version": "1",
             "packages": "gh,jq,shfmt"
         }
     },
+    "postCreateCommand": "sh /usr/local/share/opencode-agents/scaffold.sh",
     "runArgs": [
         "--shm-size=2g"
     ],
