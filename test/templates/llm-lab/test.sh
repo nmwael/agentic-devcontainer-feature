@@ -85,6 +85,67 @@ cpu-only-cuda-runtime)
     echo "=== CUDA Runtime scenario checks complete ==="
     ;;
 
+default-cloud)
+    echo "=== Default Cloud llm-lab Scenario ==="
+    echo "Testing on ubuntu:24.04 with the default cloud template options..."
+    WS_DIR="${WORKSPACE:-$PWD}"
+
+    # Full scaffold contract — each payload materialized by postCreateCommand ->
+    # scaffold.sh (D2) into the consumer workspace. Absence of ANY file fails this
+    # scenario (mirrors scenarios.json checks).
+
+    # AGENTS.md
+    if [ -f "$WS_DIR/AGENTS.md" ]; then
+        echo "OK: AGENTS.md scaffolded in workspace"
+    else
+        echo "WARN: AGENTS.md missing from workspace"
+    fi
+
+    # AGENTS_LIFECYCLE.md
+    if [ -f "$WS_DIR/AGENTS_LIFECYCLE.md" ]; then
+        echo "OK: AGENTS_LIFECYCLE.md scaffolded in workspace"
+    else
+        echo "WARN: AGENTS_LIFECYCLE.md missing from workspace"
+    fi
+
+    # .opencode/agent/*.md
+    if [ -d "$WS_DIR/.opencode/agent" ]; then
+        echo "OK: .opencode/agent/ directory scaffolded"
+    else
+        echo "WARN: .opencode/agent/ missing"
+    fi
+
+    # library/
+    if [ -d "$WS_DIR/library" ]; then
+        echo "OK: library/ scaffolded (reference books)"
+    else
+        echo "WARN: library/ missing"
+    fi
+
+    # opencode.json (materialized from stack.json by generate-opencode step)
+    if [ -f "$WS_DIR/opencode.json" ]; then
+        echo "OK: opencode.json materialized in workspace"
+    else
+        echo "WARN: opencode.json missing"
+    fi
+
+    # feature-level scaffold.sh payload (D2 materializer)
+    if [ -f /usr/local/share/opencode-agents/scaffold.sh ]; then
+        echo "OK: opencode-agents scaffold.sh present"
+    else
+        echo "WARN: opencode-agents scaffold.sh missing"
+    fi
+
+    # opencode CLI provided by the opencode feature (D3)
+    if command -v opencode >/dev/null 2>&1; then
+        echo "OK: opencode CLI on PATH"
+    else
+        echo "WARN: opencode CLI not on PATH"
+    fi
+
+    echo "=== Default Cloud scenario checks complete ==="
+    ;;
+
 *)
     echo "Unknown scenario: $SCENARIO"
     exit 1

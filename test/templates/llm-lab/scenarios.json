@@ -37,6 +37,25 @@
                 "models fetch-models.sh script available",
                 "opencode-agents scaffold present"
             ]
+        },
+        {
+            "name": "default-cloud",
+            "description": "Default cloud scenario on ubuntu:24.04 — asserts the full scaffolded opencode-agents structure materializes in the consumer workspace",
+            "baseImage": "ubuntu:24.04",
+            "features": {
+                "llama-server": "1",
+                "gpu-bridge": "1",
+                "bifrost-gateway": "1",
+                "models": "1",
+                "opencode-agents": "1"
+            },
+            "checks": [
+                "llama-server installed",
+                "gpu-bridge operational",
+                "bifrost-gateway operational",
+                "models fetch-models.sh available",
+                "opencode-agents full scaffold structure present"
+            ]
         }
     ]
 }
