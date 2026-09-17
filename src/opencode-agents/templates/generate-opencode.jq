@@ -25,19 +25,19 @@
                         headers: { "x-bf-passthrough-extra-params": "true" }
                     },
                     models:
-                        ({ ($m.name): { name: ($m.name + " (unpinned fallback)"), limit: { context: $m.context } } }
+                        ({ ($m.name): { name: ($m.name + " (unpinned fallback)"), limit: { context: $m.context, output: ($m.output // $m.context) } } }
                          + (reduce range(0; $m.parallel) as $i ({};
                                . + { (($m.name) + "-s" + ($i | tostring)):
-                                         { name: ($m.name + " - Slot " + ($i | tostring)), limit: { context: $m.context } } })))
+                                         { name: ($m.name + " - Slot " + ($i | tostring)), limit: { context: $m.context, output: ($m.output // $m.context) } } })))
                 }
             }
         )
     ) + { opencode: { options: { setCacheKey: false } } }) as $providers
 | ((reduce $models[] as $m ([]; . + [$m.provider])) | unique | . + ["opencode"]) as $enabled
 | ((reduce ($roles | to_entries[]) as $e ({};
-          . + { ($e.key):
-                  ((first($models[] | select(.name == $e.value.model))).provider
-                   + "/" + $e.value.model + "-s" + ($e.value.slot | tostring)) }))) as $agent_map
+          . + { ($e.key): { model:
+                    ((first($models[] | select(.name == $e.value.model))).provider
+                     + "/" + $e.value.model + "-s" + ($e.value.slot | tostring)) } }))) as $agent_map
 | {
     "$schema": "https://opencode.ai/config.json",
     model: $primary_id,

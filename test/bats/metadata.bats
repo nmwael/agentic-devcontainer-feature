@@ -105,6 +105,18 @@ assert isinstance(data, dict) and "features" in data, "template devcontainer.jso
     [ -f "$REPO_ROOT/test/templates/llm-lab/test.sh" ] || return 1
 }
 
+@test "opencode-agents fragment: agents are objects and limit.output is present" {
+    frag="$REPO_ROOT/src/opencode-agents/templates/opencode.json.fragment"
+    jq -e '[ .agent[] | type ] | all(. == "object")' "$frag" >/dev/null || {
+        echo "opencode.json.fragment: every agent entry must be an object"
+        return 1
+    }
+    jq -e '[ .provider[].models[]? | .limit.output ] | all(.)' "$frag" >/dev/null || {
+        echo "opencode.json.fragment: every model must declare limit.output"
+        return 1
+    }
+}
+
 @test "scripts/ and test harness shell scripts are shellcheck-clean" {
     shellcheck -x -S warning \
         "$REPO_ROOT"/scripts/*.sh \

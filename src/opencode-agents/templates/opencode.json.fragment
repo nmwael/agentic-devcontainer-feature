@@ -13,12 +13,12 @@
         }
       },
       "models": {
-        "gemma4-26b-a4b":   { "name": "Gemma4 26B A4B (unpinned fallback)", "limit": { "context": 65536 } },
-        "gemma4-26b-a4b-s0": { "name": "Gemma4 26B A4B — Slot 0 (architect)", "limit": { "context": 65536 } },
-        "gemma4-26b-a4b-s1": { "name": "Gemma4 26B A4B — Slot 1 (coder)", "limit": { "context": 65536 } },
-        "gemma4-26b-a4b-s2": { "name": "Gemma4 26B A4B — Slot 2 (researcher)", "limit": { "context": 65536 } },
-        "gemma4-26b-a4b-s3": { "name": "Gemma4 26B A4B — Slot 3 (reviewer)", "limit": { "context": 65536 } },
-        "gemma4-26b-a4b-s4": { "name": "Gemma4 26B A4B — Slot 4 (build/ui/artist/ai-researcher)", "limit": { "context": 65536 } }
+        "gemma4-26b-a4b":   { "name": "Gemma4 26B A4B (unpinned fallback)", "limit": { "context": 65536, "output": 65536 } },
+        "gemma4-26b-a4b-s0": { "name": "Gemma4 26B A4B — Slot 0 (architect)", "limit": { "context": 65536, "output": 65536 } },
+        "gemma4-26b-a4b-s1": { "name": "Gemma4 26B A4B — Slot 1 (coder)", "limit": { "context": 65536, "output": 65536 } },
+        "gemma4-26b-a4b-s2": { "name": "Gemma4 26B A4B — Slot 2 (researcher)", "limit": { "context": 65536, "output": 65536 } },
+        "gemma4-26b-a4b-s3": { "name": "Gemma4 26B A4B — Slot 3 (reviewer)", "limit": { "context": 65536, "output": 65536 } },
+        "gemma4-26b-a4b-s4": { "name": "Gemma4 26B A4B — Slot 4 (build/ui/artist/ai-researcher)", "limit": { "context": 65536, "output": 65536 } }
       }
     },
     "opencode": {

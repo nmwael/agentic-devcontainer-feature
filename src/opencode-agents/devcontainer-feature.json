@@ -1,7 +1,7 @@
 {
     "name": "Opencode Agents",
     "id": "opencode-agents",
-    "version": "1.1.2",
+    "version": "1.1.3",
     "description": "Ships the complete primary agentic setup + library (AGENTS.md / AGENTS_LIFECYCLE.md, .opencode/agent/*.md, generic skills, library/ reference books). Consumer-extensible + opt-out via WITH_LIBRARY option.",
     "options": {
         "OVERWRITE": {
