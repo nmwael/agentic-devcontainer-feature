@@ -40,13 +40,16 @@
         },
         {
             "name": "default-cloud",
-            "description": "Default cloud scenario on ubuntu:24.04 — asserts the full scaffolded opencode-agents structure materializes in the consumer workspace",
+            "description": "Default cloud scenario on ubuntu:24.04 — CLOUD_MODE routes ALL agents to the hosted opencode provider; asserts the full scaffolded opencode-agents structure materializes in the consumer workspace",
             "baseImage": "ubuntu:24.04",
             "features": {
                 "llama-server": "1",
                 "gpu-bridge": "1",
                 "bifrost-gateway": "1",
-                "models": "1",
+                "models": {
+                    "version": "1",
+                    "CLOUD_MODE": "true"
+                },
                 "opencode-agents": "1"
             },
             "checks": [
@@ -54,7 +57,8 @@
                 "gpu-bridge operational",
                 "bifrost-gateway operational",
                 "models fetch-models.sh available",
-                "opencode-agents full scaffold structure present"
+                "opencode-agents full scaffold structure present",
+                "opencode.json pins every agent to opencode/* (cloud mode)"
             ]
         }
     ]

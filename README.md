@@ -20,6 +20,8 @@ This generates `.devcontainer/devcontainer.json` with:
 - `GPU_MODE` [wsl2, native, none]
 - `MODEL` [gemma-4-26B-A4B-it-UD-IQ2_M] — legacy single-model option
 - `MODELS` / `ROLES` — JSON multi-upstream overrides (N models served simultaneously, default = single-model `gemma4-26b-a4b`)
+- `CLOUD_MODE` [false] — GPU-less/cloud boxes: route ALL agents to the hosted `opencode` provider instead of local slots
+- `CLOUD_MODEL` [big-pickle] — hosted model id for the cloud role mapping (per-role override via `ROLES`)
 - `FEATURES_TAG` [1]
 - `INCLUDE_AGENTS` / `INCLUDE_MODELS` / `INCLUDE_LIBRARY` booleans
 - `runArgs` with `--device=nvidia.com/gpu=all`, forwardPorts
@@ -70,11 +72,20 @@ Plus `--device=nvidia.com/gpu=all` in `runArgs`.
 ### models
 - **Provides:** On-demand model fetch + the shared `stack.json` manifest (write once, consumed by bifrost, opencode-agents, auto-startup); weights are NEVER baked into image layers
 - **Installs:** `fetch-models.sh` (iterates `stack.json.models[]`) to `/usr/local/share/llm-lab/models/`, plus `stack.json` at `/usr/local/share/llm-lab/stack.json`
-- **Options:** `MODELS`/`ROLES` [JSON multi-upstream, schema-1], `BIFROST_PORT` [8082], `MODEL` [gemma-4-26B-A4B-it-UD-IQ2_M] / `QUANT` [IQ2_M] (legacy single-model), `MODELS_DIR` [default: $PWD/models]
-- **stack.json schema:** `models[] = { name, provider, hf, quant, port, context, parallel }`; each entry becomes its own llama-server, opencode provider, and bifrost upstream
+- **Options:** `MODELS`/`ROLES` [JSON multi-upstream, schema-1], `CLOUD_MODE` [false] / `CLOUD_MODEL` [big-pickle], `BIFROST_PORT` [8082], `MODEL` [gemma-4-26B-A4B-it-UD-IQ2_M] / `QUANT` [IQ2_M] (legacy single-model), `MODELS_DIR` [default: $PWD/models]
+- **stack.json schema:** `models[] = { name, provider, hf, quant, port, context, parallel }`; each entry becomes its own llama-server, opencode provider, and bifrost upstream. `cloud: true` writes an empty `models[]` (no local backends)
 - **fetch-models.sh:** Idempotent: skip if the target file already exists; `curl -L --retry 5 --continue-at -`
 - **MODELS_DIR:** Derived from workspace when unset (default `$PWD/models` → bind-mount friendly)
 - **Use case:** Download and cache GGUF models without bloating the image
+
+### Cloud mode (`CLOUD_MODE=true`)
+On GPU-less boxes (Codespaces, CI, laptops without an NVIDIA card) there is no llama-server, so the local slot pins in `opencode.json` would 404. `CLOUD_MODE=true` makes the whole agentic stack ride the hosted `opencode` provider instead:
+
+1. `models` writes `stack.json` with `cloud: true`, `cloud_provider: "opencode"`, an **empty** `models[]`, and roles mapping every agent to a hosted model id (default `CLOUD_MODEL`: `big-pickle`; override per-role via `ROLES` or `.devcontainer/llm-lab-roles.json`).
+2. `generate-opencode.jq` emits a cloud `opencode.json`: every `agent.<role>.model = opencode/<model>`, `enabled_providers = ["opencode"]`, **no** local bifrost providers.
+3. `auto-startup.sh` skips llama-server **and** bifrost (opencode serve + Tailscale still start).
+
+Precedence is deliberate: **explicit `MODELS` (or `.devcontainer/llm-lab-models.json`) always builds the local slot-pinned stack and wins over `CLOUD_MODE`** — "if models/roles are supplied, use those instead". Cloud roles only apply when no models are supplied.
 
 ### opencode-agents
 - **Provides:** Complete primary agentic setup + library (AGENTS.md / AGENTS_LIFECYCLE.md, `.opencode/agent/*.md`, library/ reference books)
@@ -85,7 +96,7 @@ Plus `--device=nvidia.com/gpu=all` in `runArgs`.
 - **Payload contents:** AGENTS.md + AGENTS_LIFECYCLE.md, `.opencode/agent/*.md` (7 role definitions), library/skills + library/ai-researcher (2 mini-books), release-it.mini.md, EXTENSIONS.md
 - **EXCLUDED:** domainbooks/, 3dprints/library/, repo-specific project_stack.md, boxforsine flows/SCAD, cad-validate/verify-pair skills
 - **Library Extensions Guide:** Documents how consumers can add books by dropping files into `library/<role>/` and registering in `library/README.md`'s consumer section; the shipped register is never overwritten once the consumer edits it (no-clobber guarantee)
-- **Config generation:** `generate-opencode.sh` + `generate-opencode.jq` emit `opencode.json` from `stack.json` — one provider per model (`provider.models[].name = <name>-s<slot>`, `limit.context` from the model `context` field), primary+subagents with role→slot pinning, permissions, compaction, `subagent_depth`; the bundled `opencode.json.fragment` is the no-manifest fallback
+- **Config generation:** `generate-opencode.sh` + `generate-opencode.jq` emit `opencode.json` from `stack.json` — local mode: one provider per model (`provider.models[].name = <name>-s<slot>`, `limit.context` from the model `context` field), primary+subagents with role→slot pinning; cloud mode (`stack.json.cloud=true`): every agent → `opencode/<model>`, no local providers; permissions, compaction, `subagent_depth`; the bundled `opencode.json.fragment` is the no-manifest fallback (local)
 - **Options:** `OVERWRITE` [false], `WITH_LIBRARY` [true], `INSTALL_DIR` [/usr/local/share/opencode-agents]
 - **Use case:** Full opencode agentic setup with behavioral HITL contract
 

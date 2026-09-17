@@ -1,8 +1,8 @@
 {
     "name": "On-Demand Models",
     "id": "models",
-    "version": "1.1.1",
-    "description": "ON-DEMAND multi-model config; weights (9-16 GB) are NEVER baked into image layers. Owns stack.json manifest (single source of truth for bifrost upstreams and opencode role->model mapping). Legacy single-model options MODEL/QUANT are deprecated in favor of MODELS.",
+    "version": "1.2.0",
+    "description": "ON-DEMAND multi-model config; weights (9-16 GB) are NEVER baked into image layers. Owns stack.json manifest (single source of truth for bifrost upstreams and opencode role->model mapping). CLOUD_MODE routes all agents to the hosted opencode provider instead of local slots. Legacy single-model options MODEL/QUANT are deprecated in favor of MODELS.",
     "options": {
         "MODELS": {
             "type": "string",
@@ -23,6 +23,16 @@
             "type": "string",
             "default": "",
             "description": "Custom directory for models; defaults to $PWD/models"
+        },
+        "CLOUD_MODE": {
+            "type": "boolean",
+            "default": false,
+            "description": "Route ALL agents to the hosted opencode provider (cloud) when no explicit MODELS/ROLES are supplied. Set true for GPU-less/cloud boxes. Explicit MODELS (or .devcontainer/llm-lab-models.json) always builds the local slot-pinned stack and wins over CLOUD_MODE."
+        },
+        "CLOUD_MODEL": {
+            "type": "string",
+            "default": "big-pickle",
+            "description": "Hosted opencode provider model id used by the default cloud role mapping (CLOUD_MODE=true, no ROLES supplied). Override per-role via ROLES or .devcontainer/llm-lab-roles.json."
         },
         "MODEL": {
             "type": "string",

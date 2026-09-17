@@ -129,6 +129,28 @@ default-cloud)
         echo "WARN: opencode.json missing"
     fi
 
+    # Cloud-mode pin contract: every agent must route to the hosted opencode
+    # provider (opencode/<model>), and the primary model must match.
+    if [ -f "$WS_DIR/opencode.json" ] && command -v jq >/dev/null 2>&1; then
+        CLOUD_BAD=0
+        for agent in architect coder researcher reviewer build ui artist ai-researcher; do
+            m="$(jq -r ".agent.$agent.model // empty" "$WS_DIR/opencode.json" 2>/dev/null)"
+            case "$m" in
+                opencode/*) echo "OK: agent $agent -> $m" ;;
+                "") echo "WARN: agent $agent has no model pin in opencode.json" ;;
+                *) echo "FAIL: agent $agent -> $m (expected opencode/* in cloud mode)"; CLOUD_BAD=1 ;;
+            esac
+        done
+        [ "$CLOUD_BAD" -eq 0 ] || exit 1
+        PRIMARY="$(jq -r '.model // empty' "$WS_DIR/opencode.json" 2>/dev/null)"
+        case "$PRIMARY" in
+            opencode/*) echo "OK: primary model $PRIMARY (cloud)" ;;
+            *) echo "FAIL: primary model '$PRIMARY' is not opencode/* (cloud mode)"; exit 1 ;;
+        esac
+    else
+        echo "WARN: cannot assert cloud agent pins (opencode.json and/or jq missing)"
+    fi
+
     # feature-level scaffold.sh payload (D2 materializer)
     if [ -f /usr/local/share/opencode-agents/scaffold.sh ]; then
         echo "OK: opencode-agents scaffold.sh present"

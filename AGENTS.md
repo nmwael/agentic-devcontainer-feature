@@ -30,7 +30,7 @@ Design-flow reference: [`SELF_DISCOVERING_FLOWS.md`](SELF_DISCOVERING_FLOWS.md) 
 
 ## Things that are NOT here (by design)
 
-- No cloud API keys / no Anthropic / no OpenAI. Local-only.
+- No cloud API keys / no Anthropic / no OpenAI by default. Local-only unless the box is booted in cloud mode: `CLOUD_MODE=true` (models feature + `stack.json.cloud=true`) routes every agent to the hosted `opencode` provider (`opencode/<model>` pins) and skips llama/bifrost — the only cloud path for the whole agentic stack. Explicit `MODELS`/`ROLES` always build the local stack instead.
 - No web search (`websearch`) — opencode gates that tool behind the hosted `opencode` provider or `OPENCODE_ENABLE_EXA=1` (Exa cloud, no API key); deliberately not enabled here. Agents use `webfetch` for web content instead.
 - No downloaded models in the image — they live in the bind-mounted workspace so rebuilds are fast and you can swap models without rebuilding.
 - No automatic server start on container boot. Launching the model server is intentional (`bash scripts/auto-startup.sh`) so it doesn't block development between model swaps.

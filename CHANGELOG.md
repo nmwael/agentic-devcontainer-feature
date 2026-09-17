@@ -5,6 +5,12 @@ All notable changes to this project are documented in this file. The format is b
 ## [Unreleased]
 
 ### Added
+- **Cloud mode for the whole agentic stack** — `CLOUD_MODE=true` makes every opencode agent ride the hosted `opencode` provider on GPU-less/cloud boxes:
+  - **`models` 1.2.0** — new `CLOUD_MODE` (boolean) + `CLOUD_MODEL` (default `big-pickle`) options. With `CLOUD_MODE=true` and no explicit `MODELS`, writes a cloud-only `stack.json` (`cloud: true`, `cloud_provider: "opencode"`, empty `models[]`, every role carrying a hosted model id). Explicit `MODELS`/`ROLES` (or `.devcontainer/llm-lab-{models,roles}.json`) always win and force the local slot-pinned stack. Local mode adds `cloud: false` to the manifest.
+  - **`opencode-agents` 1.2.0** — `generate-opencode.jq` cloud branch: every `agent.<role>.model = opencode/<model>`, `model`/`small_model` from the `build` role, `enabled_providers = ["opencode"]`, no local bifrost providers, no `limit` (hosted defaults). Local generation is byte-identical to 1.1.3.
+  - **`scripts/auto-startup.sh`** — honors `stack.json.cloud=true`: skips llama-server AND bifrost; opencode serve + Tailscale still start (`SKIP_LLAMA_START` unchanged).
+  - **`llm-lab` template 1.2.0** — `CLOUD_MODE`/`CLOUD_MODEL` passthrough options; repo `.devcontainer` passes `CLOUD_MODE`/`CLOUD_MODEL` via `containerEnv`.
+  - **Tests** — models `cloud-mode` + `cloud-mode-explicit-models-wins` scenarios, template `default-cloud` asserts every agent pin starts with `opencode/`, integration bats covers the cloud generator output.
 - **devcontainer CLI test tier** — `devcontainer features test` mirrors the repo layout (`test/<feature>/test.sh`, `duplicate.sh`, `scenarios.json` + per-scenario scripts, `_global` full-stack scenario) and is run in CI via a matrix job (llama-server, gpu-bridge, bifrost-gateway, models, opencode-agents, full-stack)
 - **Static guardrails** for the mirrored test suite: `run-static.sh` validates the test mirror contract (every feature has `test.sh`, every scenario key has a matching `.sh`) and shellcheck covers all `test/**.sh` scripts; `metadata.bats` enforces the contract.
 - **Template smoke in release** — after publishing `llm-lab`, CI applies the published template to a throwaway workspace and builds the generated dev container to validate option rendering and feature resolution.

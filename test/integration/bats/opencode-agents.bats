@@ -116,6 +116,44 @@ PY
     rm -f "$stack" "$out"
 }
 
+@test "generate-opencode.sh cloud mode routes every agent to opencode/* and omits local providers" {
+    stack=$(mktemp)
+    out=$(mktemp --suffix=.json)
+    python3 - <<'PY' >"$stack"
+import json
+print(json.dumps({
+    "schema": 1,
+    "models_dir": "/models",
+    "bifrost_port": 8082,
+    "opencode_port": 4096,
+    "subagent_depth": 2,
+    "cloud": True,
+    "cloud_provider": "opencode",
+    "models": [],
+    "roles": {
+        "architect": {"model": "big-pickle", "slot": 0},
+        "coder":     {"model": "big-pickle", "slot": 0},
+        "researcher": {"model": "big-pickle", "slot": 0},
+        "reviewer":  {"model": "big-pickle", "slot": 0},
+        "build":     {"model": "big-pickle", "slot": 0},
+        "ui":        {"model": "big-pickle", "slot": 0},
+        "artist":    {"model": "big-pickle", "slot": 0},
+        "ai-researcher": {"model": "big-pickle", "slot": 0}
+    }
+}))
+PY
+    run /usr/local/share/opencode-agents/generate-opencode.sh "$stack" "$out"
+    [ "$status" -eq 0 ]
+    python3 -m json.tool "$out" >/dev/null
+    [ "$(jq -r '.model' "$out")" = "opencode/big-pickle" ]
+    [ "$(jq -r '.small_model' "$out")" = "opencode/big-pickle" ]
+    [ "$(jq '[.enabled_providers[]] | length' "$out")" -eq 1 ]
+    [ "$(jq -r '.enabled_providers[0]' "$out")" = "opencode" ]
+    [ "$(jq '.provider | has("local-gemma4-26b")' "$out")" = "false" ]
+    jq -e '.agent | to_entries | all(.value.model | startswith("opencode/"))' "$out" >/dev/null
+    rm -f "$stack" "$out"
+}
+
 @test "scaffold.sh generates from stack.json when present (fragment when absent)" {
     stack=$(mktemp)
     python3 -c "import json; json.dump({'bifrost_port':8082,'opencode_port':4096,'subagent_depth':2,'models':[{'name':'gemma4-26b-a4b','provider':'local-gemma4-26b','hf':'gemma-4-26B-A4B-it-UD-IQ2_M','quant':'IQ2_M','port':8089,'context':65536,'parallel':5}],'roles':{'build':{'model':'gemma4-26b-a4b','slot':4}}}, open('$stack','w'))"

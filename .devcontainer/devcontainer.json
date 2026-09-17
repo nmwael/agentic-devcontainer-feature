@@ -48,7 +48,9 @@
         "TS_AUTHKEY": "${localEnv:TS_AUTHKEY}",
         "GOOGLE_API_KEY": "${localEnv:GOOGLE_API_KEY}",
         "NVIDIA_API_KEY": "${localEnv:NVIDIA_API_KEY}",
-        "SKIP_LLAMA_START": "${localEnv:SKIP_LLAMA_START}"
+        "SKIP_LLAMA_START": "${localEnv:SKIP_LLAMA_START}",
+        "CLOUD_MODE": "${localEnv:CLOUD_MODE}",
+        "CLOUD_MODEL": "${localEnv:CLOUD_MODEL}"
     },
     "postCreateCommand": "bash scripts/post-create.sh",
     "postStartCommand": "bash scripts/auto-startup.sh"

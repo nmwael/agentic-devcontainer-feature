@@ -7,5 +7,23 @@
                 "ROLES": "{\"architect\":{\"model\":\"e5-26b\",\"slot\":0},\"coder\":{\"model\":\"gemma4-9b\",\"slot\":1},\"build\":{\"model\":\"e5-26b\",\"slot\":1}}"
             }
         }
+    },
+    "cloud-mode": {
+        "image": "ubuntu:24.04",
+        "features": {
+            "models": {
+                "CLOUD_MODE": "true"
+            }
+        }
+    },
+    "cloud-mode-explicit-models-wins": {
+        "image": "ubuntu:24.04",
+        "features": {
+            "models": {
+                "CLOUD_MODE": "true",
+                "MODELS": "[{\"name\":\"e5-26b\",\"provider\":\"local-e5-26b\",\"hf\":\"Qwen/Qwen3-26B\",\"quant\":\"Q4_K_M\",\"port\":18081,\"context\":65536,\"parallel\":2}]",
+                "ROLES": "{\"architect\":{\"model\":\"e5-26b\",\"slot\":0},\"build\":{\"model\":\"e5-26b\",\"slot\":1}}"
+            }
+        }
     }
 }

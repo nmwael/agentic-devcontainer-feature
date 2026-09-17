@@ -55,6 +55,14 @@ fi
 MODELS_DIR="${MODELS_DIR:-$PWD/models}"
 STACK_JSON="${STACK_JSON:-/usr/local/share/llm-lab/stack.json}"
 
+# Cloud mode (stack.json.cloud=true) means no local backends at all: skip
+# llama-server AND bifrost. Everything still runs (opencode serve, tailscale)
+# and agents route to the hosted opencode provider.
+CLOUD_STACK=false
+if [ -f "$STACK_JSON" ] && command -v jq >/dev/null 2>&1; then
+    CLOUD_STACK="$(jq -r '.cloud // false' "$STACK_JSON")"
+fi
+
 start_llama_server() {
     local model_file="$1" port="$2" ctx="$3" label="$4" alias="$5" parallel="$6"
     if [ -z "$model_file" ] || ! command -v llama-server >/dev/null 2>&1; then
@@ -87,6 +95,8 @@ start_llama_server() {
 
 if [ -n "${SKIP_LLAMA_START:-}" ]; then
     echo "[auto-startup] SKIP_LLAMA_START set — skipping llama-server"
+elif [ "$CLOUD_STACK" = "true" ]; then
+    echo "[auto-startup] cloud mode (stack.json.cloud=true) — skipping llama-server"
 elif [ -f "$STACK_JSON" ] && command -v jq >/dev/null 2>&1; then
     model_count=$(jq '.models | length' "$STACK_JSON")
     echo "[auto-startup] stack.json present — starting $model_count llama-server(s)"
@@ -129,7 +139,9 @@ BIFROST_PORT="${BIFROST_PORT:-8082}"
 if [ -f "$STACK_JSON" ] && command -v jq >/dev/null 2>&1; then
     BIFROST_PORT=$(jq -r '.bifrost_port // 8082' "$STACK_JSON")
 fi
-if command -v start-bifrost >/dev/null 2>&1; then
+if [ "$CLOUD_STACK" = "true" ]; then
+    echo "[auto-startup] cloud mode — skipping bifrost (no local upstreams)"
+elif command -v start-bifrost >/dev/null 2>&1; then
     if curl -sf -o /dev/null --max-time 2 "http://127.0.0.1:$BIFROST_PORT/"; then
         echo "[auto-startup] bifrost already up on :$BIFROST_PORT"
     else

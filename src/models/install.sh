@@ -16,10 +16,16 @@ DEFAULT_ROLES='{"architect":{"model":"gemma4-26b-a4b","slot":0},"coder":{"model"
 
 MODELS="${MODELS:-}"
 ROLES="${ROLES:-}"
+CLOUD_MODE="${CLOUD_MODE:-false}"
+CLOUD_MODEL="${CLOUD_MODEL:-big-pickle}"
 MODELS_DIR="${MODELS_DIR:-}"
 BIFROST_PORT="${BIFROST_PORT:-8082}"
 OPENCODE_PORT="${OPENCODE_PORT:-4096}"
 SUBAGENT_DEPTH="${SUBAGENT_DEPTH:-2}"
+
+# Default cloud role mapping: every agent routes to the hosted opencode provider
+# (roles.model = hosted model id; slot is unused by the opencode generator).
+DEFAULT_CLOUD_ROLES="{\"architect\":{\"model\":\"$CLOUD_MODEL\",\"slot\":0},\"coder\":{\"model\":\"$CLOUD_MODEL\",\"slot\":0},\"researcher\":{\"model\":\"$CLOUD_MODEL\",\"slot\":0},\"reviewer\":{\"model\":\"$CLOUD_MODEL\",\"slot\":0},\"build\":{\"model\":\"$CLOUD_MODEL\",\"slot\":0},\"ui\":{\"model\":\"$CLOUD_MODEL\",\"slot\":0},\"artist\":{\"model\":\"$CLOUD_MODEL\",\"slot\":0},\"ai-researcher\":{\"model\":\"$CLOUD_MODEL\",\"slot\":0}}"
 
 # Consumer-friendly file overrides — real JSON files, zero shell quoting required.
 # Precedence: option env var > $PWD/.devcontainer/llm-lab-{models,roles}.json > defaults.
@@ -32,11 +38,30 @@ if [ -z "$ROLES" ] && [ -f "$PWD/.devcontainer/llm-lab-roles.json" ]; then
     echo "ROLES loaded from $PWD/.devcontainer/llm-lab-roles.json"
 fi
 
+CLOUD_ON=false
+if [ "$(printf '%s' "$CLOUD_MODE" | tr '[:upper:]' '[:lower:]')" = "true" ] || [ "$CLOUD_MODE" = "1" ]; then
+    CLOUD_ON=true
+fi
+
+# Mode selection. Explicit MODELS (option or llm-lab-models.json) ALWAYS builds
+# the local slot-pinned stack and wins over CLOUD_MODE ("if models are supplied,
+# use those instead"). Cloud mode = CLOUD_MODE=true with no explicit models; ROLES
+# (option or llm-lab-roles.json) then supplies per-role hosted model ids.
+MODE=local
+if [ -z "$MODELS" ] && [ "$CLOUD_ON" = "true" ]; then
+    MODE=cloud
+    MODELS='[]'
+    echo "CLOUD_MODE=true with no explicit MODELS — writing cloud-only stack (all agents -> hosted opencode provider, default model $CLOUD_MODEL)"
+fi
 if [ -z "$MODELS" ]; then
     MODELS="$DEFAULT_MODELS"
 fi
 if [ -z "$ROLES" ]; then
-    ROLES="$DEFAULT_ROLES"
+    if [ "$MODE" = "cloud" ]; then
+        ROLES="$DEFAULT_CLOUD_ROLES"
+    else
+        ROLES="$DEFAULT_ROLES"
+    fi
 fi
 
 # jq provisioning — needed to materialize stack.json (the shared multi-model manifest).
@@ -66,42 +91,75 @@ if command -v jq >/dev/null 2>&1; then
     if ! printf '%s' "$MODELS" | jq -e . >/dev/null 2>&1; then
         echo "WARNING: invalid MODELS JSON — using default single-model stack"
         MODELS="$DEFAULT_MODELS"
+        MODE=local
     fi
     if ! printf '%s' "$ROLES" | jq -e . >/dev/null 2>&1; then
         echo "WARNING: invalid ROLES JSON — using default role mapping"
-        ROLES="$DEFAULT_ROLES"
+        if [ "$MODE" = "cloud" ]; then ROLES="$DEFAULT_CLOUD_ROLES"; else ROLES="$DEFAULT_ROLES"; fi
     fi
 
-    # Integrity: >=1 model, every role references an existing model, slot < its parallel slot count.
-    if ! jq -e -n --argjson m "$(printf '%s' "$MODELS" | jq -c .)" --argjson r "$(printf '%s' "$ROLES" | jq -c .)" \
-        '($m | length) > 0 and
-         all($r[];
-             .model as $rm |
-             (any($m[]; .name == $rm))
-             and ((first($m[] | select(.name == $rm))).parallel) > .slot)' \
-        >/dev/null 2>&1; then
-        echo "WARNING: MODELS/ROLES fail integrity (role must reference an existing model, slot < parallel) — using defaults"
-        MODELS="$DEFAULT_MODELS"
-        ROLES="$DEFAULT_ROLES"
+    if [ "$MODE" = "cloud" ]; then
+        # Cloud integrity: >=1 role, every role carries a non-empty hosted model id.
+        if ! jq -e -n --argjson r "$(printf '%s' "$ROLES" | jq -c .)" \
+            '($r | length) > 0 and
+             all($r[];
+                 (.model | type) == "string" and (.model | length) > 0)' \
+            >/dev/null 2>&1; then
+            echo "WARNING: cloud ROLES entries must carry a non-empty 'model' (hosted opencode id) — using cloud default"
+            ROLES="$DEFAULT_CLOUD_ROLES"
+        fi
+    else
+        # Local integrity: >=1 model, every role references an existing model, slot < its parallel slot count.
+        if ! jq -e -n --argjson m "$(printf '%s' "$MODELS" | jq -c .)" --argjson r "$(printf '%s' "$ROLES" | jq -c .)" \
+            '($m | length) > 0 and
+             all($r[];
+                 .model as $rm |
+                 (any($m[]; .name == $rm))
+                 and ((first($m[] | select(.name == $rm))).parallel) > .slot)' \
+            >/dev/null 2>&1; then
+            echo "WARNING: MODELS/ROLES fail integrity (role must reference an existing model, slot < parallel) — using defaults"
+            MODELS="$DEFAULT_MODELS"
+            ROLES="$DEFAULT_ROLES"
+        fi
     fi
 
     MODELS_NORM="$(printf '%s' "$MODELS" | jq -c .)"
     ROLES_NORM="$(printf '%s' "$ROLES" | jq -c .)"
 
     # Write the shared manifest — single source of truth for bifrost + opencode + auto-startup.
-    jq -n --argjson m "$MODELS_NORM" --argjson r "$ROLES_NORM" \
-        --arg md "$MODELS_DIR" --arg bp "$BIFROST_PORT" --arg op "$OPENCODE_PORT" --arg sd "$SUBAGENT_DEPTH" \
-        '{
-            schema: 1,
-            notation: "roles -> (model, slot); model id = provider/name[-s{slot}]",
-            models_dir: $md,
-            bifrost_port: ($bp | tonumber),
-            opencode_port: ($op | tonumber),
-            subagent_depth: ($sd | tonumber),
-            models: $m,
-            roles: $r
-        }' >"$STACK_FILE"
-    echo "Shared manifest written to $STACK_FILE"
+    if [ "$MODE" = "cloud" ]; then
+        jq -n --argjson r "$ROLES_NORM" \
+            --arg md "$MODELS_DIR" --arg bp "$BIFROST_PORT" --arg op "$OPENCODE_PORT" --arg sd "$SUBAGENT_DEPTH" \
+            '{
+                schema: 1,
+                notation: "cloud mode: roles.model = hosted opencode provider model id (slots unused)",
+                models_dir: $md,
+                bifrost_port: ($bp | tonumber),
+                opencode_port: ($op | tonumber),
+                subagent_depth: ($sd | tonumber),
+                cloud: true,
+                cloud_provider: "opencode",
+                models: [],
+                roles: $r
+            }' >"$STACK_FILE"
+        echo "Cloud-only shared manifest written to $STACK_FILE (all agents -> hosted opencode provider)"
+    else
+        jq -n --argjson m "$MODELS_NORM" --argjson r "$ROLES_NORM" \
+            --arg md "$MODELS_DIR" --arg bp "$BIFROST_PORT" --arg op "$OPENCODE_PORT" --arg sd "$SUBAGENT_DEPTH" \
+            '{
+                schema: 1,
+                notation: "roles -> (model, slot); model id = provider/name[-s{slot}]",
+                models_dir: $md,
+                bifrost_port: ($bp | tonumber),
+                opencode_port: ($op | tonumber),
+                subagent_depth: ($sd | tonumber),
+                cloud: false,
+                cloud_provider: "opencode",
+                models: $m,
+                roles: $r
+            }' >"$STACK_FILE"
+        echo "Shared manifest written to $STACK_FILE"
+    fi
 
     # Back-compat mirror: models.json reflects the FIRST model only (legacy fetch path).
     FIRST_HF="$(printf '%s' "$MODELS_NORM" | jq -r '.[0].hf // empty')"

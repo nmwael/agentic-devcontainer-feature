@@ -1,8 +1,8 @@
 {
     "id": "llm-lab",
-    "version": "1.1.2",
+    "version": "1.2.0",
     "name": "llm-lab",
-    "description": "Local LLM lab devcontainer template \u2014 generates full agentic setup with features, GPU bridge, bifrost, models, and opencode agents.",
+    "description": "Local LLM lab devcontainer template \u2014 generates full agentic setup with features, GPU bridge, bifrost, models, and opencode agents. CLOUD_MODE routes all agents to the hosted opencode provider.",
     "documentationURL": "https://github.com/nmwael/agentic-devcontainer-feature/tree/main/src/templates/llm-lab",
     "publisher": "nmwael",
     "schemaVersion": 1,
@@ -34,6 +34,16 @@
             "type": "string",
             "default": "",
             "description": "JSON object mapping agent role -> {model, slot} across the MODELS. Empty = default 8-role mapping onto the first model."
+        },
+        "CLOUD_MODE": {
+            "type": "boolean",
+            "default": false,
+            "description": "Route ALL agents to the hosted opencode provider (cloud) instead of local slots. Requires CLOUD_MODEL below; explicit MODELS/ROLES always win over cloud mode."
+        },
+        "CLOUD_MODEL": {
+            "type": "string",
+            "default": "big-pickle",
+            "description": "Hosted opencode provider model id used for cloud mode (default role <-> cloud model mapping). Override per-role with ROLES."
         },
         "FEATURES_TAG": {
             "type": "string",
