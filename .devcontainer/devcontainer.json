@@ -7,6 +7,9 @@
         "ghcr.io/nmwael/agentic-devcontainer-feature/bifrost-gateway": "1",
         "ghcr.io/nmwael/agentic-devcontainer-feature/models": "1",
         "ghcr.io/nmwael/agentic-devcontainer-feature/opencode-agents": "1",
+        "ghcr.io/devcontainers-extra/features/opencode": {
+            "version": "latest"
+        },
         "ghcr.io/tailscale/codespace/tailscale": {
             "version": "latest"
         },
