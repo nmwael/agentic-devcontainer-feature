@@ -53,6 +53,7 @@
     },
     "containerEnv": {
         "TS_AUTHKEY": "${localEnv:TS_AUTHKEY}",
+        "TS_HOSTNAME": "${localEnv:TS_HOSTNAME}",
         "GOOGLE_API_KEY": "${localEnv:GOOGLE_API_KEY}",
         "NVIDIA_API_KEY": "${localEnv:NVIDIA_API_KEY}",
         "SKIP_LLAMA_START": "${localEnv:SKIP_LLAMA_START}",

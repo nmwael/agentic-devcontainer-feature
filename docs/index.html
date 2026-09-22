@@ -378,6 +378,7 @@
                 <span class="badge">Tailscale Ready</span>
             </div>
             <p class="hero-summary">Add one <code>features</code> block to any repo and you get a complete local-LLM developer box: a prebuilt CUDA llama-server, on-demand GGUF model fetch, a multi-upstream OpenAI-compatible gateway, and a full multi-agent coding setup with human approval — all wired to a single <code>stack.json</code> manifest and reachable from any device over Tailscale. No cloud APIs required, no baked-in weights: everything runs and downloads locally.</p>
+            <p class="hero-summary">In plain words: this gives you a private, always-on LLM box you can talk to — from your desk or your phone — reachable only over your own Tailscale VPN, and spinning up another one (with different models, or a fresh agent setup) is one <code>features</code> block in any repo.</p>
         </header>
 
         <nav class="page-nav" aria-label="Page sections — details deepen as you scroll">
@@ -403,6 +404,14 @@
         <div class="section">
             <h2 id="what-you-get">What You Get</h2>
             <p class="lead">Spin up a complete local-LLM developer environment in any repo — a single <code>features</code> block provisions the whole box:</p>
+            <p class="lead">Here's what that adds up to in plain English:</p>
+            <ul>
+                <li><strong>It's a private LLM box.</strong> llama.cpp serves your models as a standard OpenAI-compatible <code>/v1</code> API (<code>:8089</code>); the bifrost gateway exposes every loaded model through one endpoint (<code>:8082</code>), so any LLM app or client can use them.</li>
+                <li><strong>Talk to it from your phone.</strong> opencode serves a chat UI on <code>:4096</code> you can open in any browser — from your desk or the train.</li>
+                <li><strong>Private by VPN, not by hiding.</strong> On boot the box auto-joins your Tailscale tailnet (node <code>llm-lab</code> via <code>TS_AUTHKEY</code>), so only your own devices can reach it — no public port exposure.</li>
+                <li><strong>New model, no rebuild.</strong> Models are declared in <code>stack.json</code> and fetched on-demand at first start; swap or add a model (<code>MODELS</code> or <code>stack.json</code>), or spin up a fresh box with different models, by editing a manifest — never the image.</li>
+                <li><strong>Agent setup in minutes.</strong> <code>opencode-agents</code> drops in the CLI, role agents, and the HITL library books; copy the same <code>features</code> block into another repo to recreate the exact setup.</li>
+            </ul>
             <div class="features-grid">
                 <div class="feature-card">
                     <svg class="feature-icon" viewBox="0 0 24 24" fill="currentColor">
@@ -527,7 +536,7 @@
                 </div>
                 <div class="tailscale-step">
                     <h4>2. Connect Tailscale</h4>
-                    <p>Nothing to run — set <code>TS_AUTHKEY</code> in <code>containerEnv</code> (see <a href="#quick-start">Quick Start</a>) and auto-startup runs <code>tailscale up --authkey=…</code> on every container start, joining your tailnet automatically.</p>
+                    <p>Nothing to run — set <code>TS_AUTHKEY</code> in <code>containerEnv</code> (see <a href="#quick-start">Quick Start</a>) and auto-startup runs <code>tailscale up --authkey=…</code> on every container start, joining your tailnet automatically. Running several boxes? Give each a distinct <code>TS_HOSTNAME</code> (default <code>llm-lab</code>) so their tailnet node names never collide.</p>
                 </div>
                 <div class="tailscale-step">
                     <h4>3. Find your IP</h4>
@@ -606,7 +615,7 @@
         }
     }
 }</code>
-            <p>Notes: <code>--device=nvidia.com/gpu=all</code> targets native Linux <em>and</em> WSL2 GPU modes. Set <code>TS_AUTHKEY</code> as a local env var to auto-join your Tailscale tailnet (see <a href="#work-from-anywhere">Work From Anywhere above</a>). The official <code>ghcr.io/tailscale/codespace/tailscale</code> feature adds the VPN; <code>containerEnv: TS_AUTHKEY</code> makes it join automatically on every start. Omit <code>containerEnv</code>/<code>customizations</code> for the minimal lab. For the pre-built <code>vscode</code> user + sudo + python3.12, apply the <code>llm-lab</code> template instead (it ships a Dockerfile variant).</p>
+            <p>Notes: <code>--device=nvidia.com/gpu=all</code> targets native Linux <em>and</em> WSL2 GPU modes. Set <code>TS_AUTHKEY</code> as a local env var to auto-join your Tailscale tailnet (see <a href="#work-from-anywhere">Work From Anywhere above</a>); set <code>TS_HOSTNAME</code> to a unique name per box if you run several devcontainers (default <code>llm-lab</code>). The official <code>ghcr.io/tailscale/codespace/tailscale</code> feature adds the VPN; <code>containerEnv: TS_AUTHKEY</code> makes it join automatically on every start. Omit <code>containerEnv</code>/<code>customizations</code> for the minimal lab. For the pre-built <code>vscode</code> user + sudo + python3.12, apply the <code>llm-lab</code> template instead (it ships a Dockerfile variant).</p>
 
             <h4>Configuration reference</h4>
             <p>Every option the features expose. Defaults are what you get from the pinned versions above — pass an object to override, e.g. <code>"ghcr.io/.../llama-server": { "version": "b10360", "cudaArchs": "80;86;89;90;120" }</code>. The <code>"1"</code> major tag always tracks the latest of the 1.x line.</p>
@@ -660,7 +669,7 @@
             <table class="reference">
                 <tr><th>Variable</th><th>Example</th><th>Description</th></tr>
                 <tr><td>TS_AUTHKEY</td><td>${localEnv:TS_AUTHKEY}</td><td>Tailscale auth key — auto-joins your tailnet on boot (pair with the <a href="#work-from-anywhere">Work From Anywhere</a> setup).</td></tr>
-                <tr><td>TS_HOSTNAME</td><td>llm-lab</td><td>Tailscale node name — the box appears as <code>llm-lab</code> on your tailnet (set to override).</td></tr>
+                <tr><td>TS_HOSTNAME</td><td>${localEnv:TS_HOSTNAME} → llm-lab</td><td>Tailscale node name — the box appears as <code>llm-lab</code> on your tailnet. Set a unique value per box (e.g. <code>llm-lab-b</code>) when running multiple devcontainers to keep tailnet names distinct.</td></tr>
                 <tr><td>GOOGLE_API_KEY</td><td>${localEnv:GOOGLE_API_KEY}</td><td>Google (Gemini) API key for the AI provider tier.</td></tr>
                 <tr><td>NVIDIA_API_KEY</td><td>${localEnv:NVIDIA_API_KEY}</td><td>NVIDIA API key if you use NVIDIA-hosted model endpoints.</td></tr>
                 <tr><td>SKIP_LLAMA_START</td><td>${localEnv:SKIP_LLAMA_START}</td><td>Set true to skip auto-starting llama-server — bring your own model server.</td></tr>

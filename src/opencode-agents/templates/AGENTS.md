@@ -101,6 +101,11 @@ Agents can run in parallel when their work is independent (e.g., two unrelated c
 - If the task requires an explicit Human-in-the-Loop (HITL) approval (e.g., the Architect's plan before code modification), the agent must state: "I am waiting for approval."
 - For all other situations where a subtask is complete and further direction is needed from the user, the agent must state: "I am waiting for instructions."
 
+### 🔧 Tools & Package Requests (HITL Gate)
+- **Never install a missing tool yourself.** If you need a system package, CLI, language runtime, or capability that isn't already in the devcontainer (via `apt`/`pip`/`npm`/`go install`, or by downloading a binary), stop and request it through the Architect instead. One-off installs often fail, vanish on rebuild, or pollute the box.
+- **Request flow:** report exactly what you need to the Architect (tool name + why + what would provide it). The Architect routes it through the normal human-approval gate so it lands as a devcontainer feature/dependency and survives rebuilds.
+- **Temporary scratch:** scripting helpers may be written into `wip/` without install; session-only runners (`npx -y`, `uvx`, ...) only with the Architect's OK.
+
 ## Verification Protocol
 
 **Mandatory Change Verification**: Before any task is marked as 'completed', the Architect MUST verify that all claimed code changes actually exist on the filesystem. This is done by performing a `git status` or `ls -R` check to confirm the existence of new/modified files and verifying their content against the agent's report. A task is not complete until the physical artifacts are verified.
