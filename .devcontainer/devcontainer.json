@@ -1,7 +1,14 @@
 {
     "name": "agentic-devcontainer-feature",
-    "dockerFile": "Dockerfile",
+    "image": "nvidia/cuda:13.3.0-cudnn-runtime-ubuntu24.04",
     "features": {
+        "ghcr.io/devcontainers/features/common-utils:2": {
+            "installZsh": false,
+            "configureZsh": false,
+            "username": "vscode",
+            "uid": "1000",
+            "gid": "1000"
+        },
         "ghcr.io/nmwael/agentic-devcontainer-feature/llama-server": "1",
         "ghcr.io/nmwael/agentic-devcontainer-feature/gpu-bridge": "1.0.1",
         "ghcr.io/nmwael/agentic-devcontainer-feature/bifrost-gateway": "1",
@@ -15,7 +22,7 @@
         },
         "ghcr.io/devcontainers-extra/features/apt-get-packages": {
             "version": "1",
-            "packages": "gh,jq,ripgrep,shfmt,bats"
+            "packages": "gh,jq,ripgrep,shfmt,bats,python3,python3-pip,python3-venv"
         },
         "ghcr.io/devcontainers/features/docker-in-docker:4": {
             "moby": false
