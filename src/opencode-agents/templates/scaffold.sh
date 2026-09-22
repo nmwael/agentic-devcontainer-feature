@@ -49,7 +49,7 @@ done
 
 # Copy library/ books
 mkdir -p "$WORKSPACE/library"
-cp -rf "$INSTALL_DIR/library/" "$WORKSPACE/library/"
+cp -rf "$INSTALL_DIR/library/." "$WORKSPACE/library/"
 
 # Copy library/EXTENSIONS.md guide (always copy, consumer edits survive OVERWRITE)
 cp -f "$INSTALL_DIR/library/EXTENSIONS.md" "$WORKSPACE/library/EXTENSIONS.md"
