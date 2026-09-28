@@ -30,4 +30,23 @@ ok "models.json back-compat mirror present"
 grep -q "MODELS_DIR" /etc/environment || fail "MODELS_DIR not exported in /etc/environment"
 ok "MODELS_DIR exported in /etc/environment"
 
+# Per-model `url` support (1.3.0): exact repo/filename.gguf, since real repos
+# disagree on the -QUANT vs .QUANT separator and cannot be derived from hf+quant.
+FETCH=/usr/local/share/llm-lab/models/fetch-models.sh
+grep -q 'https://huggingface.co/\${url}' "$FETCH" || fail "fetch-models.sh does not honour the per-model url field"
+ok "fetch-models.sh honours the per-model url field"
+
+# The legacy hf-derived path must remain byte-identical for configs without url.
+grep -q 'resolve/main/\${MODEL_BASE}-\${quant}\.gguf' "$FETCH" \
+    || fail "legacy hf-derived download path regressed"
+ok "legacy hf-derived download path preserved (no url)"
+
+# Downloaded names must stay discoverable by the auto-startup.sh glob
+# *<hf with / -> _>*<quant>*.gguf, otherwise the server silently skips the model.
+grep -q "tr '/' '_'" "$FETCH" || fail "fetch-models.sh no longer normalises slashes for the filename"
+ok "filename normalises hf slashes (auto-startup.sh glob stays matchable)"
+
+dash -n "$FETCH" 2>/dev/null || sh -n "$FETCH" || fail "fetch-models.sh is not POSIX-sh clean"
+ok "fetch-models.sh is POSIX-sh clean"
+
 echo "PASS: models"

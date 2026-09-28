@@ -1,13 +1,13 @@
 {
     "name": "On-Demand Models",
     "id": "models",
-    "version": "1.2.0",
+    "version": "1.3.0",
     "description": "ON-DEMAND multi-model config; weights (9-16 GB) are NEVER baked into image layers. Owns stack.json manifest (single source of truth for bifrost upstreams and opencode role->model mapping). CLOUD_MODE routes all agents to the hosted opencode provider instead of local slots. Legacy single-model options MODEL/QUANT are deprecated in favor of MODELS.",
     "options": {
         "MODELS": {
             "type": "string",
             "default": "",
-            "description": "JSON array of model specs [{name,provider,hf,quant,port,context,parallel}, ...]. Empty = default single-model (gemma4-26b-a4b). May also be provided via $PWD/.devcontainer/llm-lab-models.json."
+            "description": "JSON array of model specs [{name,provider,hf,quant,url,port,context,parallel}, ...]. Optional url = exact repo/filename.gguf path on huggingface.co; required for real repos, omit for the legacy hf-derived path. Empty = default single-model (gemma4-26b-a4b). May also be provided via $PWD/.devcontainer/llm-lab-models.json."
         },
         "ROLES": {
             "type": "string",

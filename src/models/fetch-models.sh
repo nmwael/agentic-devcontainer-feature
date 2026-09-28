@@ -38,10 +38,25 @@ COUNT=$(printf '%s' "$CFG_MODELS" | jq 'length' 2>/dev/null) || COUNT=0
 fetch_one() {
     hf="$1"
     quant="$2"
+    url="$3"
     echo "Fetching model: $hf quant=$quant to $MODELS_DIR"
 
-    # Idempotent check: skip if the target file already exists
-    EXPECTED_FILE="${MODELS_DIR}/$(printf '%s' "$hf" | tr '/' '_')_${quant}.gguf"
+    # Idempotency key: the auto-startup.sh glob is *<hf with / -> _>*<quant>*.gguf,
+    # so any name built from both segments stays discoverable. A url basename may
+    # repeat them (unsloth style) or carry neither (dot-separated legacy quants),
+    # so prefix it unless doing so would only duplicate the segments.
+    slug="$(printf '%s' "$hf" | tr '/' '_')"
+    if [ -n "$url" ]; then
+        base="$(printf '%s' "$url" | sed 's|.*/||')"
+        if [ "$base" = "${slug}_${quant}.gguf" ]; then
+            FILE_NAME="${slug}_${quant}.gguf"
+        else
+            FILE_NAME="${slug}_${base}"
+        fi
+    else
+        FILE_NAME="${slug}_${quant}.gguf"
+    fi
+    EXPECTED_FILE="${MODELS_DIR}/${FILE_NAME}"
     if [ -f "$EXPECTED_FILE" ]; then
         echo "Model file already exists at $EXPECTED_FILE — skipping download (idempotent)."
         return 0
@@ -49,11 +64,14 @@ fetch_one() {
 
     # Download with retries and resume
     mkdir -p "$MODELS_DIR"
-    MODEL_PATH=$(printf '%s' "$hf" | sed 's|/||')
-    MODEL_BASE=$(printf '%s' "$hf" | sed 's|.*/||')
-    curl -L --retry 5 --continue-at - \
-        "https://huggingface.co/${MODEL_PATH}/resolve/main/${MODEL_BASE}-${quant}.gguf" \
-        -o "$EXPECTED_FILE"
+    if [ -n "$url" ]; then
+        DOWNLOAD_URL="https://huggingface.co/${url}"
+    else
+        MODEL_PATH=$(printf '%s' "$hf" | sed 's|/||')
+        MODEL_BASE=$(printf '%s' "$hf" | sed 's|.*/||')
+        DOWNLOAD_URL="https://huggingface.co/${MODEL_PATH}/resolve/main/${MODEL_BASE}-${quant}.gguf"
+    fi
+    curl -L --retry 5 --continue-at - "$DOWNLOAD_URL" -o "$EXPECTED_FILE"
 
     echo "Model downloaded to $MODELS_DIR"
 }
@@ -63,8 +81,9 @@ if [ "${COUNT:-0}" -gt 0 ]; then
     while [ "$i" -lt "$COUNT" ]; do
         hf="$(printf '%s' "$CFG_MODELS" | jq -r ".[$i].hf // empty" 2>/dev/null || true)"
         quant="$(printf '%s' "$CFG_MODELS" | jq -r ".[$i].quant // empty" 2>/dev/null || true)"
+        url="$(printf '%s' "$CFG_MODELS" | jq -r ".[$i].url // empty" 2>/dev/null || true)"
         if [ -n "$hf" ] && [ -n "$quant" ]; then
-            fetch_one "$hf" "$quant" || {
+            fetch_one "$hf" "$quant" "$url" || {
                 echo "WARNING: failed to fetch [$i] $hf-$quant" >&2
                 exit 1
             }
@@ -75,5 +94,5 @@ if [ "${COUNT:-0}" -gt 0 ]; then
     done
 else
     echo "No model config found ($STACK / $CFG) — using defaults."
-    fetch_one "$DEFAULT_MODEL" "$DEFAULT_QUANT"
+    fetch_one "$DEFAULT_MODEL" "$DEFAULT_QUANT" ""
 fi
