@@ -49,4 +49,10 @@ ok "filename normalises hf slashes (auto-startup.sh glob stays matchable)"
 dash -n "$FETCH" 2>/dev/null || sh -n "$FETCH" || fail "fetch-models.sh is not POSIX-sh clean"
 ok "fetch-models.sh is POSIX-sh clean"
 
+# A 4xx/5xx body must not be persisted: the idempotency check would otherwise
+# treat the error page as a finished model and never retry.
+grep -q -- '--fail' "$FETCH" || fail "curl is not --fail; HTTP error pages get saved as .gguf"
+grep -q '!= "GGUF"' "$FETCH" || fail "fetched files are not validated as GGUF"
+ok "rejects non-GGUF downloads and cleans up on failure"
+
 echo "PASS: models"

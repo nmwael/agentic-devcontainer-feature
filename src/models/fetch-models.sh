@@ -71,7 +71,19 @@ fetch_one() {
         MODEL_BASE=$(printf '%s' "$hf" | sed 's|.*/||')
         DOWNLOAD_URL="https://huggingface.co/${MODEL_PATH}/resolve/main/${MODEL_BASE}-${quant}.gguf"
     fi
-    curl -L --retry 5 --continue-at - "$DOWNLOAD_URL" -o "$EXPECTED_FILE"
+    curl -L --fail --retry 5 --continue-at - "$DOWNLOAD_URL" -o "$EXPECTED_FILE" || {
+        rm -f "$EXPECTED_FILE"
+        echo "ERROR: download failed: $DOWNLOAD_URL" >&2
+        return 1
+    }
+
+    # A 4xx/5xx body (HF error page, rate-limit HTML) must never be left behind:
+    # the idempotency check above would then treat the junk as a finished model.
+    if [ ! -s "$EXPECTED_FILE" ] || [ "$(head -c 4 "$EXPECTED_FILE" 2>/dev/null)" != "GGUF" ]; then
+        rm -f "$EXPECTED_FILE"
+        echo "ERROR: not a GGUF file (bad status or error page): $DOWNLOAD_URL" >&2
+        return 1
+    fi
 
     echo "Model downloaded to $MODELS_DIR"
 }
