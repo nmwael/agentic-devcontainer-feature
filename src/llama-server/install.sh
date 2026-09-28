@@ -26,6 +26,26 @@ esac
 
 LLAMA_DIR="${INSTALL_PATH}"
 
+# Runtime dependency: the upstream ubuntu-* release builds are compiled with
+# OpenMP, so libggml-base.so and every libggml-cpu-<microarch>.so backend
+# link against libgomp.so.1. That lives in the 'libgomp1' package, which is NOT
+# pulled in by libgcc-s1/gcc-14-base — so a minimal base image has the GCC
+# runtime but not the OpenMP runtime, and every llama-server binary dies with
+#   "error while loading shared libraries: libgomp.so.1".
+# Provisioned before the idempotence check below so a custom base image that
+# already ships llama-server gets the fix too.
+if ! ldconfig -p 2>/dev/null | grep -q 'libgomp\.so\.1'; then
+    echo "libgomp.so.1 not found — provisioning via apt..."
+    if apt-get update -qq && apt-get install -y --no-install-recommends libgomp1 >/dev/null 2>&1; then
+        echo "libgomp1 ready"
+    else
+        echo "WARNING: libgomp1 install failed — llama-server will not start."
+        echo "         Install it manually (apt-get install libgomp1) or rebuild from a base image that provides it."
+    fi
+else
+    echo "libgomp.so.1 already present — skipping"
+fi
+
 # Idempotence path: if llama-server already exists, notice and NO-OP
 if [ -f "${LLAMA_DIR}/llama-server" ]; then
     echo "Notice: /opt/llama-server/llama-server already exists (custom image as base)."
@@ -110,6 +130,18 @@ fi
 
 # Write VERSION file
 echo "$VERSION" >"$INSTALL_PATH/VERSION"
+
+# Self-check: execute the binary. Loading it is the only way to prove every
+# transitive shared object resolved, so a missing runtime dep surfaces here at
+# build time instead of at the first agent prompt.
+echo "Verifying llama-server starts..."
+if "$INSTALL_PATH/llama-server" --version >/dev/null 2>&1; then
+    echo "llama-server --version OK"
+else
+    echo "WARNING: llama-server was installed but fails to execute."
+    "$INSTALL_PATH/llama-server" --version 2>&1 | head -3 || true
+    echo "         Common cause: missing libgomp1 (OpenMP runtime)."
+fi
 
 echo "Done! llama-server installed at $INSTALL_PATH"
 echo "Run 'llama-server --version' to verify."
