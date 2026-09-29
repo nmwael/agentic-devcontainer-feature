@@ -23,6 +23,15 @@
             "packages": "gh,jq,shfmt"
         }
     },
+    "overrideFeatureInstallOrder": [
+        "llama-server",
+        "gpu-bridge",
+        "models",
+        "bifrost-gateway",
+        "opencode-agents",
+        "opencode",
+        "apt-get-packages"
+    ],
     "postCreateCommand": "sh /usr/local/share/opencode-agents/scaffold.sh",
     "runArgs": [
         "--shm-size=2g"
