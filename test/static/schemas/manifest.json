@@ -1,0 +1,20 @@
+{
+  "source": "https://github.com/devcontainers/spec/tree/main/schemas",
+  "schemas": {
+    "devContainer.base.schema.json": {
+      "url": "https://raw.githubusercontent.com/devcontainers/spec/main/schemas/devContainer.base.schema.json",
+      "sha256": "a0883c0405ff433db188849d458fb20b9c0d73e0ba1a6e44c1d83f3b485408dd",
+      "validates": "devcontainer.json"
+    },
+    "devContainerFeature.schema.json": {
+      "url": "https://raw.githubusercontent.com/devcontainers/spec/main/schemas/devContainerFeature.schema.json",
+      "sha256": "671fcd80cbb3510793412746b35505d12b6a4b8e68d38a01960e440aa5af32eb",
+      "validates": "devcontainer-feature.json"
+    }
+  },
+  "not_vendored": {
+    "devContainer.schema.json": "Thin 447-byte wrapper that $refs devContainer.base plus vscode's and codespaces' schemas from other repos. base covers the same fields self-contained.",
+    "devContainerTemplate.schema.json": "Does not exist. The spec publishes no template schema, so template metadata can only be checked by hand (test/static/schema-check.py)."
+  },
+  "refresh": "python3 test/static/vendor-schemas.py --check   # CI: fails if stale\npython3 test/static/vendor-schemas.py            # refresh and update digests"
+}

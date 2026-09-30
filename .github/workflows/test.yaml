@@ -8,6 +8,7 @@ on:
       - 'src/**'
       - 'scripts/**'
       - 'test/**'
+      - '.devcontainer/**'
       - '.github/workflows/test.yaml'
   pull_request:
   workflow_dispatch:
@@ -22,9 +23,15 @@ jobs:
       - name: Install test tooling
         run: |
           sudo apt-get update
-          sudo apt-get install -y --no-install-recommends bats dash jq python3 shellcheck
+          sudo apt-get install -y --no-install-recommends \
+            bats dash jq python3 shellcheck
 
-      - name: Static suite (shellcheck + dash + schema)
+      - name: Install JSON Schema CLI
+        # Same tool the devbox installs (see .devcontainer/Dockerfile), pinned
+        # to the same version so a local run and a CI run cannot disagree.
+        run: npm install -g "@sourcemeta/jsonschema@17.0.0"
+
+      - name: Static suite (shellcheck + dash + schema + spec)
         run: test/static/run-static.sh
 
       - name: Bats metadata suite

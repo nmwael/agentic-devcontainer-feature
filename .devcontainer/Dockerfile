@@ -47,3 +47,12 @@ RUN echo /opt/llama-server > /etc/ld.so.conf.d/llama-server.conf \
     && ln -sf /opt/llama-server/llama-server /usr/local/bin/llama-server \
     && ldconfig \
     && cd / && /opt/llama-server/llama-server --version
+
+# JSON Schema CLI, for test/static. devcontainerspec ships no validator: the
+# newest @devcontainers/cli on npm contains none, so `devcontainer upgrade`
+# and friends exit 0 on a config the box then refuses to build. This is the
+# tool that checks the specs in CI (see .github/workflows/test.yaml).
+# Pinned: it is a gate, so an unattended minor bump is not a decision to
+# delegate to whatever npm serves tomorrow.
+RUN npm install -g @sourcemeta/jsonschema@17.0.0 \
+    && jsonschema version
