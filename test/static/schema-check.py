@@ -162,12 +162,59 @@ def main():
                     fail(f"{fpath}: missing required key 'upstream'")
             cfg_templs += 1
 
+    # Every overrideFeatureInstallOrder entry must be an exact key from
+    # "features". The CLI resolves a bare name as a *legacy* feature from the
+    # default collection and hard-fails before any install runs, so a shorthand
+    # like "apt-get-packages" breaks the whole boot.
+    checked_orders = 0
+    devcontainers = []
+    for base in (os.path.join(ROOT, ".devcontainer"),
+                 os.path.join(SRC, "templates")):
+        if not os.path.isdir(base):
+            continue
+        if base.endswith("templates"):
+            for name in sorted(os.listdir(base)):
+                cand = os.path.join(base, name, ".devcontainer", "devcontainer.json")
+                if os.path.isfile(cand):
+                    devcontainers.append(cand)
+        else:
+            cand = os.path.join(base, "devcontainer.json")
+            if os.path.isfile(cand):
+                devcontainers.append(cand)
+
+    for path in devcontainers:
+        data = read_json(path)
+        if not isinstance(data, dict):
+            continue
+        order = data.get("overrideFeatureInstallOrder")
+        if order is None:
+            continue
+        feature_keys = set(data.get("features") or {})
+        for entry in order:
+            if entry not in feature_keys:
+                fail(
+                    f"{path}: overrideFeatureInstallOrder entry '{entry}' is not a "
+                    f"key in 'features' (CLI would treat it as a legacy feature and "
+                    f"abort the build)"
+                )
+        missing = feature_keys - set(order)
+        if missing:
+            fail(
+                f"{path}: overrideFeatureInstallOrder omits {sorted(missing)}; "
+                f"list every feature so the order is explicit"
+            )
+        checked_orders += 1
+
     if errors:
         print(f"schema-check FAILED ({len(errors)} issue(s)):")
         for e in errors:
             print(f"  - {e}")
         sys.exit(1)
-    print(f"schema-check OK: {feats} feature(s), {templs} template(s), {cfg_templs} config template(s) validated")
+    print(
+        f"schema-check OK: {feats} feature(s), {templs} template(s), "
+        f"{cfg_templs} config template(s), "
+        f"{checked_orders} install order(s) validated"
+    )
 
 
 if __name__ == "__main__":

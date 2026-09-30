@@ -31,16 +31,16 @@
         }
     },
     "overrideFeatureInstallOrder": [
-        "common-utils",
-        "llama-server",
-        "gpu-bridge",
-        "models",
-        "bifrost-gateway",
-        "opencode-agents",
-        "opencode",
-        "tailscale",
-        "apt-get-packages",
-        "docker-in-docker"
+        "ghcr.io/devcontainers/features/common-utils:2",
+        "ghcr.io/nmwael/agentic-devcontainer-feature/llama-server",
+        "ghcr.io/nmwael/agentic-devcontainer-feature/gpu-bridge",
+        "ghcr.io/nmwael/agentic-devcontainer-feature/models",
+        "ghcr.io/nmwael/agentic-devcontainer-feature/bifrost-gateway",
+        "ghcr.io/nmwael/agentic-devcontainer-feature/opencode-agents",
+        "ghcr.io/devcontainers-extra/features/opencode",
+        "ghcr.io/tailscale/codespace/tailscale",
+        "ghcr.io/devcontainers-extra/features/apt-get-packages",
+        "ghcr.io/devcontainers/features/docker-in-docker:4"
     ],
     "runArgs": [
         "--device=nvidia.com/gpu=all",
