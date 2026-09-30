@@ -42,7 +42,7 @@
         "seccomp:unconfined"
     ],
     "hostRequirements": {
-        "gpu": "all"
+        "gpu": true
     },
     "runArgs": [
         "--shm-size=2g"
