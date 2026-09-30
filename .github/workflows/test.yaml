@@ -27,9 +27,16 @@ jobs:
             bats dash jq python3 shellcheck
 
       - name: Install JSON Schema CLI
-        # Same tool the devbox installs (see .devcontainer/Dockerfile), pinned
-        # to the same version so a local run and a CI run cannot disagree.
-        run: npm install -g "@sourcemeta/jsonschema@17.0.0"
+        # The upstream Action, pinned. Same CLI version the devbox installs
+        # (see .devcontainer/Dockerfile), so a local run and a CI run cannot
+        # disagree on a gate.
+        #
+        # Note: unlike the Dockerfile, this path does not verify a checksum.
+        # The Action runs upstream's install script, which curls the release
+        # zip and unzips it with no digest check. Acceptable for an ephemeral
+        # runner, but it is the weaker of the two installs despite being the
+        # official one.
+        uses: sourcemeta/jsonschema@v17.0.0
 
       - name: Static suite (shellcheck + dash + schema + spec)
         run: test/static/run-static.sh

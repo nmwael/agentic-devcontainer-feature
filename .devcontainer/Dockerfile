@@ -27,8 +27,13 @@ FROM nvidia/cuda:12.8.1-cudnn-runtime-ubuntu24.04
 # release build, and libgomp1 is a separate package from libgcc-s1. Without it
 # every llama-server binary dies with "libgomp.so.1: cannot open shared object
 # file", including the CPU fallback the feature installs.
+#
+# curl + unzip === the JSON Schema CLI install below. Listed here rather than
+# apt-get-installing them inline so this stays the image's single apt pass; the
+# cuda runtime base is not guaranteed to carry either.
 RUN apt-get update \
-    && apt-get install -y --no-install-recommends libgomp1 ca-certificates \
+    && apt-get install -y --no-install-recommends \
+        ca-certificates curl libgomp1 unzip \
     && rm -rf /var/lib/apt/lists/*
 
 # Flatten the CUDA build into /opt/llama-server. The llama-server feature
@@ -50,9 +55,34 @@ RUN echo /opt/llama-server > /etc/ld.so.conf.d/llama-server.conf \
 
 # JSON Schema CLI, for test/static. devcontainerspec ships no validator: the
 # newest @devcontainers/cli on npm contains none, so `devcontainer upgrade`
-# and friends exit 0 on a config the box then refuses to build. This is the
-# tool that checks the specs in CI (see .github/workflows/test.yaml).
-# Pinned: it is a gate, so an unattended minor bump is not a decision to
-# delegate to whatever npm serves tomorrow.
-RUN npm install -g @sourcemeta/jsonschema@17.0.0 \
-    && jsonschema version
+# and friends exit 0 on a config the box then refuses to build.
+#
+# Installed from the release zip rather than `npm install -g` because the npm
+# package carries a prebuilt binary for all seven platforms, 85MB, to use the
+# 14MB of one. The sha256 is checked against the published CHECKSUMS.txt
+# before the binary is installed, so this is a pinned artifact rather than
+# whatever npm serves at the time. CI installs the same version via the
+# upstream Action (see .github/workflows/test.yaml).
+#
+# Assumes a glibc base (Ubuntu), so the -musl builds are not considered.
+ARG JSONSCHEMA_VERSION=17.0.0
+RUN set -eux; \
+    arch="$(dpkg --print-architecture)"; \
+    case "$arch" in \
+        amd64) target=x86_64 ;; \
+        arm64) target=arm64 ;; \
+        *) echo "unsupported architecture: $arch" >&2; exit 1 ;; \
+    esac; \
+    base="https://github.com/sourcemeta/jsonschema/releases/download/v${JSONSCHEMA_VERSION}"; \
+    zip="jsonschema-${JSONSCHEMA_VERSION}-linux-${target}.zip"; \
+    curl -fsSL "$base/CHECKSUMS.txt" -o /tmp/CHECKSUMS.txt; \
+    curl -fsSL "$base/$zip" -o "/tmp/$zip"; \
+    cd /tmp; \
+    sed -E "s/^SHA256 \\((.*)\\) = (.*)$/\\2  \\1/" CHECKSUMS.txt \
+        | grep " ${zip}\$" | sha256sum -c -; \
+    unzip -q "/tmp/$zip"; \
+    install -m0755 \
+        "jsonschema-${JSONSCHEMA_VERSION}-linux-${target}/bin/jsonschema" \
+        /usr/local/bin/jsonschema; \
+    rm -rf "/tmp/$zip" /tmp/CHECKSUMS.txt "/tmp/jsonschema-${JSONSCHEMA_VERSION}-linux-${target}"; \
+    jsonschema version
