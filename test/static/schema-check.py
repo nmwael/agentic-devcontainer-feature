@@ -110,6 +110,102 @@ def check_template(name, path):
         check_shebang(test_sh)
 
 
+def check_config_types(path, data):
+    """Type-check the devcontainer fields these configs actually set.
+
+    Hand-transcribed from devContainer.base.schema.json rather than fetched at
+    run time, so this stays runnable offline like the rest of this file. It
+    covers the fields used here, not the whole spec.
+
+    The point is to catch values of the wrong shape. A permissive CLI reads
+    hostRequirements.gpu = "all", decides it is a string, and hands it back
+    without complaint -- the field is an enum of [true, false, "optional"], so
+    the value is not merely wrong, it is a type the schema does not have. That
+    mistake passed `devcontainer upgrade`, passed read-configuration, and
+    passed this file's other checks, and only surfaced when VS Code's stricter
+    bundled CLI read the same file. Nothing downstream of the CLI catches it,
+    so the check has to live here.
+    """
+    for key, expected in (
+        ("privileged", bool),
+        ("init", bool),
+        ("updateRemoteUserUID", bool),
+        ("remoteUser", str),
+        ("workspaceFolder", str),
+    ):
+        if key in data and not isinstance(data[key], expected):
+            fail(
+                f"{path}: '{key}' must be {expected.__name__}, got "
+                f"{type(data[key]).__name__} ({data[key]!r})"
+            )
+
+    for key in ("capAdd", "securityOpt", "runArgs"):
+        val = data.get(key)
+        if val is None:
+            continue
+        if not isinstance(val, list) or not all(isinstance(v, str) for v in val):
+            fail(f"{path}: '{key}' must be an array of strings")
+
+    ports = data.get("forwardPorts")
+    if ports is not None:
+        if not isinstance(ports, list):
+            fail(f"{path}: 'forwardPorts' must be an array")
+        else:
+            for p in ports:
+                # bool subclasses int in Python, so True would pass an int
+                # check and is not a valid port.
+                if isinstance(p, bool) or not isinstance(p, (int, str)):
+                    fail(
+                        f"{path}: 'forwardPorts' entry {p!r} must be an integer "
+                        f"or a 'host:port' string"
+                    )
+                elif isinstance(p, int) and not (0 <= p <= 65535):
+                    fail(f"{path}: 'forwardPorts' entry {p} is outside 0-65535")
+
+    env = data.get("containerEnv")
+    if env is not None:
+        if not isinstance(env, dict):
+            fail(f"{path}: 'containerEnv' must be an object")
+        else:
+            for k, v in env.items():
+                if not isinstance(v, str):
+                    fail(
+                        f"{path}: 'containerEnv' value for '{k}' must be a "
+                        f"string, got {type(v).__name__}"
+                    )
+
+    req = data.get("hostRequirements")
+    if req is None:
+        return
+    if not isinstance(req, dict):
+        fail(f"{path}: 'hostRequirements' must be an object")
+        return
+    if "gpu" in req:
+        gpu = req["gpu"]
+        # bool before any int test: True/False are ints in Python, so an int
+        # check would wave through 1 and 0.
+        if not (isinstance(gpu, bool) or gpu == "optional" or isinstance(gpu, dict)):
+            fail(
+                f"{path}: hostRequirements.gpu must be true, false, "
+                f'"optional", or an object; got {gpu!r}. Note "all" is the '
+                f"Docker --gpus spelling and is not valid for this field"
+            )
+    if "cpus" in req and (isinstance(req["cpus"], bool) or not isinstance(req["cpus"], int)):
+        fail(f"{path}: 'hostRequirements.cpus' must be an integer")
+    for key in ("memory", "storage"):
+        if key in req and not isinstance(req[key], str):
+            fail(f"{path}: 'hostRequirements.{key}' must be a string")
+
+    probe = data.get("userEnvProbe")
+    if probe is not None and probe not in (
+        "none",
+        "loginShell",
+        "loginInteractiveShell",
+        "interactiveShell",
+    ):
+        fail(f"{path}: 'userEnvProbe' has invalid value {probe!r}")
+
+
 def main():
     if not os.path.isdir(SRC):
         fail(f"src/ directory not found at {SRC}")
@@ -167,6 +263,7 @@ def main():
     # default collection and hard-fails before any install runs, so a shorthand
     # like "apt-get-packages" breaks the whole boot.
     checked_orders = 0
+    checked_configs = 0
     devcontainers = []
     for base in (os.path.join(ROOT, ".devcontainer"),
                  os.path.join(SRC, "templates")):
@@ -186,6 +283,8 @@ def main():
         data = read_json(path)
         if not isinstance(data, dict):
             continue
+        check_config_types(path, data)
+        checked_configs += 1
         order = data.get("overrideFeatureInstallOrder")
         if order is None:
             continue
@@ -213,6 +312,7 @@ def main():
     print(
         f"schema-check OK: {feats} feature(s), {templs} template(s), "
         f"{cfg_templs} config template(s), "
+        f"{checked_configs} devcontainer config(s) type-checked, "
         f"{checked_orders} install order(s) validated"
     )
 
