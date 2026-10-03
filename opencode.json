@@ -1,0 +1,45 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "model": "opencode/qwen/qwen3-coder:free",
+  "small_model": "opencode/qwen/qwen3-coder:free",
+  "provider": {
+    "opencode": {
+      "options": {
+        "setCacheKey": false
+      }
+    }
+  },
+  "agent": {
+    "architect": {
+      "model": "opencode/big-pickle"
+    },
+    "coder": {
+      "model": "opencode/qwen/qwen3-coder:free"
+    },
+    "researcher": {
+      "model": "opencode/meta-llama/llama-4-scout:free"
+    },
+    "reviewer": {
+      "model": "opencode/moonshotai/kimi-k2:free"
+    },
+    "build": {
+      "model": "opencode/qwen/qwen3-coder:free"
+    },
+    "ui": {
+      "model": "opencode/deepseek/deepseek-chat-v3-0324:free"
+    },
+    "artist": {
+      "model": "opencode/llama-3.2:free"
+    },
+    "ai-researcher": {
+      "model": "opencode/meta-llama/llama-4-scout:free"
+    }
+  },
+  "enabled_providers": [
+    "opencode"
+  ],
+  "subagent_depth": 2,
+  "server": {
+    "port": 4096
+  }
+}

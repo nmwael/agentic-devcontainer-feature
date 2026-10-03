@@ -1,0 +1,10 @@
+{
+  "architect": {"model": "big-pickle", "slot": 0},
+  "coder": {"model": "qwen/qwen3-coder:free", "slot": 0},
+  "researcher": {"model": "meta-llama/llama-4-scout:free", "slot": 0},
+  "reviewer": {"model": "moonshotai/kimi-k2:free", "slot": 0},
+  "build": {"model": "qwen/qwen3-coder:free", "slot": 0},
+  "ui": {"model": "deepseek/deepseek-chat-v3-0324:free", "slot": 0},
+  "artist": {"model": "llama-3.2:free", "slot": 0},
+  "ai-researcher": {"model": "meta-llama/llama-4-scout:free", "slot": 0}
+}
