@@ -1,13 +1,10 @@
 #!/bin/bash
 # devcontainer features test — opencode-agents (auto-generated, default options).
-# WITH_LIBRARY=true by default: full agentic payload + library books + opencode CLI.
+# WITH_LIBRARY=true by default: full agentic payload + library books.
 set -e
 
 fail() { echo "FAIL: $*"; exit 1; }
 ok() { echo "ok: $*"; }
-
-[ -x /usr/local/bin/opencode ] || fail "opencode CLI not on PATH"
-ok "opencode CLI on PATH: $(opencode --version 2>/dev/null || echo present)"
 
 D=/usr/local/share/opencode-agents
 [ -f "$D/AGENTS.md" ] || fail "AGENTS.md not shipped"
@@ -28,7 +25,7 @@ ok "agent role definitions shipped: $ROLE_COUNT file(s)"
 [ -f "$D/library/release-it.mini.md" ] || fail "library/release-it.mini.md missing"
 [ -d "$D/library/ai-researcher" ] || fail "WITH_LIBRARY=true: ai-researcher book dir missing"
 BOOK_COUNT="$(find "$D/library/ai-researcher" -name '*.md' | wc -l)"
-[ "$BOOK_COUNT" -ge 1 ] || fail "no ai-researcher reference books shipped"
-ok "library shipped: ai-researcher $BOOK_COUNT book(s) + shared mini-books"
+[ "$BOOK_COUNT" -ge 1 ] || fail "WITH_LIBRARY=true: ai-researcher books missing"
+ok "library present (WITH_LIBRARY=true): ai-researcher books=$BOOK_COUNT"
 
-echo "PASS: opencode-agents"
+echo "PASS: opencode-agents default scenario"

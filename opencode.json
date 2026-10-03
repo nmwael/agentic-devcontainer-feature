@@ -1,7 +1,7 @@
 {
   "$schema": "https://opencode.ai/config.json",
-  "model": "opencode/qwen/qwen3-coder:free",
-  "small_model": "opencode/qwen/qwen3-coder:free",
+  "model": "opencode/ling-3.1-flash-free",
+  "small_model": "opencode/ling-3.1-flash-free",
   "provider": {
     "opencode": {
       "options": {
@@ -14,25 +14,25 @@
       "model": "opencode/big-pickle"
     },
     "coder": {
-      "model": "opencode/qwen/qwen3-coder:free"
+      "model": "opencode/ling-3.1-flash-free"
     },
     "researcher": {
-      "model": "opencode/meta-llama/llama-4-scout:free"
+      "model": "opencode/nemotron-3-ultra-free"
     },
     "reviewer": {
-      "model": "opencode/moonshotai/kimi-k2:free"
+      "model": "opencode/nemotron-3.5-lightning-free"
     },
     "build": {
-      "model": "opencode/qwen/qwen3-coder:free"
+      "model": "opencode/ling-3.1-flash-free"
     },
     "ui": {
-      "model": "opencode/deepseek/deepseek-chat-v3-0324:free"
+      "model": "opencode/fledge-alpha-free"
     },
     "artist": {
-      "model": "opencode/llama-3.2:free"
+      "model": "opencode/space-bunny-free"
     },
     "ai-researcher": {
-      "model": "opencode/meta-llama/llama-4-scout:free"
+      "model": "opencode/mimo-v2.6-flash-free"
     }
   },
   "enabled_providers": [
