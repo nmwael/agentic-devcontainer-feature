@@ -1,14 +1,15 @@
 #!/bin/bash
 # devcontainer features test — opencode-agents "no-library" scenario
-# (WITH_LIBRARY=false): agents stay fully functional, books are skipped.
+# (WITH_LIBRARY=false): core scaffold ships, role books are skipped.
 set -e
 
 fail() { echo "FAIL: $*"; exit 1; }
 ok() { echo "ok: $*"; }
 
-[ -x /usr/local/bin/opencode ] || fail "opencode CLI missing"
 D=/usr/local/share/opencode-agents
 [ -f "$D/AGENTS.md" ] || fail "AGENTS.md missing even without library"
+[ -f "$D/scaffold.sh" ] || fail "scaffold.sh missing"
+[ -f "$D/generate-opencode.sh" ] || fail "generate-opencode.sh missing"
 [ -f "$D/library/EXTENSIONS.md" ] || fail "library/EXTENSIONS.md must always ship"
 ok "core scaffold present without library"
 

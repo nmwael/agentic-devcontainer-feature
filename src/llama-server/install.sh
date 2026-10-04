@@ -56,6 +56,17 @@ fi
 
 echo "Installing llama-server VERSION=$VERSION CUDA_ARCHS=$CUDA_ARCHS ARCH=$ARCH_VARIANT"
 
+# The download needs curl + CA trust. A minimal base image (e.g. ubuntu:24.04,
+# used by the devcontainer CLI feature-test harness) has neither. Provision
+# them up-front (idempotent) so the asset fetch works on any base; mirrors the
+# libgomp1 provisioning above.
+if ! command -v curl >/dev/null 2>&1; then
+    echo "curl not found — provisioning via apt..."
+    apt-get update -qq \
+        && apt-get install -y --no-install-recommends ca-certificates curl >/dev/null 2>&1 \
+        || echo "WARNING: curl install failed — llama-server will not be installed."
+fi
+
 # Resolve asset URL
 if [ -n "$ASSET_URL" ]; then
     ASSET_URL_FINAL="$ASSET_URL"

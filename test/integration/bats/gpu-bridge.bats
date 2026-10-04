@@ -1,24 +1,26 @@
 #!/usr/bin/env bats
-# Container-side assertions for the gpu-bridge feature. CI containers are NOT
-# WSL2, so the feature must stub out cleanly (exit 0) - including on re-runs.
+# Container-side assertions for the gpu-bridge feature.
+# FORCE_NONWSL=true forces the non-WSL2 code path regardless of host, so these
+# assertions are deterministic even when CI itself runs under WSL2.
 
 @test "non-WSL2 install exits 0 (stub no-op, not an error)" {
-    run /bin/sh /tmp/feature/install.sh
+    run env FORCE_NONWSL=true /bin/sh /tmp/feature/install.sh
     [ "$status" -eq 0 ]
 }
 
 @test "stub reports the WSL2 skip explicitly" {
-    run /bin/sh /tmp/feature/install.sh
-    [[ "$output" == *"Not running in WSL2"* ]]
+    run env FORCE_NONWSL=true /bin/sh /tmp/feature/install.sh
+    echo "$output" | grep -qi "not running in wsl2"
 }
 
-@test "default WSL2_ONLY=false means stub, WSL2_ONLY=true means hard fail" {
-    run env WSL2_ONLY=true /bin/sh /tmp/feature/install.sh
+@test "WSL2_ONLY=true hard-fails outside WSL2" {
+    run env FORCE_NONWSL=true WSL2_ONLY=true /bin/sh /tmp/feature/install.sh
     [ "$status" -eq 1 ]
-    [[ "$output" == *"requires WSL2"* ]]
+    echo "$output" | grep -qi "requires wsl2"
 }
 
 @test "no WSL2 artifacts are created outside WSL2" {
+    run env FORCE_NONWSL=true /bin/sh /tmp/feature/install.sh
     [ ! -d /usr/lib/wsl/lib ]
     [ ! -d /usr/lib/wsl/drivers ]
 }

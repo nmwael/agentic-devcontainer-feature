@@ -23,6 +23,9 @@ fi
 if [ -d "/usr/lib/wsl/lib" ]; then
     IS_WSL2=true
 fi
+if [ "${FORCE_NONWSL:-false}" = "true" ] || [ "${FORCE_NONWSL:-}" = "1" ]; then
+    IS_WSL2=false
+fi
 
 echo "WSL2 detection: $IS_WSL2"
 

@@ -78,8 +78,8 @@ jobs:
         run: |
           if [ "${{ matrix.global }}" = "true" ]; then
             devcontainer features test --global-scenarios-only \
-              --base-image ubuntu:24.04 --remote-user vscode
+              --base-image ubuntu:24.04
           else
             devcontainer features test -f "${{ matrix.name }}" \
-              --base-image ubuntu:24.04 --remote-user vscode
+              --base-image ubuntu:24.04
           fi

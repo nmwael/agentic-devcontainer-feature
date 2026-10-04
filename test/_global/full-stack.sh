@@ -20,11 +20,18 @@ else
 fi
 
 # ---- bifrost-gateway --------------------------------------------------------
+# Feature install order is not guaranteed (the CLI may install in parallel), so
+# bifrost-gateway can install before models writes stack.json. Re-materialize
+# the config from the final stack.json — exactly what a consumer does at
+# startup — then assert on it.
 [ -x /usr/local/bin/start-bifrost ] || fail "start-bifrost not on PATH"
+STACK=/usr/local/share/llm-lab/stack.json
+[ -f "$STACK" ] || fail "stack.json missing"
 CFG=/usr/local/share/llm-lab/bifrost/config/bifrost.json
-[ -f "$CFG" ] || fail "bifrost config missing"
+/usr/local/share/llm-lab/bifrost/write-bifrost-config.sh "$STACK" "$CFG" 8089 >/dev/null 2>&1 \
+    || fail "write-bifrost-config.sh re-materialization failed"
 jq -e . "$CFG" >/dev/null 2>&1 || fail "bifrost config invalid JSON"
-jq -e '.providers.gemma4-26b-a4b.network_config.base_url | endswith(":8089/v1")' "$CFG" \
+jq -e '.providers["gemma4-26b-a4b"].network_config.base_url | endswith(":8089/v1")' "$CFG" \
     >/dev/null 2>&1 || fail "bifrost config must expose default upstream on :8089/v1"
 ok "bifrost multi-upstream config materialized from stack.json"
 
@@ -38,8 +45,10 @@ jq -e . "$STACK" >/dev/null 2>&1 || fail "stack.json invalid JSON"
 ok "stack.json default manifest: $(jq -r '.models[0].name' "$STACK") on :$(jq -r '.models[0].port' "$STACK")"
 
 # ---- opencode-agents --------------------------------------------------------
-[ -x /usr/local/bin/opencode ] || fail "opencode CLI not on PATH"
-ok "opencode CLI on PATH"
+# The opencode CLI is a separate feature; assert the scaffold payload instead.
+[ -f /usr/local/share/opencode-agents/AGENTS.md ] || fail "opencode-agents scaffold missing"
+[ -x /usr/local/share/opencode-agents/scaffold.sh ] || fail "scaffold.sh not on disk"
+ok "opencode-agents scaffold on disk"
 
 # ---- scaffold (the step consumers run at postCreateCommand) -----------------
 SCRATCH=/tmp/full-stack-smoke

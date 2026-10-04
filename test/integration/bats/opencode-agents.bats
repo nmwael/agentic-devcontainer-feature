@@ -1,21 +1,6 @@
 #!/usr/bin/env bats
 # Container-side assertions for the opencode-agents feature.
 
-@test "opencode CLI is on PATH for non-interactive shells (all users)" {
-    command -v opencode
-    [ -f /usr/local/bin/opencode ]
-    [ ! -L /usr/local/bin/opencode ]
-    [ -x /usr/local/bin/opencode ]
-    size=$(stat -c %s /usr/local/bin/opencode)
-    [ "$size" -gt 1000000 ]
-}
-
-@test "opencode CLI runs and reports a version" {
-    run opencode --version
-    [ "$status" -eq 0 ]
-    [ -n "$output" ]
-}
-
 @test "agent scaffold installed at INSTALL_DIR" {
     [ -f /usr/local/share/opencode-agents/AGENTS.md ]
     [ -f /usr/local/share/opencode-agents/AGENTS_LIFECYCLE.md ]
