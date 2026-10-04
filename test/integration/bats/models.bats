@@ -17,8 +17,19 @@
     grep -q 'QUANT=' /usr/local/share/llm-lab/models/fetch-models.sh
 }
 
-@test "MODELS_DIR exported to /etc/environment" {
-    grep -q "MODELS_DIR" /etc/environment
+@test "MODELS_DIR is not persisted with a build-time (temp) value" {
+    # /etc/environment is only written when MODELS_DIR is explicitly set; the
+    # default is resolved at runtime by resolve-stack.sh so no stale/empty
+    # export can shadow it.
+    ! grep -q '^export MODELS_DIR=$' /etc/environment
+    ! grep -q '^export MODELS_DIR=/tmp/dev-container-features' /etc/environment
+}
+
+@test "runtime resolver + shared lib installed" {
+    [ -x /usr/local/share/llm-lab/models/resolve-stack.sh ]
+    [ -f /usr/local/share/llm-lab/models/stack-lib.sh ]
+    sh -n /usr/local/share/llm-lab/models/resolve-stack.sh
+    sh -n /usr/local/share/llm-lab/models/stack-lib.sh
 }
 
 @test "stack.json manifest written with schema and defaults" {
