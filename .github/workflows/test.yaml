@@ -80,6 +80,13 @@ jobs:
             devcontainer features test --global-scenarios-only \
               --base-image ubuntu:24.04
           else
-            devcontainer features test -f "${{ matrix.name }}" \
-              --base-image ubuntu:24.04
+            if [ "${{ matrix.name }}" = "gpu-bridge" ]; then
+              # The duplicate test randomizes options; WSL2_ONLY=true hard-fails
+              # by design on non-WSL2 runners, so skip the randomized duplicate here.
+              devcontainer features test -f "${{ matrix.name }}" --skip-duplicated \
+                --base-image ubuntu:24.04
+            else
+              devcontainer features test -f "${{ matrix.name }}" \
+                --base-image ubuntu:24.04
+            fi
           fi

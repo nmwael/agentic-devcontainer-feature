@@ -1,0 +1,11 @@
+{
+    "non-wsl2-noop": {
+        "image": "ubuntu:24.04",
+        "features": {
+            "gpu-bridge": {
+                "WSL2_ONLY": "false"
+            }
+        },
+        "testScript": "test.sh"
+    }
+}
