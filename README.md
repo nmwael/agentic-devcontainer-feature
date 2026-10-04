@@ -75,8 +75,19 @@ Plus `--device=nvidia.com/gpu=all` in `runArgs`.
 - **Options:** `MODELS`/`ROLES` [JSON multi-upstream, schema-1], `CLOUD_MODE` [false] / `CLOUD_MODEL` [big-pickle], `BIFROST_PORT` [8082], `MODEL` [gemma-4-26B-A4B-it-UD-IQ2_M] / `QUANT` [IQ2_M] (legacy single-model), `MODELS_DIR` [default: $PWD/models]
 - **stack.json schema:** `models[] = { name, provider, hf, quant, port, context, parallel }`; each entry becomes its own llama-server, opencode provider, and bifrost upstream. `cloud: true` writes an empty `models[]` (no local backends)
 - **fetch-models.sh:** Idempotent: skip if the target file already exists; `curl -L --retry 5 --continue-at -`
-- **MODELS_DIR:** Derived from workspace when unset (default `$PWD/models` → bind-mount friendly)
+- **MODELS_DIR:** Defaults to `<workspace>/models`, resolved at runtime once the workspace is mounted (see *Profile files are resolved at runtime* below)
 - **Use case:** Download and cache GGUF models without bloating the image
+
+### Profile files are resolved at runtime (1.4.0+)
+A devcontainer feature installs during the **build** stage, but your repo is bind-mounted at **container start**. The CLI extracts an OCI feature to `/tmp/dev-container-features/<id>_<n>` and runs `install.sh` with that as `$PWD`, and it passes no workspace path (the only build args are `_DEV_CONTAINERS_BASE_IMAGE` / `_DEV_CONTAINERS_IMAGE_USER`).
+
+So `install.sh` **cannot** read `.devcontainer/llm-lab-models.json`, and an older `$PWD/models` default baked an unreachable temp path into `stack.json` (`/tmp/dev-container-features/models_3/models`). Since 1.4.0 the feature:
+
+1. Installs `resolve-stack.sh`, wired via the feature's `postCreateCommand` (the CLI runs hooks with cwd = the workspace folder).
+2. At runtime, reads `.devcontainer/llm-lab-{models,roles}.json`, applies the same integrity checks as the build, and rewrites `stack.json`, `models.json`, and the bifrost routing config.
+3. Sets `models_dir` to `<workspace>/models` unless `MODELS_DIR` is given explicitly.
+
+Precedence: **explicit `MODELS`/`ROLES` feature options > `.devcontainer/llm-lab-*.json` > built-in defaults.** If you set `MODELS`/`ROLES` as feature options, runtime resolution leaves your stack alone — the choice is recorded in `/usr/local/share/llm-lab/.build-state`. Re-running the resolver is safe (idempotent), so switching profiles only needs a container restart, **not** a rebuild.
 
 ### Cloud mode (`CLOUD_MODE=true`)
 On GPU-less boxes (Codespaces, CI, laptops without an NVIDIA card) there is no llama-server, so the local slot pins in `opencode.json` would 404. `CLOUD_MODE=true` makes the whole agentic stack ride the hosted `opencode` provider instead:

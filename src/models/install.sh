@@ -23,12 +23,30 @@ BIFROST_PORT="${BIFROST_PORT:-8082}"
 OPENCODE_PORT="${OPENCODE_PORT:-4096}"
 SUBAGENT_DEPTH="${SUBAGENT_DEPTH:-2}"
 
+SCRIPT_SRC="$(CDPATH='' cd -- "$(dirname -- "$0")" && pwd)"
+LLM_LAB_DIR="${LLM_LAB_DIR:-/usr/local/share/llm-lab}"
+STACK_FILE="${STACK_FILE:-$LLM_LAB_DIR/stack.json}"
+FEATURE_MODELS_DIR="${FEATURE_MODELS_DIR:-$LLM_LAB_DIR/models}"
+
+# Remember whether MODELS/ROLES arrived as explicit feature options. resolve-stack.sh
+# reads this to avoid clobbering an explicit-option consumer with a stray profile file.
+BUILD_MODELS_OPTION="${MODELS}"
+BUILD_ROLES_OPTION="${ROLES}"
+
+# Shared manifest writers/validators, also used at runtime by resolve-stack.sh.
+# shellcheck source=/dev/null
+. "$SCRIPT_SRC/stack-lib.sh"
+
 # Default cloud role mapping: every agent routes to the hosted opencode provider
 # (roles.model = hosted model id; slot is unused by the opencode generator).
 DEFAULT_CLOUD_ROLES="{\"architect\":{\"model\":\"$CLOUD_MODEL\",\"slot\":0},\"coder\":{\"model\":\"$CLOUD_MODEL\",\"slot\":0},\"researcher\":{\"model\":\"$CLOUD_MODEL\",\"slot\":0},\"reviewer\":{\"model\":\"$CLOUD_MODEL\",\"slot\":0},\"build\":{\"model\":\"$CLOUD_MODEL\",\"slot\":0},\"ui\":{\"model\":\"$CLOUD_MODEL\",\"slot\":0},\"artist\":{\"model\":\"$CLOUD_MODEL\",\"slot\":0},\"ai-researcher\":{\"model\":\"$CLOUD_MODEL\",\"slot\":0}}"
 
-# Consumer-friendly file overrides — real JSON files, zero shell quoting required.
-# Precedence: option env var > $PWD/.devcontainer/llm-lab-{models,roles}.json > defaults.
+# NOTE: $PWD here is NOT the workspace. The devcontainer CLI extracts an OCI
+# feature to /tmp/dev-container-features/<id>_<n> and runs install.sh with that
+# as the working directory, and the workspace bind-mount does not exist yet at
+# build time. So $PWD/.devcontainer/llm-lab-*.json can never match. Profile
+# files are resolved at runtime by resolve-stack.sh (postCreateCommand), where
+# the workspace is mounted. Explicit options remain the build-time input.
 if [ -z "$MODELS" ] && [ -f "$PWD/.devcontainer/llm-lab-models.json" ]; then
     MODELS="$(cat "$PWD/.devcontainer/llm-lab-models.json")"
     echo "MODELS loaded from $PWD/.devcontainer/llm-lab-models.json"
@@ -76,13 +94,13 @@ if ! command -v jq >/dev/null 2>&1; then
 fi
 
 if [ -z "$MODELS_DIR" ]; then
-    MODELS_DIR="$PWD/models"
-    echo "MODELS_DIR not set — defaulting to $MODELS_DIR"
+    # $PWD is the CLI's temp feature-extraction dir (/tmp/dev-container-features/<id>_<n>),
+    # never the workspace, so defaulting to "$PWD/models" baked a path that cannot exist.
+    # Leave it empty: resolve-stack.sh sets it to $WORKSPACE/models at runtime, and
+    # fetch-models.sh already falls back through stack.json -> models.json -> $PWD/models.
+    MODELS_DIR=""
+    echo "MODELS_DIR not set — deferring to runtime resolution (resolve-stack.sh)"
 fi
-
-FEATURE_MODELS_DIR="/usr/local/share/llm-lab/models"
-STACK_FILE="/usr/local/share/llm-lab/stack.json"
-SCRIPT_SRC="$(CDPATH='' cd -- "$(dirname -- "$0")" && pwd)"
 
 mkdir -p "$FEATURE_MODELS_DIR" "$(dirname "$STACK_FILE")"
 
@@ -99,24 +117,12 @@ if command -v jq >/dev/null 2>&1; then
     fi
 
     if [ "$MODE" = "cloud" ]; then
-        # Cloud integrity: >=1 role, every role carries a non-empty hosted model id.
-        if ! jq -e -n --argjson r "$(printf '%s' "$ROLES" | jq -c .)" \
-            '($r | length) > 0 and
-             all($r[];
-                 (.model | type) == "string" and (.model | length) > 0)' \
-            >/dev/null 2>&1; then
+        if ! llm_validate_cloud "$ROLES"; then
             echo "WARNING: cloud ROLES entries must carry a non-empty 'model' (hosted opencode id) — using cloud default"
             ROLES="$DEFAULT_CLOUD_ROLES"
         fi
     else
-        # Local integrity: >=1 model, every role references an existing model, slot < its parallel slot count.
-        if ! jq -e -n --argjson m "$(printf '%s' "$MODELS" | jq -c .)" --argjson r "$(printf '%s' "$ROLES" | jq -c .)" \
-            '($m | length) > 0 and
-             all($r[];
-                 .model as $rm |
-                 (any($m[]; .name == $rm))
-                 and ((first($m[] | select(.name == $rm))).parallel) > .slot)' \
-            >/dev/null 2>&1; then
+        if ! llm_validate_local "$MODELS" "$ROLES"; then
             echo "WARNING: MODELS/ROLES fail integrity (role must reference an existing model, slot < parallel) — using defaults"
             MODELS="$DEFAULT_MODELS"
             ROLES="$DEFAULT_ROLES"
@@ -127,45 +133,30 @@ if command -v jq >/dev/null 2>&1; then
     ROLES_NORM="$(printf '%s' "$ROLES" | jq -c .)"
 
     # Write the shared manifest — single source of truth for bifrost + opencode + auto-startup.
+    llm_write_stack "$MODE" "$MODELS_NORM" "$ROLES_NORM" "$MODELS_DIR" \
+        "$BIFROST_PORT" "$OPENCODE_PORT" "$SUBAGENT_DEPTH"
+
     if [ "$MODE" = "cloud" ]; then
-        jq -n --argjson r "$ROLES_NORM" \
-            --arg md "$MODELS_DIR" --arg bp "$BIFROST_PORT" --arg op "$OPENCODE_PORT" --arg sd "$SUBAGENT_DEPTH" \
-            '{
-                schema: 1,
-                notation: "cloud mode: roles.model = hosted opencode provider model id (slots unused)",
-                models_dir: $md,
-                bifrost_port: ($bp | tonumber),
-                opencode_port: ($op | tonumber),
-                subagent_depth: ($sd | tonumber),
-                cloud: true,
-                cloud_provider: "opencode",
-                models: [],
-                roles: $r
-            }' >"$STACK_FILE"
         echo "Cloud-only shared manifest written to $STACK_FILE (all agents -> hosted opencode provider)"
     else
-        jq -n --argjson m "$MODELS_NORM" --argjson r "$ROLES_NORM" \
-            --arg md "$MODELS_DIR" --arg bp "$BIFROST_PORT" --arg op "$OPENCODE_PORT" --arg sd "$SUBAGENT_DEPTH" \
-            '{
-                schema: 1,
-                notation: "roles -> (model, slot); model id = provider/name[-s{slot}]",
-                models_dir: $md,
-                bifrost_port: ($bp | tonumber),
-                opencode_port: ($op | tonumber),
-                subagent_depth: ($sd | tonumber),
-                cloud: false,
-                cloud_provider: "opencode",
-                models: $m,
-                roles: $r
-            }' >"$STACK_FILE"
         echo "Shared manifest written to $STACK_FILE"
+        # Back-compat mirror: models.json reflects the FIRST model only (legacy fetch path).
+        llm_write_models_json "$MODELS_NORM" "$MODELS_DIR"
     fi
 
-    # Back-compat mirror: models.json reflects the FIRST model only (legacy fetch path).
-    FIRST_HF="$(printf '%s' "$MODELS_NORM" | jq -r '.[0].hf // empty')"
-    FIRST_QUANT="$(printf '%s' "$MODELS_NORM" | jq -r '.[0].quant // empty')"
-    jq -n --arg m "$FIRST_HF" --arg q "$FIRST_QUANT" --arg d "$MODELS_DIR" \
-        '{model: $m, quant: $q, models_dir: $d}' >"$FEATURE_MODELS_DIR/models.json"
+    # Record build-time inputs so resolve-stack.sh can honour explicit feature options
+    # and reuse the ports/depth selected here at runtime.
+    LLAMA_PORT="${LLAMA_PORT:-8089}"
+    cat >"$LLM_LAB_DIR/.build-state" <<EOF
+BUILD_MODELS='$BUILD_MODELS_OPTION'
+BUILD_ROLES='$BUILD_ROLES_OPTION'
+BUILD_MODE='$MODE'
+BUILD_MODELS_DIR='$MODELS_DIR'
+BUILD_BIFROST_PORT='$BIFROST_PORT'
+BUILD_OPENCODE_PORT='$OPENCODE_PORT'
+BUILD_SUBAGENT_DEPTH='$SUBAGENT_DEPTH'
+BUILD_LLAMA_PORT='$LLAMA_PORT'
+EOF
 else
     cp -f "$SCRIPT_SRC/templates/models.json" "$FEATURE_MODELS_DIR/models.json"
     echo "WARNING: jq unavailable — manifest not written; models.json keeps template defaults"
@@ -176,11 +167,25 @@ FETCH_SCRIPT="$FEATURE_MODELS_DIR/fetch-models.sh"
 cp -f "$SCRIPT_SRC/fetch-models.sh" "$FETCH_SCRIPT"
 chmod 0755 "$FETCH_SCRIPT"
 
-# Write MODELS_DIR to /etc/environment or via containerEnv when the option is set
-if ! grep -qF "MODELS_DIR" /etc/environment 2>/dev/null; then
-    echo "export MODELS_DIR=$MODELS_DIR" >>/etc/environment
-    echo "Added MODELS_DIR to /etc/environment"
+# Install the runtime resolver (sourced shared lib travels with it).
+cp -f "$SCRIPT_SRC/stack-lib.sh" "$FEATURE_MODELS_DIR/stack-lib.sh"
+cp -f "$SCRIPT_SRC/resolve-stack.sh" "$FEATURE_MODELS_DIR/resolve-stack.sh"
+chmod 0755 "$FEATURE_MODELS_DIR/resolve-stack.sh"
+
+# Persist MODELS_DIR only when explicitly configured. Writing the (now empty)
+# build-time default would leave an empty/stale export in /etc/environment that
+# shadows the runtime value for every later shell; resolve-stack.sh sets it once
+# the workspace is mounted.
+if [ -n "$MODELS_DIR" ]; then
+    if ! grep -qF "export MODELS_DIR=" /etc/environment 2>/dev/null; then
+        echo "export MODELS_DIR=$MODELS_DIR" >>/etc/environment
+        echo "Added MODELS_DIR to /etc/environment"
+    fi
 fi
 
 echo "Done! Models feature activated."
-echo "Run 'fetch-models.sh' to download configured model(s) into $MODELS_DIR"
+if [ -n "$MODELS_DIR" ]; then
+    echo "Run 'fetch-models.sh' to download configured model(s) into $MODELS_DIR"
+else
+    echo "MODELS_DIR resolved at runtime — run 'fetch-models.sh' after the workspace is mounted"
+fi

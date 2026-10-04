@@ -4,6 +4,15 @@ All notable changes to this project are documented in this file. The format is b
 
 ## [Unreleased]
 
+### Fixed
+- **`models` 1.4.0 — profile files and `models_dir` are resolved at RUNTIME, not build time.** A feature installs during the build stage, but the repo is bind-mounted at container start, so `install.sh` could never read `.devcontainer/llm-lab-models.json`. Compounding it, the `$PWD/models` default baked the CLI's temp feature-extraction path into `stack.json` and `/etc/environment` (e.g. `/tmp/dev-container-features/models_3/models`), leaving a working box unable to find any weights:
+  - **New `resolve-stack.sh`** — wired via the feature's `postCreateCommand` (the CLI runs lifecycle hooks with cwd = the workspace folder). Reads `.devcontainer/llm-lab-{models,roles}.json`, applies the same integrity validation as the build, and rewrites `stack.json`, the `models.json` mirror, and the bifrost routing config.
+  - **`MODELS_DIR`** — no longer defaults to `$PWD/models`. Empty at build time; the resolver sets it to `<workspace>/models` unless explicitly configured. `/etc/environment` is only written when `MODELS_DIR` is set, so no stale/empty export can shadow the runtime value.
+  - **New `stack-lib.sh`** — shared validators/writers sourced by both `install.sh` and `resolve-stack.sh`, so the two paths cannot drift.
+  - **Explicit options win.** `install.sh` records whether `MODELS`/`ROLES` arrived as feature options (`/usr/local/share/llm-lab/.build-state`); when they did, the resolver leaves the stack untouched instead of clobbering it with a workspace profile file.
+  - Switching profiles now needs only a container restart, not a rebuild. The resolver is idempotent and rejects malformed JSON, unknown role models, and slots beyond a model's `parallel` count without corrupting a working stack.
+  - **Tests** — `test/models/runtime-resolution.sh` (14 assertions, runs inside `devcontainer features test`) covers the build/runtime split, precedence, cloud-mode preservation, idempotency, and the integrity rejections. The old `test.sh` assertion that `MODELS_DIR` was always exported to `/etc/environment` now asserts the opposite (no stale build-time export).
+
 ### Added
 - **Cloud mode for the whole agentic stack** — `CLOUD_MODE=true` makes every opencode agent ride the hosted `opencode` provider on GPU-less/cloud boxes:
   - **`models` 1.2.0** — new `CLOUD_MODE` (boolean) + `CLOUD_MODEL` (default `big-pickle`) options. With `CLOUD_MODE=true` and no explicit `MODELS`, writes a cloud-only `stack.json` (`cloud: true`, `cloud_provider: "opencode"`, empty `models[]`, every role carrying a hosted model id). Explicit `MODELS`/`ROLES` (or `.devcontainer/llm-lab-{models,roles}.json`) always win and force the local slot-pinned stack. Local mode adds `cloud: false` to the manifest.

@@ -27,8 +27,24 @@ ok "default model matches legacy stack (gemma4-26b-a4b :8089 ctx 65536)"
 [ -f /usr/local/share/llm-lab/models/models.json ] || fail "models.json back-compat mirror missing"
 ok "models.json back-compat mirror present"
 
-grep -q "MODELS_DIR" /etc/environment || fail "MODELS_DIR not exported in /etc/environment"
-ok "MODELS_DIR exported in /etc/environment"
+# MODELS_DIR persistence. With no explicit option the feature deliberately does
+# NOT write /etc/environment at build time: $PWD is the CLI's temp feature
+# extraction dir, so an empty/stale export would shadow the value resolve-stack.sh
+# sets at runtime. When the option IS set it must be persisted.
+if grep -q '^export MODELS_DIR=$' /etc/environment 2>/dev/null; then
+    fail "empty MODELS_DIR persisted to /etc/environment — would shadow the runtime value"
+fi
+if [ -n "${MODELS_DIR:-}" ]; then
+    grep -q "^export MODELS_DIR=$MODELS_DIR" /etc/environment || fail "explicit MODELS_DIR not exported in /etc/environment"
+    ok "explicit MODELS_DIR exported in /etc/environment"
+else
+    ok "MODELS_DIR left to runtime resolution (no stale build-time export)"
+fi
+
+# The runtime resolver and its shared lib must ship from the feature root.
+[ -x /usr/local/share/llm-lab/models/resolve-stack.sh ] || fail "resolve-stack.sh not installed"
+[ -f /usr/local/share/llm-lab/models/stack-lib.sh ] || fail "stack-lib.sh not installed"
+ok "runtime resolver installed (resolve-stack.sh + stack-lib.sh)"
 
 # Per-model `url` support (1.3.0): exact repo/filename.gguf, since real repos
 # disagree on the -QUANT vs .QUANT separator and cannot be derived from hf+quant.
@@ -56,3 +72,14 @@ grep -q '!= "GGUF"' "$FETCH" || fail "fetched files are not validated as GGUF"
 ok "rejects non-GGUF downloads and cleans up on failure"
 
 echo "PASS: models"
+
+# Runtime profile resolution (build/runtime split). The feature ships resolve-stack.sh
+# and stack-lib.sh into the image, so drive them from that installed copy rather than
+# guessing where the CLI mounted the source tree.
+INSTALLED_FEATURE_DIR="${INSTALLED_FEATURE_DIR:-/usr/local/share/llm-lab/models}"
+if [ -f "$INSTALLED_FEATURE_DIR/resolve-stack.sh" ]; then
+    bash "$(dirname "$0")/runtime-resolution.sh"
+else
+    echo "FAIL: runtime-resolution.sh: no resolve-stack.sh under $INSTALLED_FEATURE_DIR"
+    exit 1
+fi
