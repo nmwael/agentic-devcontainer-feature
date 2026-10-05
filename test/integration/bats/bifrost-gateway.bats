@@ -33,6 +33,59 @@
     dash -n /usr/local/bin/start-bifrost
 }
 
+@test "launcher passes the port as -port flag, not a positional argument" {
+    # bifrost v2.2.x parses -port/-host as flags. A positional port is silently
+    # ignored and the server falls back to 127.0.0.1:8080, making BIFROST_PORT
+    # unreachable. Guard against regressing to the positional form.
+    run grep -q '\-port "\$PORT_ENV"' /usr/local/bin/start-bifrost
+    [ "$status" -eq 0 ]
+    run grep -q '\-host "\$HOST_ENV"' /usr/local/bin/start-bifrost
+    [ "$status" -eq 0 ]
+    if grep -q 'bin.js" "\$PORT_ENV"' /usr/local/bin/start-bifrost; then
+        echo "launcher still passes the port positionally; bifrost ignores it"
+        return 1
+    fi
+}
+
+@test "launcher syncs generated config to bifrost's expected app-dir path" {
+    # write-bifrost-config.sh emits <BIFROST_DIR>/config/bifrost.json but bifrost
+    # reads <app-dir>/config.json. Without the sync it logs "config file not
+    # found ... initializing with default values" and serves zero providers.
+    run grep -q 'APP_DIR' /usr/local/bin/start-bifrost
+    [ "$status" -eq 0 ]
+    run grep -q 'config.json' /usr/local/bin/start-bifrost
+    [ "$status" -eq 0 ]
+    run grep -q 'GENERATED_CONFIG' /usr/local/bin/start-bifrost
+    [ "$status" -eq 0 ]
+}
+
+@test "launcher honours BIFROST_PORT end-to-end (binds the requested port)" {
+    requested=18383
+    BIFROST_PORT=$requested start-bifrost >/tmp/bifrost-port-test.log 2>&1 &
+    launcher_pid=$!
+    n=0
+    while [ "$n" -lt 20 ]; do
+        if PORT=$requested python3 -c 'import os,socket
+s=socket.socket(); s.settimeout(2)
+try:
+    s.connect(("127.0.0.1", int(os.environ["PORT"]))); s.close(); raise SystemExit(0)
+except SystemExit: raise
+except Exception: raise SystemExit(1)'; then
+            break
+        fi
+        n=$((n + 1))
+        sleep 1
+    done
+    bound=no
+    [ "$n" -lt 20 ] && bound=yes
+    # Tear down before asserting. `wait` on a SIGTERM'd child exits 143, which
+    # bats would otherwise report as a test failure.
+    pkill -f "bifros[t]-http" 2>/dev/null
+    kill "$launcher_pid" 2>/dev/null
+    wait "$launcher_pid" 2>/dev/null || true
+    [ "$bound" = yes ]
+}
+
 @test "write-bifrost-config.sh shipped, executable, sh-clean" {
     [ -f /usr/local/share/llm-lab/bifrost/write-bifrost-config.sh ]
     [ -x /usr/local/share/llm-lab/bifrost/write-bifrost-config.sh ]
