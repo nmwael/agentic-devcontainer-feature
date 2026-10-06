@@ -1,8 +1,10 @@
 #!/bin/sh
 # write-bifrost-config.sh — materialize a bifrost v2 config file from the shared
 # stack.json manifest (written by the models feature), one provider per llama-server
-# upstream. Model-id routing: each provider's keys[].models allowlist is "{name}*",
-# so a request for "gemma4-26b-a4b-s0" is routed to the 26B upstream on its port.
+# upstream. Model-id routing: each provider's keys[].models allowlist carries
+# the exact ids "{name}" + "{name}-s0..s{parallel-1}" (bifrost matches
+# allowlist entries exactly), so a request for "gemma4-26b-a4b-s0" is routed
+# to the 26B upstream on its port.
 #
 # Usage: write-bifrost-config.sh [stack.json] [output.json] [llama_port_fallback]
 # Requires: jq. Without jq it falls back to copying the shipped legacy template.
@@ -17,14 +19,17 @@ mkdir -p "$(dirname "$OUT_FILE")"
 
 if command -v jq >/dev/null 2>&1; then
     if [ -f "$STACK_FILE" ] && jq -e . "$STACK_FILE" >/dev/null 2>&1; then
-        # One provider per model upstream; keys[].models routes "{name}*" model ids here.
+        # One provider per model upstream; keys[].models routes the exact
+        # "{name}"/"{name}-s{slot}" ids here.
         jq -n --slurpfile s "$STACK_FILE" \
             '{ "$schema": "https://www.getbifrost.ai/schema",
                providers: (
                    reduce $s[0].models[] as $m ({};
                        .[$m.name] = {
-                           keys:    [ { name: "local", value: "no-key", models: [($m.name + "*")], weight: 1.0 } ],
-                           network_config: { base_url: ("http://127.0.0.1:" + ($m.port | tostring) + "/v1") },
+                           keys:    [ { name: "local", value: "no-key",
+                                        models: ([$m.name] + [($m.name) as $n | range(0; ($m.parallel // 1)) | $n + "-s" + tostring]),
+                                        weight: 1.0 } ],
+                           network_config: { base_url: ("http://127.0.0.1:" + ($m.port | tostring)) },
                            custom_provider_config: { base_provider_type: "openai" }
                        }
                    )
@@ -38,7 +43,7 @@ if command -v jq >/dev/null 2>&1; then
                providers: {
                    llama: {
                        keys:    [ { name: "local", value: "no-key", models: ["*"], weight: 1.0 } ],
-                       network_config: { base_url: ("http://127.0.0.1:" + $port + "/v1") },
+                       network_config: { base_url: ("http://127.0.0.1:" + $port) },
                        custom_provider_config: { base_provider_type: "openai" }
                    }
                },

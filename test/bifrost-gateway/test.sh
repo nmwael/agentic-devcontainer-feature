@@ -2,7 +2,7 @@
 # devcontainer features test — bifrost-gateway (auto-generated, default options).
 # The feature is built in ISOLATION here (no models feature -> no stack.json),
 # so write-bifrost-config.sh must fall back to the legacy single-upstream config
-# on the default LLAMA_PORT (8089), ending in /v1 (llama-server OpenAI endpoint).
+# on the default LLAMA_PORT (8089); bifrost appends the /v1 path itself.
 set -e
 
 fail() { echo "FAIL: $*"; exit 1; }
@@ -16,9 +16,9 @@ CFG=/usr/local/share/llm-lab/bifrost/config/bifrost.json
 jq -e . "$CFG" >/dev/null 2>&1 || fail "bifrost config is not valid JSON"
 ok "bifrost config present + valid JSON"
 
-jq -e '.providers.llama.network_config.base_url | endswith(":8089/v1")' "$CFG" >/dev/null 2>&1 \
-    || fail "expected legacy single-upstream on :8089/v1 (no stack.json present)"
-ok "legacy fallback upstream resolves to http://127.0.0.1:8089/v1"
+jq -e '.providers.llama.network_config.base_url | endswith(":8089")' "$CFG" >/dev/null 2>&1 \
+    || fail "expected legacy single-upstream on :8089 (no stack.json present)"
+ok "legacy fallback upstream resolves to http://127.0.0.1:8089"
 
 [ -x /usr/local/share/llm-lab/bifrost/write-bifrost-config.sh ] || fail "write-bifrost-config.sh not installed"
 ok "write-bifrost-config.sh installed"

@@ -63,7 +63,7 @@ Plus `--device=nvidia.com/gpu=all` in `runArgs`.
 - **Provides:** Pinned `@maximhq/bifrost` install + config scaffold
 - **Installs:** `npm install --prefix /usr/local/share/llm-lab/bifrost @maximhq/bifrost@<pin>`
 - **Launches:** `start-bifrost` script honoring `BIFROST_PORT` / config (bifrost v2.2.x takes the port as a `-port` flag, and reads its config from `<app-dir>/config.json` — the launcher passes `-port`/`-host` and syncs the generated config into the app-dir on start)
-- **Config:** `write-bifrost-config.sh` materializes `config/bifrost.json` (v2 schema) from `stack.json` — one provider per llama-server upstream (base_url `:port/v1`), routed by `keys[].models = ["{name}*"]`
+- **Config:** `write-bifrost-config.sh` materializes `config/bifrost.json` (v2 schema) from `stack.json` — one provider per llama-server upstream (base_url `:port`; bifrost appends the OpenAI `/v1/...` path itself), routed by `keys[].models` listing the exact ids `{name}` / `{name}-s{slot}`
 - **Options:** `PORT` [8082], `VERSION` [latest], `LLAMA_PORT` [8089, legacy single-upstream fallback]
 - **Honors env:** `BIFROST_PORT` (overrides the `PORT` option/`stack.json.bifrost_port` at launch)
 - **installsAfter:** [llama-server] (soft)

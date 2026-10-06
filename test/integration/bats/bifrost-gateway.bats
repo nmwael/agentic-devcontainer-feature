@@ -136,10 +136,16 @@ with open(sys.argv[1]) as f:
     c = json.load(f)
 providers = c['providers']
 assert set(providers) == {'gemma4-26b-a4b', 'gemma4-31b-a4b'}
-assert providers['gemma4-26b-a4b']['network_config']['base_url'].endswith(':8089/v1')
-assert providers['gemma4-31b-a4b']['network_config']['base_url'].endswith(':8090/v1')
-# model-id routing: keys[].models allowlists the provider's slug with a wildcard
-assert 'gemma4-26b-a4b*' in providers['gemma4-26b-a4b']['keys'][0]['models']
+assert providers['gemma4-26b-a4b']['network_config']['base_url'].endswith(':8089')
+assert providers['gemma4-31b-a4b']['network_config']['base_url'].endswith(':8090')
+# model-id routing: keys[].models allowlists the provider's exact ids
+# (name plus per-slot ids; bifrost matches allowlist entries exactly)
+assert 'gemma4-26b-a4b' in providers['gemma4-26b-a4b']['keys'][0]['models']
+assert 'gemma4-26b-a4b-s3' in providers['gemma4-26b-a4b']['keys'][0]['models']
+assert not any(m.endswith('*') for m in providers['gemma4-26b-a4b']['keys'][0]['models'])
+assert 'gemma4-31b-a4b' in providers['gemma4-31b-a4b']['keys'][0]['models']
+assert 'gemma4-31b-a4b-s2' in providers['gemma4-31b-a4b']['keys'][0]['models']
+assert not any(m.endswith('*') for m in providers['gemma4-31b-a4b']['keys'][0]['models'])
 PY
     rm -f "$stack" "$out"
 }

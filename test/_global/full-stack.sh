@@ -31,8 +31,10 @@ CFG=/usr/local/share/llm-lab/bifrost/config/bifrost.json
 /usr/local/share/llm-lab/bifrost/write-bifrost-config.sh "$STACK" "$CFG" 8089 >/dev/null 2>&1 \
     || fail "write-bifrost-config.sh re-materialization failed"
 jq -e . "$CFG" >/dev/null 2>&1 || fail "bifrost config invalid JSON"
-jq -e '.providers["gemma4-26b-a4b"].network_config.base_url | endswith(":8089/v1")' "$CFG" \
-    >/dev/null 2>&1 || fail "bifrost config must expose default upstream on :8089/v1"
+jq -e '.providers["gemma4-26b-a4b"].network_config.base_url | endswith(":8089")' "$CFG" \
+    >/dev/null 2>&1 || fail "bifrost config must expose default upstream on :8089"
+jq -e '.providers["gemma4-26b-a4b"].keys[0].models == ["gemma4-26b-a4b","gemma4-26b-a4b-s0","gemma4-26b-a4b-s1","gemma4-26b-a4b-s2","gemma4-26b-a4b-s3","gemma4-26b-a4b-s4"]' "$CFG" \
+    >/dev/null 2>&1 || fail "default model allowlist must be the exact id list (name + -s0..-s4 for parallel 5)"
 ok "bifrost multi-upstream config materialized from stack.json"
 
 # ---- models -----------------------------------------------------------------
