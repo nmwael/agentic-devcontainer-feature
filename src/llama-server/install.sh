@@ -123,6 +123,17 @@ if [ -n "$LLAMA_BIN" ]; then
     echo "llama-server symlinked to /usr/local/bin/llama-server"
 fi
 
+# llama-watchdog.sh rides along with the binary. /health stays green when
+# generation collapses (a server observed at ~0.1 tok/s still answers in
+# milliseconds), so the consumer's auto-startup.sh spawns this probe to detect
+# a degraded server and recycle it through the idempotent starter.
+FEATURE_DIR=$(CDPATH='' cd -- "$(dirname -- "$0")" && pwd)
+if [ -f "$FEATURE_DIR/llama-watchdog.sh" ]; then
+    install -m 0755 "$FEATURE_DIR/llama-watchdog.sh" "$INSTALL_PATH/llama-watchdog.sh"
+    ln -sf "$INSTALL_PATH/llama-watchdog.sh" /usr/local/bin/llama-watchdog
+    echo "llama-watchdog installed -> /usr/local/bin/llama-watchdog"
+fi
+
 # Bundle CUDA runtime libs if requested
 if [ "$BUNDLE_CUDA_LIBS" = "true" ]; then
     echo "Bundling CUDA 13.3 runtime libraries..."

@@ -22,6 +22,7 @@ FEATURE_SCRIPTS=(
     src/models/fetch-models.sh
     src/bifrost-gateway/start-bifrost.sh
     src/gpu-bridge/ensure-bridge.sh
+    src/llama-server/llama-watchdog.sh
     test/templates/llm-lab/test.sh
 )
 

@@ -182,4 +182,26 @@ else
     echo "[auto-startup] opencode CLI not installed — skipping"
 fi
 
+# --- llama watchdog (/health stays green while generation collapses) ---------
+# A server decoding at ~0.1 tok/s still answers /health in milliseconds, so
+# every agent turn would silently burn opencode's provider timeout. The probe
+# (installed by the llama-server feature) stops that: two slow/failed probes
+# while idle recycle the server through this same idempotent starter.
+SCRIPT_DIR=$(CDPATH='' cd -- "$(dirname -- "$0")" && pwd)
+SCRIPT_PATH="$SCRIPT_DIR/auto-startup.sh"
+WATCHDOG_BIN=""
+if command -v llama-watchdog >/dev/null 2>&1; then
+    WATCHDOG_BIN="$(command -v llama-watchdog)"
+elif [ -f "$SCRIPT_DIR/llama-watchdog.sh" ]; then
+    WATCHDOG_BIN="$SCRIPT_DIR/llama-watchdog.sh"
+fi
+if [ -z "$WATCHDOG_BIN" ]; then
+    echo "[auto-startup] llama-watchdog not installed — skipping (feature llama-server >= 1.0.4)"
+elif command -v pgrep >/dev/null 2>&1 && pgrep -f llama-watchdog >/dev/null 2>&1; then
+    echo "[auto-startup] llama watchdog already running"
+else
+    echo "[auto-startup] starting llama watchdog (interval=${WATCHDOG_INTERVAL:-120}s budget=${WATCHDOG_BUDGET:-30}s)"
+    WATCHDOG_RESTART="bash $SCRIPT_PATH" nohup sh "$WATCHDOG_BIN" >>/tmp/llama-watchdog.log 2>&1 &
+fi
+
 echo "[auto-startup] done."
