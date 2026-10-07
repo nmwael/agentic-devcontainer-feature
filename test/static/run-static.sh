@@ -8,7 +8,8 @@
 #  6. template JSON validation (jq) on config templates
 #  7. hadolint Dockerfile lint (fail-on {DL3003,DL4006,DL4006}; report-only DL4006)
 #  8. auto-startup llama-server flag contract
-#  9. devcontainer-CLI test mirror contract
+#  9. llama-watchdog spawn contract (restart hook + anchored daemon guard)
+# 10. devcontainer-CLI test mirror contract
 # Runs on the CI runner - Docker not required (hadolint runs via the binary
 # or the hadolint/hadolint image when either is available; else SKIP, never fails).
 set -euo pipefail
@@ -36,20 +37,20 @@ CHECK_SCRIPTS=(
     test/_global/*.sh
 )
 
-echo "==[1/9] shellcheck (warning severity) =="
+echo "==[1/10] shellcheck (warning severity) =="
 shellcheck -x -S warning "${CHECK_SCRIPTS[@]}"
 echo "  shellcheck: clean"
 
-echo "==[2/9] dash -n syntax (installers run under /bin/sh) =="
+echo "==[2/10] dash -n syntax (installers run under /bin/sh) =="
 for f in "${FEATURE_SCRIPTS[@]}"; do
     dash -n "$f"
     echo "  ok: $f"
 done
 
-echo "==[3/9] hand-written schema checks =="
+echo "==[3/10] hand-written schema checks =="
 python3 test/static/schema-check.py
 
-echo "==[4/9] official devcontainer spec validation =="
+echo "==[4/10] official devcontainer spec validation =="
 # Authoritative, offline: the schemas are vendored under test/static/schemas.
 # --fast because the full output is worse than useless here -- the base schema
 # root is a oneOf over container shapes, so one bad field also reports errors
@@ -72,10 +73,10 @@ for schema in test/static/schemas/*.schema.json; do
 done
 echo "  ok: vendored schemas are themselves valid"
 
-echo "==[5/9] vendored schema freshness =="
+echo "==[5/10] vendored schema freshness =="
 python3 test/static/vendor-schemas.py --check
 
-echo "==[6/9] template JSON validation (jq) =="
+echo "==[6/10] template JSON validation (jq) =="
 TEMPLATE_JSONS=(src/*/templates/*.json)
 COUNT=0
 for f in "${TEMPLATE_JSONS[@]}"; do
@@ -89,7 +90,7 @@ for f in "${TEMPLATE_JSONS[@]}"; do
 done
 echo "  ${COUNT} template JSON file(s) valid"
 
-echo "==[7/9] hadolint Dockerfile lint =="
+echo "==[7/10] hadolint Dockerfile lint =="
 # Dockerfile correctness gate: fail-on {DL3003,DL3008}; DL4006 report-only.
 # Runs when a hadolint binary or the hadolint/hadolint image is available;
 # else SKIP (exit 0, never fails the suite).
@@ -129,7 +130,7 @@ else
     echo "  SKIP: hadolint unavailable (no hadolint binary, no docker) — soft gate, never fails"
 fi
 
-echo "==[8/9] auto-startup llama-server flags =="
+echo "==[8/10] auto-startup llama-server flags =="
 # Model-id sync contract: llama-server MUST receive --alias/--parallel matching
 # the opencode provider models generated from stack.json, or bifrost routing
 # 404s (see AGENTS.md conventions).
@@ -141,7 +142,27 @@ if ! grep -q -- '--alias' scripts/auto-startup.sh ||
 fi
 echo "  ok: auto-startup.sh passes --alias/--parallel/--ctx-size"
 
-echo "==[9/9] devcontainer-CLI test mirror contract =="
+echo "==[9/10] llama-watchdog spawn contract =="
+# The reference auto-startup.sh must (a) hand the watchdog a restart command
+# that points back at itself, (b) guard the single-instance check with a
+# pattern anchored to the bare invocation — an unanchored `pgrep -f
+# llama-watchdog` also matches a concurrent `--probe`/`--once`, so the spawn
+# skipped itself — and (c) spawn it detached.
+if ! grep -qF 'WATCHDOG_RESTART="bash $SCRIPT_PATH"' scripts/auto-startup.sh; then
+    echo "  FAIL: auto-startup.sh must spawn the watchdog with WATCHDOG_RESTART pointing at itself"
+    exit 1
+fi
+if ! grep -qF "pgrep -f 'llama-watchdog(\\.sh)?\$'" scripts/auto-startup.sh; then
+    echo "  FAIL: auto-startup.sh daemon guard must be anchored: pgrep -f 'llama-watchdog(\\.sh)?\$'"
+    exit 1
+fi
+if ! grep -qF 'nohup sh "$WATCHDOG_BIN"' scripts/auto-startup.sh; then
+    echo "  FAIL: auto-startup.sh must spawn the watchdog detached (nohup ... &)"
+    exit 1
+fi
+echo "  ok: restart hook + anchored single-instance guard + detached spawn"
+
+echo "==[10/10] devcontainer-CLI test mirror contract =="
 # `devcontainer features test` requires test/<feature>/test.sh for every feature
 # in src/, and a matching <scenario>.sh for every key in each scenarios.json.
 FEATURES=(llama-server gpu-bridge bifrost-gateway models opencode-agents)

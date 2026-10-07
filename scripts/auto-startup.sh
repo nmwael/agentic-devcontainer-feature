@@ -197,7 +197,7 @@ elif [ -f "$SCRIPT_DIR/llama-watchdog.sh" ]; then
 fi
 if [ -z "$WATCHDOG_BIN" ]; then
     echo "[auto-startup] llama-watchdog not installed — skipping (feature llama-server >= 1.0.4)"
-elif command -v pgrep >/dev/null 2>&1 && pgrep -f llama-watchdog >/dev/null 2>&1; then
+elif command -v pgrep >/dev/null 2>&1 && pgrep -f 'llama-watchdog(\.sh)?$' >/dev/null 2>&1; then
     echo "[auto-startup] llama watchdog already running"
 else
     echo "[auto-startup] starting llama watchdog (interval=${WATCHDOG_INTERVAL:-120}s budget=${WATCHDOG_BUDGET:-30}s)"
