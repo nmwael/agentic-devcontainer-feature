@@ -43,10 +43,10 @@
                           headers: { "x-bf-passthrough-extra-params": "true" }
                       },
                       models:
-                          ({ ($m.name): { name: ($m.name + " (unpinned fallback)"), limit: { context: $m.context, output: ($m.output // $m.context) } } }
+                          ({ ($m.name): { name: ($m.name + " (unpinned fallback)"), limit: { context: $m.context, output: ($m.output // 8192) } } }
                            + (reduce range(0; $m.parallel) as $i ({};
                                  . + { (($m.name) + "-s" + ($i | tostring)):
-                                           { name: ($m.name + " - Slot " + ($i | tostring)), limit: { context: $m.context, output: ($m.output // $m.context) } } })))
+                                           { name: ($m.name + " - Slot " + ($i | tostring)), limit: { context: $m.context, output: ($m.output // 8192) } } })))
                   }
               }
           )

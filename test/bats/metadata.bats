@@ -117,6 +117,14 @@ assert isinstance(data, dict) and "features" in data, "template devcontainer.jso
     }
 }
 
+@test "opencode-agents fragment: limit.output is never limit.context" {
+    frag="$REPO_ROOT/src/opencode-agents/templates/opencode.json.fragment"
+    jq -e '[ .provider[].models[]? | (.limit.output == .limit.context) ] | any | not' "$frag" >/dev/null || {
+        echo "opencode.json.fragment: limit.output == limit.context collapses opencode's compaction threshold to 0"
+        return 1
+    }
+}
+
 @test "scripts/ and test harness shell scripts are shellcheck-clean" {
     shellcheck -x -S warning \
         "$REPO_ROOT"/scripts/*.sh \

@@ -102,3 +102,43 @@ J
     [ "$status" -eq 0 ]
     [ -x /usr/local/share/opencode-agents/scaffold.sh ]
 }
+
+@test "generate-opencode.sh defaults limit.output to 8192, never limit.context" {
+    stack=$(mktemp)
+    cat >"$stack" <<'J'
+{"schema":1,"models_dir":"/tmp/m","bifrost_port":8082,"opencode_port":4096,"subagent_depth":2,"cloud":false,"cloud_provider":"opencode","models":[{"name":"gemma4-26b-a4b","provider":"local-gemma4-26b","hf":"x","quant":"Q2","port":8089,"context":65536,"parallel":2}],"roles":{"architect":{"model":"gemma4-26b-a4b","slot":0}}}
+J
+    out=$(mktemp -d)
+    run /usr/local/share/opencode-agents/generate-opencode.sh "$stack" "$out/opencode.json"
+    [ "$status" -eq 0 ]
+    jq -e '[.provider[] | .models[]? | .limit.output] | all(. == 8192)' "$out/opencode.json" >/dev/null || {
+        echo "limit.output must default to 8192 (context was 65536):"
+        jq -c '.provider[] | .models[]? | .limit' "$out/opencode.json"
+        return 1
+    }
+    jq -e '[.provider[] | .models[]? | (.limit.output == .limit.context)] | any | not' "$out/opencode.json" >/dev/null || {
+        echo "limit.output == limit.context collapses opencode's compaction threshold to 0 (compact-every-turn loop)"
+        return 1
+    }
+    rm -rf "$out" "$stack"
+}
+
+@test "generate-opencode.sh honours an explicit per-model output" {
+    stack=$(mktemp)
+    cat >"$stack" <<'J'
+{"schema":1,"models_dir":"/tmp/m","bifrost_port":8082,"opencode_port":4096,"subagent_depth":2,"cloud":false,"cloud_provider":"opencode","models":[{"name":"qwen3-8b","provider":"local-qwen3-8b","hf":"x","quant":"Q4","port":8089,"context":40960,"output":4096,"parallel":1}],"roles":{"build":{"model":"qwen3-8b","slot":0}}}
+J
+    out=$(mktemp -d)
+    run /usr/local/share/opencode-agents/generate-opencode.sh "$stack" "$out/opencode.json"
+    [ "$status" -eq 0 ]
+    jq -e '.provider["local-qwen3-8b"].models["qwen3-8b"].limit.output == 4096' "$out/opencode.json" >/dev/null || {
+        echo "explicit profile output=4096 must reach limit.output:"
+        jq -c '.provider["local-qwen3-8b"].models' "$out/opencode.json"
+        return 1
+    }
+    jq -e '.provider["local-qwen3-8b"].models["qwen3-8b-s0"].limit.output == 4096' "$out/opencode.json" >/dev/null || {
+        echo "slot id must carry the same explicit output"
+        return 1
+    }
+    rm -rf "$out" "$stack"
+}
