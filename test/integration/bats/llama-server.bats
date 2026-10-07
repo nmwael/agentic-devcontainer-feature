@@ -128,3 +128,88 @@ PY
     run llama-watchdog --probe 18099
     [ "$status" -eq 1 ]
 }
+
+@test "llama-watchdog restart ledger: caps attempts, healthy probe re-arms" {
+    work=$(mktemp -d)
+    marker="$work/restarted"
+    state="$work/state"
+
+    # Three restart attempts on a dead port, each relaunch "succeeds".
+    i=0
+    while [ "$i" -lt 3 ]; do
+        run env WATCHDOG_STATE="$state" WATCHDOG_CONFIRM_DELAY=0 WATCHDOG_MAX_RESTARTS=3 \
+            WATCHDOG_RESTART="echo restarted >> $marker" llama-watchdog --once 18099 dead
+        [ "$status" -eq 0 ]
+        i=$((i + 1))
+    done
+    [ "$(wc -l <"$marker")" -eq 3 ]
+    [ "$(awk '$1 == "18099" { print $2 }' "$state")" -eq 3 ]
+
+    # Fourth attempt gives up: the restart command must not run again.
+    run env WATCHDOG_STATE="$state" WATCHDOG_CONFIRM_DELAY=0 WATCHDOG_MAX_RESTARTS=3 \
+        WATCHDOG_RESTART="echo restarted >> $marker" llama-watchdog --once 18099 dead
+    [ "$status" -eq 0 ]
+    printf '%s' "$output" | grep -q "giving up"
+    [ "$(wc -l <"$marker")" -eq 3 ]
+
+    # A healthy probe re-arms only the probed port's budget.
+    printf '18089 3\n18099 3\n' >"$state"
+    cat >"$work/stub.py" <<'PY'
+import json
+import sys
+from http.server import BaseHTTPRequestHandler, HTTPServer
+
+port = int(sys.argv[1])
+
+
+class Handler(BaseHTTPRequestHandler):
+    def _ok(self, body):
+        self.send_response(200)
+        self.send_header("Content-Type", "application/json")
+        self.send_header("Content-Length", str(len(body)))
+        self.end_headers()
+        self.wfile.write(body)
+
+    def do_GET(self):
+        # /health must answer 200 or the cycle never reaches the probe.
+        self._ok(b'{"status":"ok"}')
+
+    def do_POST(self):
+        self.rfile.read(int(self.headers.get("Content-Length") or 0))
+        self._ok(json.dumps({"choices": [{"message": {"content": "OK"}}]}).encode())
+
+    def log_message(self, *args):
+        pass
+
+
+HTTPServer(("127.0.0.1", port), Handler).serve_forever()
+PY
+    python3 "$work/stub.py" 18089 &
+    WATCHDOG_STUB_PIDS="$WATCHDOG_STUB_PIDS $!"
+    n=0
+    until (exec 3<>/dev/tcp/127.0.0.1/18089) 2>/dev/null; do
+        n=$((n + 1))
+        [ "$n" -lt 20 ] || false
+        sleep 0.5
+    done
+
+    run env WATCHDOG_STATE="$state" llama-watchdog --once 18089 stub
+    [ "$status" -eq 0 ]
+    printf '%s' "$output" | grep -q "healthy (probe inside"
+    [ -z "$(awk '$1 == "18089" { print $2 }' "$state")" ]
+    [ "$(awk '$1 == "18099" { print $2 }' "$state")" -eq 3 ]
+}
+
+@test "llama-watchdog with no args enters daemon mode (auto-startup spawns it bare)" {
+    # Daemon path, before any probe: the bare invocation must not stop at
+    # --help (exit 0 + usage), so it has to reach the manifest guards and
+    # exit 1 — or, on a box with jq, keep looping until timeout (124).
+    run env STACK_JSON=/nonexistent-stack.json timeout 10 llama-watchdog
+    [ "$status" -eq 1 ]
+    printf '%s' "$output" | grep -Eq "jq not found|no manifest at"
+
+    # Cloud/skip boxes: exit cleanly instead of restart-looping on nothing.
+    run env SKIP_LLAMA_START=1 timeout 10 llama-watchdog
+    [ "$status" -eq 0 ]
+    printf '%s' "$output" | grep -q "SKIP_LLAMA_START is set"
+}
