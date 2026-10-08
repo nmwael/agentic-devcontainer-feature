@@ -46,6 +46,22 @@ else
     echo "libgomp.so.1 already present — skipping"
 fi
 
+# llama-watchdog.sh rides along with the binary. /health stays green when
+# generation collapses (a server observed at ~0.1 tok/s still answers in
+# milliseconds), so the consumer's auto-startup.sh spawns this probe to detect
+# a degraded server and recycle it through the idempotent starter.
+# Installed BEFORE the idempotence check below, for the same reason libgomp1
+# is: a base image that already ships llama-server (or a rebuild whose binary
+# rides in from a cached layer) takes the early-exit path, and the watchdog is
+# exactly what that path is missing — 1.0.5 never landed on such a box.
+FEATURE_DIR=$(CDPATH='' cd -- "$(dirname -- "$0")" && pwd)
+if [ -f "$FEATURE_DIR/llama-watchdog.sh" ]; then
+    mkdir -p "$INSTALL_PATH"
+    install -m 0755 "$FEATURE_DIR/llama-watchdog.sh" "$INSTALL_PATH/llama-watchdog.sh"
+    ln -sf "$INSTALL_PATH/llama-watchdog.sh" /usr/local/bin/llama-watchdog
+    echo "llama-watchdog installed -> /usr/local/bin/llama-watchdog"
+fi
+
 # Idempotence path: if llama-server already exists, notice and NO-OP
 if [ -f "${LLAMA_DIR}/llama-server" ]; then
     echo "Notice: /opt/llama-server/llama-server already exists (custom image as base)."
@@ -121,17 +137,6 @@ LLAMA_BIN="$(find "$INSTALL_PATH" -type f -name llama-server | head -1)"
 if [ -n "$LLAMA_BIN" ]; then
     ln -sf "$LLAMA_BIN" /usr/local/bin/llama-server
     echo "llama-server symlinked to /usr/local/bin/llama-server"
-fi
-
-# llama-watchdog.sh rides along with the binary. /health stays green when
-# generation collapses (a server observed at ~0.1 tok/s still answers in
-# milliseconds), so the consumer's auto-startup.sh spawns this probe to detect
-# a degraded server and recycle it through the idempotent starter.
-FEATURE_DIR=$(CDPATH='' cd -- "$(dirname -- "$0")" && pwd)
-if [ -f "$FEATURE_DIR/llama-watchdog.sh" ]; then
-    install -m 0755 "$FEATURE_DIR/llama-watchdog.sh" "$INSTALL_PATH/llama-watchdog.sh"
-    ln -sf "$INSTALL_PATH/llama-watchdog.sh" /usr/local/bin/llama-watchdog
-    echo "llama-watchdog installed -> /usr/local/bin/llama-watchdog"
 fi
 
 # Bundle CUDA runtime libs if requested

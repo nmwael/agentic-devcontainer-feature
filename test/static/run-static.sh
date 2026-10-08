@@ -8,7 +8,7 @@
 #  6. template JSON validation (jq) on config templates
 #  7. hadolint Dockerfile lint (fail-on {DL3003,DL4006,DL4006}; report-only DL4006)
 #  8. auto-startup llama-server flag contract
-#  9. llama-watchdog spawn contract (restart hook + anchored daemon guard)
+#  9. llama-watchdog spawn contract (restart hook + anchored daemon guard + install ordering)
 # 10. devcontainer-CLI test mirror contract
 # Runs on the CI runner - Docker not required (hadolint runs via the binary
 # or the hadolint/hadolint image when either is available; else SKIP, never fails).
@@ -147,7 +147,9 @@ echo "==[9/10] llama-watchdog spawn contract =="
 # that points back at itself, (b) guard the single-instance check with a
 # pattern anchored to the bare invocation — an unanchored `pgrep -f
 # llama-watchdog` also matches a concurrent `--probe`/`--once`, so the spawn
-# skipped itself — and (c) spawn it detached.
+# skipped itself — and (c) spawn it detached. And install.sh must install the
+# watchdog (d) BEFORE the idempotence early-exit, or a base image that already
+# ships llama-server takes the exit and the watchdog never lands — 1.0.5.
 if ! grep -qF 'WATCHDOG_RESTART="bash $SCRIPT_PATH"' scripts/auto-startup.sh; then
     echo "  FAIL: auto-startup.sh must spawn the watchdog with WATCHDOG_RESTART pointing at itself"
     exit 1
@@ -161,6 +163,13 @@ if ! grep -qF 'nohup sh "$WATCHDOG_BIN"' scripts/auto-startup.sh; then
     exit 1
 fi
 echo "  ok: restart hook + anchored single-instance guard + detached spawn"
+wd_line=$(grep -n 'llama-watchdog installed' src/llama-server/install.sh | head -1 | cut -d: -f1)
+exit_line=$(grep -n 'no re-install performed' src/llama-server/install.sh | head -1 | cut -d: -f1)
+if [ -z "$wd_line" ] || [ -z "$exit_line" ] || [ "$wd_line" -ge "$exit_line" ]; then
+    echo "  FAIL: install.sh must install llama-watchdog before the idempotence early-exit (line $wd_line vs $exit_line)"
+    exit 1
+fi
+echo "  ok: watchdog installs before the idempotence early-exit (line $wd_line < $exit_line)"
 
 echo "==[10/10] devcontainer-CLI test mirror contract =="
 # `devcontainer features test` requires test/<feature>/test.sh for every feature

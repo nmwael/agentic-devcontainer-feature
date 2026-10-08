@@ -56,6 +56,20 @@ teardown() {
     command -v llama-watchdog
 }
 
+@test "watchdog installs even when the binary pre-exists (early-exit path)" {
+    # Simulate a base image whose llama-server rode in from a cached layer but
+    # that never got the watchdog (the 1.0.5 bug): remove the watchdog, then
+    # re-run install.sh — the idempotence early-exit must not skip the install.
+    rm -f /opt/llama-server/llama-watchdog.sh /usr/local/bin/llama-watchdog
+    run /bin/sh /tmp/feature/install.sh
+    [ "$status" -eq 0 ]
+    echo "$output" | grep -q "no re-install performed"
+    [ -x /opt/llama-server/llama-watchdog.sh ]
+    [ -L /usr/local/bin/llama-watchdog ]
+    [ "$(readlink /usr/local/bin/llama-watchdog)" = "/opt/llama-server/llama-watchdog.sh" ]
+    command -v llama-watchdog
+}
+
 @test "llama-watchdog passes dash -n" {
     run dash -n "$(command -v llama-watchdog)"
     [ "$status" -eq 0 ]
