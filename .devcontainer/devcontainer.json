@@ -45,7 +45,10 @@
     "gpu": true
   },
   "runArgs": [
-    "--shm-size=2g"
+    "--shm-size=2g",
+    "--device=/dev/dxg",
+    "--volume=/usr/lib/wsl/lib:/usr/lib/wsl/lib:ro",
+    "--volume=/usr/lib/wsl/drivers:/usr/lib/wsl/drivers:ro"
   ],
   "forwardPorts": [
     8082,
@@ -64,6 +67,7 @@
     }
   },
   "containerEnv": {
+    "LD_LIBRARY_PATH": "/usr/lib/wsl/lib:/opt/llama-server:/usr/local/cuda/compat:/usr/local/nvidia/lib:/usr/local/nvidia/lib64:/usr/local/cuda/lib64",
     "TS_AUTHKEY": "${localEnv:TS_AUTHKEY}",
     "TS_HOSTNAME": "${localEnv:TS_HOSTNAME}",
     "GOOGLE_API_KEY": "${localEnv:GOOGLE_API_KEY}",
