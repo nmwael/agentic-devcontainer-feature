@@ -29,6 +29,48 @@ ok "node runtime present: $(node --version 2>/dev/null)"
 [ -s /usr/local/share/llm-lab/bifrost/version ] || fail "bifrost version stamp missing"
 ok "bifrost version: $(cat /usr/local/share/llm-lab/bifrost/version)"
 
+# --- watchdog shipped by the feature (>= 1.1.4) -------------------------------
+# Parity with the llama watchdog checks (llama-server.bats:52-76): real file in
+# the feature share dir, symlink on PATH, and POSIX-sh clean.
+[ -x /usr/local/share/llm-lab/bifrost/bifrost-watchdog.sh ] \
+    || fail "bifrost-watchdog.sh missing from the feature share dir"
+[ -x /usr/local/bin/bifrost-watchdog ] || fail "bifrost-watchdog missing on PATH"
+ok "bifrost-watchdog on PATH"
+dash -n /usr/local/bin/bifrost-watchdog || fail "bifrost-watchdog is not dash-clean"
+ok "bifrost-watchdog passes dash -n"
+
+# Launcher contract: a best-effort oom_score_adj write must exist before
+# `exec node` so the wrapper (and the bifrost-http-0 child via fork
+# inheritance) is deprioritised under memory pressure. Positive grep only —
+# whether the write succeeds is privilege-dependent (CI Docker drops
+# CAP_SYS_RESOURCE), so the guarded write, not the result, is the contract.
+grep -q 'oom_score_adj' /usr/local/bin/start-bifrost \
+    || fail "start-bifrost does not set oom_score_adj before exec"
+ok "start-bifrost carries the best-effort oom_score_adj write"
+
+# Static: install.sh must install the watchdog BEFORE BOTH `exit 0` early-exits
+# (nodejs/npm/jq provisioning failure, npm install failure) — any exit 0 before
+# the install loses the watchdog on exactly the base images that need it
+# (the 1.0.5/1.0.6 lesson). Repo-side only; the integration tier covers the
+# installed artifacts.
+INSTALL="${TEST_FEATURE_SRC:-/workspaces/agentic-devcontainer-feature/src}/bifrost-gateway/install.sh"
+if [ -f "$INSTALL" ]; then
+    grep -q 'bifrost-watchdog installed' "$INSTALL" \
+        || fail "install.sh never installs bifrost-watchdog"
+    wd_line=$(grep -n 'bifrost-watchdog installed' "$INSTALL" | head -1 | cut -d: -f1)
+    grep -q 'nodejs/npm/jq install failed' "$INSTALL" \
+        || fail "install.sh nodejs/npm/jq early-exit marker missing"
+    exit1_line=$(grep -n 'nodejs/npm/jq install failed' "$INSTALL" | head -1 | cut -d: -f1)
+    grep -q 'npm install failed for @maximhq/bifrost' "$INSTALL" \
+        || fail "install.sh npm-install early-exit marker missing"
+    exit2_line=$(grep -n 'npm install failed for @maximhq/bifrost' "$INSTALL" | head -1 | cut -d: -f1)
+    [ "$wd_line" -lt "$exit1_line" ] \
+        || fail "watchdog installs after the nodejs/npm/jq early-exit (line $wd_line vs $exit1_line)"
+    [ "$wd_line" -lt "$exit2_line" ] \
+        || fail "watchdog installs after the npm-install early-exit (line $wd_line vs $exit2_line)"
+    ok "install.sh installs the watchdog before both early-exit paths ($wd_line < $exit1_line/$exit2_line)"
+fi
+
 # --- launcher must actually START on the configured port ------------------------
 # Regression guard: the launcher used to pass the port positionally, which
 # bifrost v2.2.x silently ignores, so the server bound its own default 8080 and

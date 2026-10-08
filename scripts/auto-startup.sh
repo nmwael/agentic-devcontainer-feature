@@ -146,7 +146,11 @@ elif command -v start-bifrost >/dev/null 2>&1; then
         echo "[auto-startup] bifrost already up on :$BIFROST_PORT"
     else
         echo "[auto-startup] starting bifrost on :$BIFROST_PORT (background)"
-        nohup start-bifrost >/tmp/bifrost.log 2>&1 &
+        if command -v pgrep >/dev/null 2>&1 && pgrep -f 'bifros[t].*bin.js' >/dev/null 2>&1; then
+            echo "[auto-startup] a bifrost launcher is already running — waiting instead of double-spawning"
+        else
+            nohup start-bifrost >/tmp/bifrost.log 2>&1 &
+        fi
         i=0
         while [ $i -lt 30 ]; do
             curl -sf -o /dev/null --max-time 2 "http://127.0.0.1:$BIFROST_PORT/" &&
@@ -202,6 +206,19 @@ elif command -v pgrep >/dev/null 2>&1 && pgrep -f 'llama-watchdog(\.sh)?$' >/dev
 else
     echo "[auto-startup] starting llama watchdog (interval=${WATCHDOG_INTERVAL:-120}s budget=${WATCHDOG_BUDGET:-30}s)"
     WATCHDOG_RESTART="bash $SCRIPT_PATH" nohup sh "$WATCHDOG_BIN" >>/tmp/llama-watchdog.log 2>&1 &
+fi
+
+BIFROST_WATCHDOG_BIN=$(command -v bifrost-watchdog 2>/dev/null || true)
+if [ -z "$BIFROST_WATCHDOG_BIN" ] && [ -f "$SCRIPT_DIR/bifrost-watchdog.sh" ]; then
+    BIFROST_WATCHDOG_BIN="$SCRIPT_DIR/bifrost-watchdog.sh"
+fi
+if [ -z "$BIFROST_WATCHDOG_BIN" ]; then
+    echo "[auto-startup] bifrost-watchdog not installed — skipping (feature bifrost-gateway >= 1.1.4)"
+elif command -v pgrep >/dev/null 2>&1 && pgrep -f 'bifrost-watchdog(\.sh)?$' >/dev/null 2>&1; then
+    echo "[auto-startup] bifrost-watchdog already running"
+else
+    echo "[auto-startup] starting bifrost-watchdog (background)"
+    BIFROST_WATCHDOG_RESTART="bash $SCRIPT_PATH" BIFROST_PORT="$BIFROST_PORT" nohup sh "$BIFROST_WATCHDOG_BIN" >>/tmp/bifrost-watchdog.log 2>&1 &
 fi
 
 echo "[auto-startup] done."

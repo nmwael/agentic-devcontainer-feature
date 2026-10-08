@@ -16,6 +16,10 @@ LLAMA_PORT="${LLAMA_PORT:-8089}"
 # Install @maximhq/bifrost
 BIFROST_DIR="/usr/local/share/llm-lab/bifrost"
 mkdir -p "$BIFROST_DIR"
+SCRIPT_SRC="$(CDPATH='' cd -- "$(dirname -- "$0")" && pwd)"
+install -m 0755 "$SCRIPT_SRC/bifrost-watchdog.sh" "$BIFROST_DIR/bifrost-watchdog.sh"
+ln -sf "$BIFROST_DIR/bifrost-watchdog.sh" /usr/local/bin/bifrost-watchdog
+echo "bifrost-watchdog installed -> /usr/local/bin/bifrost-watchdog"
 
 # Bifrost is a node app; base images (e.g. nvidia/cuda) often lack node/npm.
 # Provision a runtime here so the feature is self-sufficient.
@@ -38,7 +42,6 @@ npm install --prefix "$BIFROST_DIR" "@maximhq/bifrost@$VERSION" 2>/dev/null || {
 }
 
 # Install the static launcher script start-bifrost from the feature root
-SCRIPT_SRC="$(CDPATH='' cd -- "$(dirname -- "$0")" && pwd)"
 cp -f "$SCRIPT_SRC/start-bifrost.sh" "/usr/local/bin/start-bifrost"
 chmod 0755 "/usr/local/bin/start-bifrost"
 
