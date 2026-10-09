@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "description": "Agent → books matrix for the reference library. Machine-readable source of truth: the role table in library/README.md is generated from this file by scripts/extract-features.sh (extracted/consumer edition) and mirrors this content in the lab.",
+  "description": "Agent → books matrix for the reference library. Machine-readable source of truth: the role table in library/README.md mirrors this content in the lab.",
   "pathsRelativeTo": "repo-root",
   "shared": [
     "library/release-it.mini.md"
@@ -17,12 +17,7 @@
       "library/coder/refactoring.mini.md",
       "library/coder/the-pragmatic-programmer.mini.md",
       "library/coder/java.mini.md",
-      "3dprints/library/tdd-mechanical.mini.md",
       "library/coder/tdd-software.mini.md"
-    ],
-    "ai-researcher": [
-      "library/ai-researcher/llama-cpp.mini.md",
-      "library/ai-researcher/gemma-4-26b-a4b.mini.md"
     ],
     "researcher": [
       "library/researcher/a-philosophy-of-software-design.mini.md"
@@ -32,9 +27,6 @@
       "library/reviewer/working-effectively-with-legacy-code.mini.md"
     ],
     "ui": [],
-    "artist": [],
-    "3d-designer": [
-      "3dprints/library/design_standards.mini.md"
-    ]
+    "artist": []
   }
 }

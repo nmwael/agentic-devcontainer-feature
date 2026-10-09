@@ -101,10 +101,10 @@ Precedence is deliberate: **explicit `MODELS` (or `.devcontainer/llm-lab-models.
 ### opencode-agents
 - **Provides:** Complete primary agentic setup + library (AGENTS.md / AGENTS_LIFECYCLE.md, `.opencode/agent/*.md`, library/ reference books)
 - **Consumer-extensible + opt-out:** `WITH_LIBRARY` boolean option
-  - `WITH_LIBRARY=true` (default): Ships library books with attribution/README + LICENSE notices
-  - `WITH_LIBRARY=false`: Installs NO shipped library books (zero redistribution surface); leaving only extension docs + empty register; the rest of the agentic setup is unaffected and functional
+  - `WITH_LIBRARY=true` (default): Ships the library payload (`library/skills/` + `release-it.mini.md` + `EXTENSIONS.md`); no per-role books ship
+  - `WITH_LIBRARY=false`: Skips the `library/skills/` copy (zero redistribution surface); only `release-it.mini.md` + `EXTENSIONS.md` + empty register remain; the rest of the agentic setup is unaffected and functional
 - **Scaffold mechanism:** `scaffold.sh` copies payload into workspace (idempotent, skip-if-exists unless `OVERWRITE=true`)
-- **Payload contents:** AGENTS.md + AGENTS_LIFECYCLE.md, `.opencode/agent/*.md` (7 role definitions), library/skills + library/ai-researcher (2 mini-books), release-it.mini.md, EXTENSIONS.md
+- **Payload contents:** AGENTS.md + AGENTS_LIFECYCLE.md, `.opencode/agent/*.md` (6 self-contained role definitions), library/skills + release-it.mini.md + EXTENSIONS.md (no per-role books ship)
 - **EXCLUDED:** domainbooks/, 3dprints/library/, repo-specific project_stack.md, boxforsine flows/SCAD, cad-validate/verify-pair skills
 - **Library Extensions Guide:** Documents how consumers can add books by dropping files into `library/<role>/` and registering in `library/README.md`'s consumer section; the shipped register is never overwritten once the consumer edits it (no-clobber guarantee)
 - **Config generation:** `generate-opencode.sh` + `generate-opencode.jq` emit `opencode.json` from `stack.json` — local mode: one provider per model (`provider.models[].name = <name>-s<slot>`, `limit.context` from the model `context` field), primary+subagents with role→slot pinning; cloud mode (`stack.json.cloud=true`): every agent → `opencode/<model>`, no local providers; permissions, compaction, `subagent_depth`; the bundled `opencode.json.fragment` is the no-manifest fallback (local)
@@ -196,7 +196,7 @@ This repository is the extracted, standalone feature collection in the canonical
 The website at `docs/index.html` provides:
 - Hero section with project name, tagline, and badge row
 - **What You Get** — 5 feature cards (llama-server, gpu-bridge, bifrost-gateway, models, opencode-agents) with install paths, behaviors, and options
-- **Multi-Role Agent Setup** — full agent roster (build → architect → coder/researcher/reviewer/ai-researcher/ui/artist), the HITL approval workflow, and what consumers get
+- **Multi-Role Agent Setup** — full agent roster (build → architect → coder/researcher/reviewer/ui/artist), the HITL approval workflow, and what consumers get
 - **Work From Anywhere with Tailscale** — mesh-network access to `:8082` (bifrost), `:8089` (llama-server), `:4096` (opencode) from your phone with zero public exposure
 - Quick Start — template path and direct-features path with `runArgs`
 - How to Use — consumer, self-consumption, contributor modes
@@ -206,6 +206,6 @@ The website is served via GitHub Pages from the `/docs` folder on the `main` bra
 
 ## Acceptance Criteria
 
-Either (a) the `llm-lab` template is applied into a fresh repo, or (b) the repo references all 5 features directly + `--device=nvidia.com/gpu=all` → container boots and serves the IQ2_M model through bifrost (8082) into opencode on BOTH WSL2 and native Linux hosts; workspace is scaffolded with the full agentic contract (AGENTS.md/AGENTS_LIFECYCLE.md, `.opencode/agent/*`, library books + attribution) and `opencode` lists the same primary+sub agents as this repo.
+Either (a) the `llm-lab` template is applied into a fresh repo, or (b) the repo references all 5 features directly + `--device=nvidia.com/gpu=all` → container boots and serves the IQ2_M model through bifrost (8082) into opencode on BOTH WSL2 and native Linux hosts; workspace is scaffolded with the full agentic contract (AGENTS.md/AGENTS_LIFECYCLE.md, `.opencode/agent/*`, shared library payload (`skills/` + `release-it.mini.md` + `EXTENSIONS.md`)) and `opencode` lists the same primary+sub agents as this repo.
 
 **Library contract holds both ways:** consumer-added book under `library/<role>/` + register entry survives re-scaffold (incl. OVERWRITE=true); `WITH_LIBRARY=false` consumer boots agents-without-library configuration (no shipped books, empty register preserved, agents functional).

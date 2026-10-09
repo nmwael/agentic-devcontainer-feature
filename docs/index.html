@@ -404,7 +404,7 @@
             <p class="lead">Three ways to engage with this repo — pick the one that fits.</p>
             <ol>
                 <li><strong>Consumer (new repo)</strong> — Add the features block from the <a href="#quick-start">Quick Start</a> section below to your <code>devcontainer.json</code>, or apply the <code>llm-lab</code> template.</li>
-                <li><strong>Self-consumption</strong> — This very repo boots the full stack from its own collection: one llama-server per <code>stack.json</code> model (default <code>:8089</code>), bifrost at <code>:8082</code>, opencode agents scaffolded, library books installed (or opt out with <code>WITH_LIBRARY=false</code>), models fetched via <code>fetch-models.sh</code>. A live reference implementation.</li>
+                <li><strong>Self-consumption</strong> — This very repo boots the full stack from its own collection: one llama-server per <code>stack.json</code> model (default <code>:8089</code>), bifrost at <code>:8082</code>, opencode agents scaffolded, shared library payload installed (<code>skills/</code> + <code>release-it.mini.md</code> + <code>EXTENSIONS.md</code>; <code>WITH_LIBRARY=false</code> drops the skills copy), models fetched via <code>fetch-models.sh</code>. A live reference implementation.</li>
                 <li><strong>Contributor</strong> — Read <code>CONTRIBUTING.md</code> for the development workflow, adding new features, and library contributions.</li>
             </ol>
         </div>
@@ -418,7 +418,7 @@
                 <li><strong>Talk to it from your phone.</strong> opencode serves a chat UI on <code>:4096</code> you can open in any browser — from your desk or the train.</li>
                 <li><strong>Private by VPN, not by hiding.</strong> On boot the box auto-joins your Tailscale tailnet (node <code>llm-lab</code> via <code>TS_AUTHKEY</code>), so only your own devices can reach it — no public port exposure.</li>
                 <li><strong>New model, no rebuild.</strong> Models are declared in <code>stack.json</code> and fetched on-demand at first start; swap or add a model (<code>MODELS</code> or <code>stack.json</code>), or spin up a fresh box with different models, by editing a manifest — never the image.</li>
-                <li><strong>Agent setup in minutes.</strong> <code>opencode-agents</code> drops in the CLI, role agents, and the HITL library books; copy the same <code>features</code> block into another repo to recreate the exact setup.</li>
+                <li><strong>Agent setup in minutes.</strong> <code>opencode-agents</code> drops in the CLI, role agents, the HITL contract, and the shared library payload (<code>skills/</code>, <code>release-it.mini.md</code>, <code>EXTENSIONS.md</code>); copy the same <code>features</code> block into another repo to recreate the exact setup.</li>
             </ul>
             <div class="features-grid">
                 <div class="feature-card">
@@ -479,10 +479,10 @@
                         <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
                     </svg>
                     <h3>Opencode Agents</h3>
-                    <p>Installs the opencode CLI plus the full agentic setup: <code>AGENTS.md</code>, <code>.opencode/agent/*.md</code>, library books, HITL contract.</p>
+                    <p>Installs the opencode CLI plus the full agentic setup: <code>AGENTS.md</code>, <code>.opencode/agent/*.md</code>, shared library payload (<code>skills/</code> + <code>release-it.mini.md</code> + <code>EXTENSIONS.md</code>), HITL contract.</p>
                     <ul>
                         <li>Installs the opencode CLI — <code>opencode</code> on PATH</li>
-                        <li>7 primary agent role definitions</li>
+                        <li>6 self-contained agent role definitions</li>
                         <li>Library of reference books with attribution</li>
                         <li>Opt-out: <code>WITH_LIBRARY=false</code></li>
                         <li>Options: <code>OVERWRITE</code>, <code>WITH_LIBRARY</code>, <code>INSTALL_DIR</code></li>
@@ -502,8 +502,7 @@
                 <li><strong>Coder</strong> — Writes and edits code, implements features, fixes bugs, follows existing code style. <em>Role: <code>coder</code></em></li>
                 <li><strong>Researcher</strong> — Explores the codebase, searches files/patterns, traces call chains, cites every claim with <code>file:line</code> evidence. <em>Role: <code>researcher</code></em></li>
                 <li><strong>Reviewer</strong> — Full audit of every change: correctness, security, style, performance, error handling. No code is complete without reviewer sign-off. <em>Role: <code>reviewer</code></em></li>
-                <li><strong>AI-Researcher</strong> — AI-specific research: llama.cpp configs, GGUF quantization, model performance; library-aware. <em>Role: <code>ai-researcher</code></em></li>
-                <li><strong>UI / Artist / 3D-Designer</strong> — Interfaces, visual assets, and print-ready geometry as code. <em>Roles: <code>ui</code>, <code>artist</code>, <code>3d-designer</code></em></li>
+                <li><strong>UI / Artist</strong> — Interfaces, visual assets, and artwork as code. <em>Roles: <code>ui</code>, <code>artist</code></em></li>
             </ol>
 
             <h4>Human-in-the-Loop (HITL) Workflow</h4>
@@ -529,6 +528,7 @@
                 <li><strong>Library extensibility</strong> — add books via <code>library/&lt;role&gt;/</code> and register them; the shipped register is never clobbered by re-scaffolds</li>
                 <li><strong>Library opt-out</strong> — <code>WITH_LIBRARY=false</code> installs no shipped books; agents stay fully functional</li>
                 <li><strong>Scaled agent communication rules</strong> — isolated subagent context, uid-prefixed scratch files, depth awareness (max 2), no recursive delegation</li>
+                <li><strong>Structured delegation JSON</strong> — architect ↔ specialist traffic travels in a typed envelope (directive/result field tables + examples in <code>AGENTS.md</code>); HITL approval stays prose + the <code>question</code> tool</li>
             </ul>
         </div>
 
@@ -638,7 +638,7 @@
                     <ul>
                         <li>Self-discovering loop: the writer proposes a gag as panel JSON, the renderer materializes sketchy SVG/PNG, <code>verify_strip.js</code> scores it (weighted to 100, pass ≥ 80), and feedback goes back — ≤ N attempts, then escalate</li>
                         <li>Fully deterministic: the same panel JSON always renders the byte-identical PNG, with committed goldens as a regression set</li>
-                        <li>Same <code>AGENTS.md</code> HITL contract and per-role <code>library/</code> books as this collection</li>
+                        <li>Same <code>AGENTS.md</code> HITL contract and shipped <code>library/</code> payload as this collection — shared <code>skills/</code>, <code>release-it.mini.md</code>, and <code>EXTENSIONS.md</code>; role books are consumer-local, added per <code>EXTENSIONS.md</code></li>
                         <li><code>assets/manifest.json</code> is the anti-hallucination hard gate — the writer may only reference assets that exist</li>
                     </ul>
                 </div>

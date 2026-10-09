@@ -173,3 +173,40 @@ assert isinstance(data, dict) and "features" in data, "template devcontainer.jso
         }
     done
 }
+
+@test "AGENTS.md template and repo-root mirrors are byte-identical" {
+    cmp "$REPO_ROOT/AGENTS.md" "$REPO_ROOT/src/opencode-agents/templates/AGENTS.md" || {
+        echo "AGENTS.md mirror drifted from template"
+        return 1
+    }
+    cmp "$REPO_ROOT/AGENTS_LIFECYCLE.md" "$REPO_ROOT/src/opencode-agents/templates/AGENTS_LIFECYCLE.md" || {
+        echo "AGENTS_LIFECYCLE.md mirror drifted from template"
+        return 1
+    }
+}
+
+@test "AGENTS.md ships the orchestration flow + delegation JSON envelope contract" {
+    local f
+    for f in "$REPO_ROOT/AGENTS.md" "$REPO_ROOT/src/opencode-agents/templates/AGENTS.md"; do
+        grep -q '^## Orchestration Flow$' "$f" || { echo "$f: missing ## Orchestration Flow"; return 1; }
+        grep -q '^## Delegation JSON envelope$' "$f" || { echo "$f: missing ## Delegation JSON envelope"; return 1; }
+        grep -q 'Architect-Bridge Only' "$f" || { echo "$f: missing architect-bridge rule"; return 1; }
+        grep -q 'subagent_depth' "$f" || { echo "$f: missing subagent_depth limit"; return 1; }
+        grep -q 'Mandatory reviewer gate' "$f" || { echo "$f: missing reviewer gate in flow"; return 1; }
+    done
+    awk '/^```json$/{f=1;next} /^```$/{f=0} f' "$REPO_ROOT/AGENTS.md" | jq -e . >/dev/null || {
+        echo "AGENTS.md: a fenced json example does not parse"
+        return 1
+    }
+}
+
+@test "specialist role prompts wire the delegation JSON envelope" {
+    local role
+    for role in architect coder researcher reviewer ui artist; do
+        grep -q 'Delegation JSON envelope' \
+            "$REPO_ROOT/src/opencode-agents/templates/.opencode/agent/$role.md" || {
+            echo "role prompt $role.md: no pointer to the delegation JSON envelope"
+            return 1
+        }
+    done
+}

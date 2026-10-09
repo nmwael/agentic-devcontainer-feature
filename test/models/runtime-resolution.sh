@@ -57,7 +57,7 @@ build() { # build [env assignments...]
     # build-time state install.sh would have produced (default gemma stack, plus the
     # .build-state marker). BUILD_* flags describe the variant being simulated.
     _kind="${BUILD_SIM:-default}"
-    _m='[{"name":"gemma4-26b-a4b","provider":"local-gemma4-26b","hf":"gemma-4-26B-A4B-it-UD-IQ2_M","quant":"IQ2_M","port":8089,"context":65536,"parallel":5}]'    _r='{"architect":{"model":"gemma4-26b-a4b","slot":0},"coder":{"model":"gemma4-26b-a4b","slot":1},"researcher":{"model":"gemma4-26b-a4b","slot":2},"reviewer":{"model":"gemma4-26b-a4b","slot":3},"build":{"model":"gemma4-26b-a4b","slot":4},"ui":{"model":"gemma4-26b-a4b","slot":4},"artist":{"model":"gemma4-26b-a4b","slot":4},"ai-researcher":{"model":"gemma4-26b-a4b","slot":4}}'
+    _m='[{"name":"gemma4-26b-a4b","provider":"local-gemma4-26b","hf":"gemma-4-26B-A4B-it-UD-IQ2_M","quant":"IQ2_M","port":8089,"context":65536,"parallel":5}]'    _r='{"architect":{"model":"gemma4-26b-a4b","slot":0},"coder":{"model":"gemma4-26b-a4b","slot":1},"researcher":{"model":"gemma4-26b-a4b","slot":2},"reviewer":{"model":"gemma4-26b-a4b","slot":3},"build":{"model":"gemma4-26b-a4b","slot":4},"ui":{"model":"gemma4-26b-a4b","slot":4},"artist":{"model":"gemma4-26b-a4b","slot":4}}'
     _mo=""; _mode=local; _cloud=false
     case "$_kind" in
         cloud) _cloud=true; _mode=cloud ;;

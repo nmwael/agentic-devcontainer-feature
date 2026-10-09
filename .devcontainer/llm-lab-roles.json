@@ -5,6 +5,5 @@
   "reviewer": {"model": "nemotron-3.5-lightning-free", "slot": 0},
   "build": {"model": "ling-3.1-flash-free", "slot": 0},
   "ui": {"model": "fledge-alpha-free", "slot": 0},
-  "artist": {"model": "space-bunny-free", "slot": 0},
-  "ai-researcher": {"model": "mimo-v2.6-flash-free", "slot": 0}
+  "artist": {"model": "space-bunny-free", "slot": 0}
 }

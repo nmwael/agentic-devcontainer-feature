@@ -6,9 +6,7 @@ This repo uses a Human-in-the-Loop (HITL) approval workflow. Specialist subagent
 
 **You MUST NOT create, edit, or modify any code files until the human has explicitly approved an architect's plan.** Operational tasks (starting services, running commands, reading files) are exempt. Everything else requires: architect plans -> human approves -> developer implements.
 
-See `library/ai-researcher/project_stack.md` for full project stack and model specifications.
-
-Design-flow reference: [`SELF_DISCOVERING_FLOWS.md`](SELF_DISCOVERING_FLOWS.md) records the audit and agreed plan for making the boxforsine CrewAI/OpenMirai flows genuinely self-discovering (LLM proposes per-variant geometry, generator materializes, `verify_pair.py` scores, loop iterates) instead of replaying hard-coded `VARIANT_PROFILES`.
+See `stack.json` (`/usr/local/share/llm-lab/stack.json`, written by the `models` feature) and `.devcontainer/llm-lab-models.json` for full project stack and model specifications.
 
 ## Conventions when modifying
 
@@ -19,14 +17,14 @@ Design-flow reference: [`SELF_DISCOVERING_FLOWS.md`](SELF_DISCOVERING_FLOWS.md) 
 
 ## Library
 
-`library/` holds condensed reference books, one per agent role. `library/README.md` maps roles to books and records sources/attribution. Delegated agents are expected to read their role's book(s) before answering questions in their domain. Layout:
+`library/` holds condensed reference books, one per agent role — they are repo/consumer-local, not part of the shipped feature payload. `library/README.md` maps roles to books and records sources/attribution; where present, delegated agents read their role's book(s) before answering questions in their domain. The shipped payload is only `library/skills/`, `library/release-it.mini.md`, and `library/EXTENSIONS.md`. Repo-local layout (books can be added per `library/EXTENSIONS.md`):
 
 - `architect/` — architecture patterns (4 books)
-- `ai-researcher/` — llama.cpp reference (original, grounded in this repo)
 - `coder/` — coding craft + Java reference (5 books)
 - `researcher/` — software design philosophy (1 book)
 - `reviewer/` — code quality & legacy code (2 books)
 - `release-it.mini.md` — shared by all agents
+- `skills/` — shared skills
 
 ## Things that are NOT here (by design)
 
@@ -68,17 +66,93 @@ The primary orchestrator of this system. Its function is the logical decompositi
 | `coder` | Writing new code, editing files, fixing bugs, implementing features (no direct delegation — research needs round-trip through `architect`) |
 | `researcher` | Exploring the codebase (+ web via webfetch), searching for patterns, understanding architecture |
 | `reviewer` | Reviewing code for bugs, style, security issues, and suggesting improvements |
-| `ai-researcher` | AI research: codebase + web research, library-aware (reads its role's books) |
-| `3d-designer` | Specializes in 3D printing design and STL generation |
 | `ui` | Designing user interfaces and turning them into UI code (HTML/CSS) |
 | `artist` | Visual assets and artwork as code (SVG/CSS), image analysis via Gemma4 vision |
+
+## Orchestration Flow
+
+Pure informational queries are answered directly (`@architect` protocol 7). Everything else that can change code travels exactly one loop:
+
+1. **user → `build` → `architect`.** `build` routes any task needing planning, decomposition, or HITL approval to `architect` (Rules) and never delegates implementation itself.
+2. **`architect` plans → human approves.** Decompose into atomic subtasks (one primary objective each, `@architect` protocol 10) and obtain explicit HITL approval via the `question` tool before any code changes; state "I am waiting for approval" while waiting.
+3. **`architect` → exactly one specialist per subtask.** Each atomic subtask goes to the single appropriate specialist (`coder`, `researcher`, `reviewer`, `ui`, `artist`) as a JSON `Directive` envelope (next section) — one objective per envelope, never bundled, never broadcast to two roles.
+4. **specialist → `architect`: one JSON `Result` envelope.** The specialist's final message is its structured result; it performs no further delegation of any kind.
+5. **`architect` reviews → synthesizes → re-delegates if needed.** Verify the result against the file system (own `read`/`git status`); when refinement is needed, issue a new `Directive` (same `task_id`, `iteration` incremented) back to the **same** specialist. All iteration flows through the architect — specialists NEVER delegate to other specialists (Rules → ⚠️ RECURSION PREVENTION, "Architect-Bridge Only").
+6. **Depth is a hard backstop.** Delegation depth never exceeds `subagent_depth` (currently 2, `opencode.json`); `build` → `architect` → specialist already consumes that budget, and the architect-bridge rule holds even where depth would still allow a delegation.
+7. **Mandatory reviewer gate.** No code task is complete until the `reviewer` returns a passing `Result` (`status: done`); only then may the architect report completion — see `## Workflow`.
+
+Anti-stall mechanics for this loop (atomic delegations, plateau detection, verify-before-report) live in `AGENTS_LIFECYCLE.md` and are binding here.
+
+## Delegation JSON envelope
+
+**Scope (explicit):** this governs **every architect ⇄ specialist delegation — all roles**, not only `coder`. `coder` is the role called out in the contract because it is the channel to/from the implementation role, and it is the strictest case (`artifacts` + `checks` required on success); `researcher`/`reviewer`/`ui`/`artist` use the identical envelope with their own required payload. It does **not** govern the architect's plan, its report to the user, or any HITL approval — those stay prose + the `question` tool.
+
+The final message of a delegation MUST be exactly one raw JSON object: no markdown fences, no prose before or after; everything explanatory lives inside the fields.
+
+### Directive (architect → specialist)
+
+| Field | Required | Type | Meaning |
+|---|---|---|---|
+| `task_id` | yes | string | Unique subtask id (e.g. `"T2"`); echoed on every iteration. |
+| `role` | yes | string | Exactly one of `coder`, `researcher`, `reviewer`, `ui`, `artist`. |
+| `objective` | yes | string | One sentence, one primary objective (atomic-delegation rule). |
+| `context` | yes | string | Everything needed to act, inlined literally — subagents cannot see prior turns (lifecycle rule 201). |
+| `success_criteria` | yes | string[] | Verifiable checks the result must satisfy. |
+| `files` | no | string[] | Exact paths in scope (read/write as the role allows); omit ⇒ no file scope. |
+| `constraints` | no | string[] | Hard limits: POSIX only, no new deps, approved-plan id. |
+| `iteration` | no | integer ≥ 1 | Refinement round; omit ⇒ 1. Re-delegations increment it. |
+
+Example directive:
+
+```json
+{
+  "task_id": "T2",
+  "role": "coder",
+  "objective": "Add a --dry-run flag to scripts/fetch.sh",
+  "context": "Plan P1 approved by the human. fetch.sh parses args in a while/case loop ending in *) usage; exit 1. Keep POSIX sh; no new dependencies.",
+  "files": ["scripts/fetch.sh", "test/fetch.bats"],
+  "constraints": ["POSIX sh only", "no new tools or packages"],
+  "success_criteria": ["dash -n scripts/fetch.sh exits 0", "bats test/fetch.bats passes", "no lines changed outside files[]"]
+}
+```
+
+### Result (specialist → architect)
+
+| Field | Required | Type | Meaning |
+|---|---|---|---|
+| `task_id` | yes | string | Echo of the directive's `task_id`. |
+| `role` | yes | string | Echo of the directive's `role`. |
+| `status` | yes | string | `done` \| `blocked` \| `needs_input`. |
+| `summary` | yes | string | One paragraph, human-readable outcome — what the architect synthesizes. |
+| `blocker` | iff `status` ≠ `done` | string | The exact error or decision needed; feeds the Multi-Step Correction & Debugging Protocol. Must be absent when `done`. |
+| `artifacts` | coder: iff `done`; else no | `{path, action, note}[]` | Files touched, claimed — the architect verifies each on disk. `action`: `created` \| `modified` \| `deleted`. |
+| `checks` | coder + ui/artist: iff `done`; else no | `{command, outcome, evidence}[]` | Real command output, never paraphrase. `outcome`: `pass` \| `fail` \| `skip`. |
+| `findings` | researcher + reviewer: iff `done`; else no | objects with `path:line` | Evidence-backed content: research facts (`{claim, evidence}`), review issues (`{severity, path, line, issue, suggestion}`). No uncited claims; `UNKNOWN` beats guessing. |
+
+Example result:
+
+```json
+{
+  "task_id": "T2",
+  "role": "coder",
+  "status": "done",
+  "summary": "--dry-run added to scripts/fetch.sh: actions print instead of writing; both checks pass.",
+  "artifacts": [
+    {"path": "scripts/fetch.sh", "action": "modified", "note": "--dry-run case arm + usage line"},
+    {"path": "test/fetch.bats", "action": "created", "note": "3 cases"}
+  ],
+  "checks": [
+    {"command": "dash -n scripts/fetch.sh", "outcome": "pass", "evidence": "exit 0, no output"},
+    {"command": "bats test/fetch.bats", "outcome": "pass", "evidence": "3 tests, 0 failures"}
+  ]
+}
+```
+
+A blocked result is only `{task_id, role, status: "blocked", summary, blocker}`; the architect then intervenes with a revised plan or corrected snippet and re-delegates — the specialist never self-corrects in a loop (Multi-Step Correction protocol). `status: needs_input` is a specialist's escalation channel to the architect; the `question` tool remains the build/architect ↔ human instrument.
 
 ## Workflow
 
 Every task involving code generation, modification, or refactoring must follow a mandatory Reviewer check. The Coder agent produces the implementation, and the Reviewer agent must then perform a full audit (Correctness, Security, Style, Performance, Error handling) before the Architect can finalize the task. No code should be considered 'complete' without an explicit pass from the Reviewer.
-
-For 3D design tasks, the `3d-designer` is the primary specialist for geometry generation and STL export. The workflow follows:
-Researcher → Architect → [Designer/Coder] → Reviewer.
 
 Agents can run in parallel when their work is independent (e.g., two unrelated code edits, or researcher + reviewer on different files).
 

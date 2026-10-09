@@ -18,7 +18,7 @@
         "gemma4-26b-a4b-s1": { "name": "Gemma4 26B A4B — Slot 1 (coder)", "limit": { "context": 65536, "output": 8192 } },
         "gemma4-26b-a4b-s2": { "name": "Gemma4 26B A4B — Slot 2 (researcher)", "limit": { "context": 65536, "output": 8192 } },
         "gemma4-26b-a4b-s3": { "name": "Gemma4 26B A4B — Slot 3 (reviewer)", "limit": { "context": 65536, "output": 8192 } },
-        "gemma4-26b-a4b-s4": { "name": "Gemma4 26B A4B — Slot 4 (build/ui/artist/ai-researcher)", "limit": { "context": 65536, "output": 8192 } }
+        "gemma4-26b-a4b-s4": { "name": "Gemma4 26B A4B — Slot 4 (build/ui/artist)", "limit": { "context": 65536, "output": 8192 } }
       }
     },
     "opencode": {
@@ -34,8 +34,7 @@
     "reviewer":     { "model": "local-gemma4-26b/gemma4-26b-a4b-s3" },
     "build":        { "model": "local-gemma4-26b/gemma4-26b-a4b-s4" },
     "ui":           { "model": "local-gemma4-26b/gemma4-26b-a4b-s4" },
-    "artist":       { "model": "local-gemma4-26b/gemma4-26b-a4b-s4" },
-    "ai-researcher": { "model": "local-gemma4-26b/gemma4-26b-a4b-s4" }
+    "artist":       { "model": "local-gemma4-26b/gemma4-26b-a4b-s4" }
   },
   "enabled_providers": ["local-gemma4-26b", "opencode"],
   "subagent_depth": 2,

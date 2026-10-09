@@ -10,7 +10,7 @@ This project uses a Human-in-the-Loop (HITL) approval workflow. Specialist subag
 
 **You MUST NOT create, edit, or modify any code files until the human has explicitly approved an architect's plan.** Operational tasks (starting services, running commands, reading files) are exempt. Everything else requires: architect plans -> human approves -> developer implements.
 
-See `library/ai-researcher/project_stack.md` for full project stack and model specifications.
+See `stack.json` (`/usr/local/share/llm-lab/stack.json`, written by the `models` feature) and `.devcontainer/llm-lab-models.json` for full project stack and model specifications.
 
 Design-flow reference: [`SELF_DISCOVERING_FLOWS.md`](SELF_DISCOVERING_FLOWS.md) records the audit and agreed plan for making the boxforsine CrewAI/OpenMirai flows genuinely self-discovering (LLM proposes per-variant geometry, generator materializes, `verify_pair.py` scores, loop iterates) instead of replaying hard-coded `VARIANT_PROFILES`.
 
@@ -45,6 +45,7 @@ To prevent "Infinite Spins" and "Step Exhaustion," all agents must adhere to the
 205: - The build agent AND the architect must watch delegated subagents for stuck states — repeated identical failures, self-retry loops, no progress across delegations, or step-limit exhaustion — and intervene immediately: stop the loop, re-issue a smaller delegation, or escalate to the architect for a revised plan; never let a stuck subagent burn budget in a self-correction loop.
 206: - Researcher reports must back every factual claim with verbatim evidence (file:line) and must answer UNKNOWN rather than guess. A report that defers its own deliverables (e.g. ends with "next steps" or promises further reading) is a failed delegation — re-issue immediately.
 207: - Before finalizing, every agent must re-read the files it cites. A cited line number that does not exist in the file, or a detail (e.g. "no trailing newline") contradicted by the actual bytes, is a failed deliverable.
+208: - Delegation traffic (architect ⇄ specialist) uses the JSON envelopes in `AGENTS.md` § "Delegation JSON envelope": a specialist's final message is exactly one `Result` object. Prose, fenced prose, or "next steps" outside the envelope is a failed delegation — the architect re-issues it as a `Directive` with `iteration` incremented.
 
 ## Verification Protocol
 

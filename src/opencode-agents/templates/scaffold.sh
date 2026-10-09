@@ -47,6 +47,10 @@ for f in "$INSTALL_DIR/.opencode/agent"/*.md; do
     [ -f "$f" ] && cp -f "$f" "$WORKSPACE/.opencode/agent/"
 done
 
+# Pre-1.3.0 scaffolds shipped one combined agent-roles.md. OVERWRITE refreshes
+# never delete, so remove the stale straggler now that per-role files replace it.
+rm -f "$WORKSPACE/.opencode/agent/agent-roles.md"
+
 # Copy library/ books
 mkdir -p "$WORKSPACE/library"
 cp -rf "$INSTALL_DIR/library/." "$WORKSPACE/library/"

@@ -43,7 +43,9 @@ STACK=/usr/local/share/llm-lab/stack.json
 [ -f "$STACK" ] || fail "stack.json missing"
 jq -e . "$STACK" >/dev/null 2>&1 || fail "stack.json invalid JSON"
 [ "$(jq '.models | length' "$STACK")" -eq 1 ] || fail "default stack must have exactly 1 model"
-[ "$(jq '.roles | length' "$STACK")" -eq 8 ] || fail "default stack must have 8 roles"
+[ "$(jq '.roles | length' "$STACK")" -eq 7 ] || fail "default stack must have 7 roles"
+jq -e '.roles | has("ai-researcher") | not' "$STACK" >/dev/null 2>&1 \
+    || fail "default stack must not declare the removed ai-researcher role"
 ok "stack.json default manifest: $(jq -r '.models[0].name' "$STACK") on :$(jq -r '.models[0].port' "$STACK")"
 
 # ---- opencode-agents --------------------------------------------------------

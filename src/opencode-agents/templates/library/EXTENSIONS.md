@@ -10,7 +10,7 @@ The payload ships a `library/EXTENSIONS.md` guide documenting this, and the ship
 
 ## Opt-Out Mechanics
 
-`WITH_LIBRARY=false` installs NO shipped library books (zero redistribution/attribution surface), leaving only the extension docs + empty register; the rest of the agentic setup (AGENTS contract, agents, skills, opencode fragment) is unaffected and functional.
+The shipped library payload is only `library/skills/`, `library/release-it.mini.md`, and `library/EXTENSIONS.md` — no per-role books ship with the feature. `WITH_LIBRARY=false` drops even the `skills/` copy, leaving just the extension docs + empty register; the rest of the agentic setup (AGENTS contract, agents, opencode fragment) is unaffected and functional.
 
 ## No-Clobber Guarantee
 

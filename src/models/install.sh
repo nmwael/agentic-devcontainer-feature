@@ -12,7 +12,7 @@ echo "The effective dev container containerUser is '$_CONTAINER_USER'"
 # Built-in defaults reproduce the historical single-model stack exactly:
 # one 26B backend on :8089 (5 shared slots), 8 roles pinned to slots s0..s4.
 DEFAULT_MODELS='[{"name":"gemma4-26b-a4b","provider":"local-gemma4-26b","hf":"gemma-4-26B-A4B-it-UD-IQ2_M","quant":"IQ2_M","port":8089,"context":65536,"parallel":5}]'
-DEFAULT_ROLES='{"architect":{"model":"gemma4-26b-a4b","slot":0},"coder":{"model":"gemma4-26b-a4b","slot":1},"researcher":{"model":"gemma4-26b-a4b","slot":2},"reviewer":{"model":"gemma4-26b-a4b","slot":3},"build":{"model":"gemma4-26b-a4b","slot":4},"ui":{"model":"gemma4-26b-a4b","slot":4},"artist":{"model":"gemma4-26b-a4b","slot":4},"ai-researcher":{"model":"gemma4-26b-a4b","slot":4}}'
+DEFAULT_ROLES='{"architect":{"model":"gemma4-26b-a4b","slot":0},"coder":{"model":"gemma4-26b-a4b","slot":1},"researcher":{"model":"gemma4-26b-a4b","slot":2},"reviewer":{"model":"gemma4-26b-a4b","slot":3},"build":{"model":"gemma4-26b-a4b","slot":4},"ui":{"model":"gemma4-26b-a4b","slot":4},"artist":{"model":"gemma4-26b-a4b","slot":4}}'
 
 MODELS="${MODELS:-}"
 ROLES="${ROLES:-}"
@@ -39,7 +39,7 @@ BUILD_ROLES_OPTION="${ROLES}"
 
 # Default cloud role mapping: every agent routes to the hosted opencode provider
 # (roles.model = hosted model id; slot is unused by the opencode generator).
-DEFAULT_CLOUD_ROLES="{\"architect\":{\"model\":\"$CLOUD_MODEL\",\"slot\":0},\"coder\":{\"model\":\"$CLOUD_MODEL\",\"slot\":0},\"researcher\":{\"model\":\"$CLOUD_MODEL\",\"slot\":0},\"reviewer\":{\"model\":\"$CLOUD_MODEL\",\"slot\":0},\"build\":{\"model\":\"$CLOUD_MODEL\",\"slot\":0},\"ui\":{\"model\":\"$CLOUD_MODEL\",\"slot\":0},\"artist\":{\"model\":\"$CLOUD_MODEL\",\"slot\":0},\"ai-researcher\":{\"model\":\"$CLOUD_MODEL\",\"slot\":0}}"
+DEFAULT_CLOUD_ROLES="{\"architect\":{\"model\":\"$CLOUD_MODEL\",\"slot\":0},\"coder\":{\"model\":\"$CLOUD_MODEL\",\"slot\":0},\"researcher\":{\"model\":\"$CLOUD_MODEL\",\"slot\":0},\"reviewer\":{\"model\":\"$CLOUD_MODEL\",\"slot\":0},\"build\":{\"model\":\"$CLOUD_MODEL\",\"slot\":0},\"ui\":{\"model\":\"$CLOUD_MODEL\",\"slot\":0},\"artist\":{\"model\":\"$CLOUD_MODEL\",\"slot\":0}}"
 
 # NOTE: $PWD here is NOT the workspace. The devcontainer CLI extracts an OCI
 # feature to /tmp/dev-container-features/<id>_<n> and runs install.sh with that

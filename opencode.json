@@ -30,9 +30,6 @@
     },
     "artist": {
       "model": "opencode/space-bunny-free"
-    },
-    "ai-researcher": {
-      "model": "opencode/mimo-v2.6-flash-free"
     }
   },
   "enabled_providers": [

@@ -62,9 +62,6 @@ cp -f "$TPL_DIR/library/release-it.mini.md" "$INSTALL_DIR/library/release-it.min
 if [ "$WITH_LIBRARY" = "true" ]; then
     mkdir -p "$INSTALL_DIR/library/skills"
     cp -f "$TPL_DIR/library/skills/"*.md "$INSTALL_DIR/library/skills/" 2>/dev/null || true
-
-    mkdir -p "$INSTALL_DIR/library/ai-researcher"
-    cp -f "$TPL_DIR/library/ai-researcher/"*.md "$INSTALL_DIR/library/ai-researcher/" 2>/dev/null || true
 else
     echo "WITH_LIBRARY=false — skipping shipped library books (EXTENSIONS.md only)"
 fi

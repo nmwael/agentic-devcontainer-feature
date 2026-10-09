@@ -133,7 +133,7 @@ default-cloud)
     # provider (opencode/<model>), and the primary model must match.
     if [ -f "$WS_DIR/opencode.json" ] && command -v jq >/dev/null 2>&1; then
         CLOUD_BAD=0
-        for agent in architect coder researcher reviewer build ui artist ai-researcher; do
+        for agent in architect coder researcher reviewer build ui artist; do
             m="$(jq -r ".agent.$agent.model // empty" "$WS_DIR/opencode.json" 2>/dev/null)"
             case "$m" in
                 opencode/*) echo "OK: agent $agent -> $m" ;;
