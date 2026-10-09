@@ -1,0 +1,631 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Changelog — agentic-devcontainer-feature</title>
+    <style>
+        html {
+            scroll-behavior: smooth;
+        }
+        :root {
+            --primary: #1a1a2e;
+            --secondary: #16213e;
+            --accent: #e94560;
+            --accent-light: #ff6b8a;
+            --text: #e9e8f5;
+            --muted: #7d8da2;
+            --card-bg: #0d1117;
+            --border: #30363d;
+            --success: #0f3460;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: var(--primary);
+            color: var(--text);
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        header {
+            text-align: center;
+            padding: 4rem 2rem;
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 3rem;
+        }
+
+        h1 {
+            font-size: 3.5rem;
+            font-weight: 300;
+            letter-spacing: 0.3em;
+            background: linear-gradient(135deg, var(--text), var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 1rem;
+            line-height: 1.2;
+        }
+
+        .subtitle {
+            font-size: 1.25rem;
+            color: var(--muted);
+            max-width: 700px;
+            margin: 0 auto;
+        }
+
+        .badge {
+            display: inline-block;
+            background: var(--accent);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 2rem;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin: 0.5rem;
+        }
+
+        .hero-summary {
+            max-width: 820px;
+            margin: 1.5rem auto 0;
+            color: var(--muted);
+            line-height: 1.7;
+            font-size: 1.05rem;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 2rem;
+            margin: 3rem 0;
+        }
+
+        .feature-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 2.5rem;
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            min-width: 0;
+        }
+
+        .feature-card > * {
+            min-width: 0;
+        }
+
+        .feature-card:hover {
+            border-color: var(--accent);
+            transform: translateY(-4px);
+        }
+
+        .feature-icon {
+            width: 48px;
+            height: 48px;
+            margin: 0 auto 1.5rem;
+            display: block;
+        }
+
+        .feature-card h3 {
+            font-size: 1.3rem;
+            margin-bottom: 1rem;
+            text-align: center;
+        }
+
+        .feature-card p {
+            color: var(--muted);
+            font-size: 0.95rem;
+            line-height: 1.5;
+            text-align: center;
+        }
+
+        .feature-card code {
+            background: var(--secondary);
+            color: var(--accent);
+            padding: 0.1rem 0.4rem;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            font-family: 'SF Mono', 'Menlo', 'Consolas', monospace;
+            overflow-wrap: anywhere;
+        }
+
+        .feature-card ul {
+            margin-top: 1rem;
+            padding-left: 1.2rem;
+            color: var(--muted);
+            font-size: 0.85rem;
+            line-height: 1.7;
+            text-align: left;
+        }
+
+        .section {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 2.5rem;
+            margin: 3rem 0;
+        }
+
+        .section h2 {
+        scroll-margin-top: 1.5rem;
+            font-size: 1.6rem;
+            margin-bottom: 0.5rem;
+            text-align: center;
+        }
+
+        .section .lead {
+            text-align: center;
+            color: var(--muted);
+            margin-bottom: 2rem;
+        }
+
+        .section h4 {
+            margin-top: 1.5rem;
+            margin-bottom: 0.75rem;
+            color: var(--text);
+        }
+
+        .section ol,
+        .section ul {
+            color: var(--muted);
+            line-height: 1.8;
+            padding-left: 1.4rem;
+        }
+
+        .section li {
+            margin-bottom: 0.6rem;
+        }
+
+        .section code {
+            background: var(--secondary);
+            color: var(--accent);
+            padding: 0.15rem 0.45rem;
+            border-radius: 4px;
+            font-family: 'SF Mono', 'Menlo', 'Consolas', monospace;
+            font-size: 0.85rem;
+        }
+
+        .quick-start code.block {
+            display: block;
+            text-align: left;
+            background: var(--secondary);
+            color: var(--accent);
+            padding: 0.8rem 1rem;
+            border-radius: 8px;
+            font-family: 'SF Mono', 'Menlo', 'Consolas', monospace;
+            font-size: 0.85rem;
+            margin: 0.75rem 0;
+            overflow-x: auto;
+            white-space: pre;
+        }
+
+        .gate {
+            border-left: 4px solid var(--accent);
+            background: rgba(233, 69, 96, 0.08);
+            padding: 1rem 1.25rem;
+            border-radius: 0 8px 8px 0;
+            margin: 1.25rem 0;
+            color: var(--text);
+        }
+
+        .gate strong {
+            color: var(--accent-light);
+        }
+
+        .tailscale-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 1.5rem;
+            margin-top: 1.5rem;
+        }
+
+        .tailscale-step {
+            background: var(--secondary);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1.25rem;
+        }
+
+        .tailscale-step h4 {
+            margin-top: 0;
+            color: var(--text);
+        }
+
+        .tailscale-step code {
+            background: var(--card-bg);
+        }
+
+        .endpoints {
+            margin-top: 0.75rem;
+            padding-left: 1.2rem;
+        }
+
+        .endpoints li {
+            font-size: 0.9rem;
+        }
+
+        .footer {
+            text-align: center;
+            padding: 3rem 2rem;
+            color: var(--muted);
+            border-top: 1px solid var(--border);
+            margin-top: 4rem;
+        }
+
+        .footer a {
+            color: var(--accent);
+            text-decoration: none;
+        }
+
+        .footer a:hover {
+            text-decoration: underline;
+        }
+
+        .footer p {
+            margin: 0.3rem 0;
+        }
+
+        table.reference {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 0.5rem 0 1.25rem;
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            overflow: hidden;
+            font-size: 0.9rem;
+        }
+        table.reference th, table.reference td {
+            text-align: left;
+            padding: 0.45rem 0.85rem;
+            border-bottom: 1px solid var(--border);
+        }
+        table.reference th {
+            background: var(--secondary);
+            color: var(--text);
+            font-weight: 600;
+        }
+        table.reference tr:last-child td { border-bottom: none; }
+        table.reference td:first-child {
+            font-family: 'Consolas', 'Menlo', monospace;
+            color: var(--accent);
+            white-space: nowrap;
+        }
+        table.reference code { font-size: 0.85rem; }
+
+        .page-nav {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+            justify-content: center;
+            margin: -1.5rem 0 0;
+            padding: 1rem 1.25rem;
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+        }
+
+        .page-nav .nav-lead {
+            flex-basis: 100%;
+            text-align: center;
+            color: var(--muted);
+            font-size: 0.85rem;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            margin-bottom: 0.25rem;
+        }
+
+        .page-nav a {
+            color: var(--text);
+            text-decoration: none;
+            background: var(--secondary);
+            border: 1px solid var(--border);
+            padding: 0.45rem 0.85rem;
+            border-radius: 2rem;
+            font-size: 0.85rem;
+            transition: border-color 0.3s ease, color 0.3s ease;
+        }
+
+        .page-nav a:hover {
+            border-color: var(--accent);
+            color: var(--accent-light);
+        }
+
+        .page-nav a .nav-depth {
+            color: var(--muted);
+            font-size: 0.75rem;
+        }
+
+        .github-corner:hover .octo-arm { animation: octocat-wave 560ms ease-in-out; }
+        @keyframes octocat-wave {
+            0%, 100% { transform: rotate(0); }
+            20%, 60% { transform: rotate(-25deg); }
+            40%, 80% { transform: rotate(10deg); }
+        }
+        @media (max-width: 500px) {
+            .github-corner:hover .octo-arm { animation: none; }
+            .github-corner .octo-arm { animation: octocat-wave 560ms ease-in-out; }
+        }
+
+        @media (max-width: 600px) {
+            h1 { font-size: 2.5rem; }
+            .features-grid { grid-template-columns: 1fr; }
+        }
+
+        .changelog-view {
+            color: var(--muted);
+        }
+        .changelog-view a {
+            color: var(--accent);
+            text-decoration: none;
+        }
+        .changelog-view a:hover {
+            text-decoration: underline;
+        }
+        .changelog-view h1,
+        .changelog-view h2,
+        .changelog-view h3,
+        .changelog-view h4,
+        .changelog-view h5,
+        .changelog-view h6 {
+            color: var(--text);
+            line-height: 1.3;
+            margin: 1.75rem 0 0.75rem;
+        }
+        .changelog-view h1 { font-size: 2rem; }
+        .changelog-view h2 {
+            font-size: 1.5rem;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 0.4rem;
+        }
+        .changelog-view h3 { font-size: 1.2rem; }
+        .changelog-view h4,
+        .changelog-view h5,
+        .changelog-view h6 { font-size: 1rem; }
+        .changelog-view p {
+            margin: 0.75rem 0;
+            line-height: 1.7;
+        }
+        .changelog-view ul,
+        .changelog-view ol {
+            margin: 0.75rem 0;
+            padding-left: 1.4rem;
+            line-height: 1.8;
+        }
+        .changelog-view li {
+            margin-bottom: 0.5rem;
+        }
+        .changelog-view code {
+            background: var(--secondary);
+            color: var(--accent);
+            padding: 0.15rem 0.45rem;
+            border-radius: 4px;
+            font-family: 'SF Mono', 'Menlo', 'Consolas', monospace;
+            font-size: 0.85rem;
+        }
+        .changelog-view blockquote {
+            border-left: 4px solid var(--accent);
+            background: rgba(233, 69, 96, 0.08);
+            padding: 0.75rem 1.25rem;
+            border-radius: 0 8px 8px 0;
+            margin: 1rem 0;
+            color: var(--text);
+        }
+        .changelog-view hr {
+            border: none;
+            border-top: 1px solid var(--border);
+            margin: 1.5rem 0;
+        }
+    </style>
+</head>
+<body>
+    <a href="https://github.com/nmwael/agentic-devcontainer-feature" class="github-corner" target="_blank" rel="noopener noreferrer" aria-label="Fork me on GitHub">
+        <svg width="80" height="80" viewBox="0 0 250 250" style="fill: var(--card-bg); color: var(--text); position: absolute; top: 0; border: 0; right: 0; z-index: 100;" aria-hidden="true">
+            <path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path>
+            <path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path>
+            <path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,44.1 C171.4,44.1 164.0,50.8 165.1,57.5 C166.2,64.2 161.1,70.6 161.1,70.6 C159.3,72.9 156.8,77.1 154.4,81.0 L131.2,104.2 C129.8,105.6 128.6,107.3 128.1,108.8 Z" fill="currentColor" class="octo-body"></path>
+        </svg>
+    </a>
+    <div class="container">
+        <header>
+            <h1>agentic-devcontainer-feature</h1>
+            <p class="subtitle">All-in-one Local LLM Developer Box — DevContainer Features Collection</p>
+            <div>
+                <a href="https://github.com/nmwael/agentic-devcontainer-feature" target="_blank" class="badge" style="text-decoration:none;">GitHub</a>
+                <span class="badge">5 Features</span>
+                <span class="badge">1 Template</span>
+                <span class="badge">Multi-Agent HITL</span>
+                <span class="badge">Tailscale Ready</span>
+            </div>
+            <p class="hero-summary">Add one <code>features</code> block to any repo and you get a complete local-LLM developer box: a prebuilt CUDA llama-server, on-demand GGUF model fetch, a multi-upstream OpenAI-compatible gateway, and a full multi-agent coding setup with human approval — all wired to a single <code>stack.json</code> manifest and reachable from any device over Tailscale. No cloud APIs required, no baked-in weights: everything runs and downloads locally.</p>
+            <p class="hero-summary">In plain words: this gives you a private, always-on LLM box you can talk to — from your desk or your phone — reachable only over your own Tailscale VPN, and spinning up another one (with different models, or a fresh agent setup) is one <code>features</code> block in any repo.</p>
+        </header>
+
+        <nav class="page-nav" aria-label="Page sections — details deepen as you scroll">
+            <p class="nav-lead">Jump to — details deepen as you scroll</p>
+            <a href="index.html#how-to-use">How to Use <span class="nav-depth">— begin</span></a>
+            <a href="index.html#what-you-get">What You Get <span class="nav-depth">— overview</span></a>
+            <a href="index.html#multi-role-agent-setup">Multi-Agent Setup <span class="nav-depth">— workflow</span></a>
+            <a href="index.html#work-from-anywhere">Work From Anywhere <span class="nav-depth">— access</span></a>
+            <a href="index.html#full-toolchain">Full Toolchain <span class="nav-depth">— binaries</span></a>
+            <a href="index.html#examples">Examples <span class="nav-depth">— in the wild</span></a>
+            <a href="index.html#quick-start">Quick Start <span class="nav-depth">— reference</span></a>
+            <a href="changelog.html" aria-current="page" style="border-color: var(--accent); color: var(--accent-light);">Changelog <span class="nav-depth">— releases</span></a>
+        </nav>
+
+        <div class="section">
+            <h2 id="changelog-title">Changelog</h2>
+            <p class="lead">Rendered live from the repository's CHANGELOG.md so this page never drifts. <a href="https://github.com/nmwael/agentic-devcontainer-feature/blob/main/CHANGELOG.md">View on GitHub</a>.</p>
+            <div id="changelog" class="changelog-view"></div>
+            <noscript>
+                <p class="changelog-view">The changelog is rendered with JavaScript. <a href="https://github.com/nmwael/agentic-devcontainer-feature/blob/main/CHANGELOG.md">View it on GitHub</a>.</p>
+            </noscript>
+        </div>
+
+        <footer class="footer">
+            <p>Repository: <a href="https://github.com/nmwael/agentic-devcontainer-feature" target="_blank">github.com/nmwael/agentic-devcontainer-feature</a></p>
+            <p>Powered by devcontainer Features • Published to GHCR • Multi-agent HITL workflow • Tailscale ready</p>
+            <p><a href="https://github.com/nmwael/agentic-devcontainer-feature/blob/main/README.md">README</a> • <a href="https://github.com/nmwael/agentic-devcontainer-feature/blob/main/CONTRIBUTING.md">CONTRIBUTING</a> • <a href="https://github.com/nmwael/agentic-devcontainer-feature/blob/main/LICENSE">LICENSE</a> • <a href="https://github.com/nmwael/agentic-devcontainer-feature/blob/main/SECURITY.md">SECURITY</a> • <a href="changelog.html">CHANGELOG</a></p>
+        </footer>
+    </div>
+    <script>
+        (function () {
+            var RAW_URL = 'https://raw.githubusercontent.com/nmwael/agentic-devcontainer-feature/main/CHANGELOG.md';
+            var BLOB_URL = 'https://github.com/nmwael/agentic-devcontainer-feature/blob/main/CHANGELOG.md';
+
+            function escapeHtml(source) {
+                return source
+                    .replace(/&/g, '&amp;')
+                    .replace(/</g, '&lt;')
+                    .replace(/>/g, '&gt;')
+                    .replace(/"/g, '&quot;')
+                    .replace(/'/g, '&#39;');
+            }
+
+            function isSafeUrl(url) {
+                var cleaned = url.replace(/^[\u0000-\u0020\u007f]+|[\u0000-\u0020\u007f]+$/g, '');
+                return /^(https?:|mailto:|#|\/|[^:]+$)/i.test(cleaned);
+            }
+
+            function renderInline(source) {
+                return source
+                    .replace(/`([^`]+)`/g, '<code>$1</code>')
+                    .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
+                    .replace(/\[([^\]]+)\]\(((?:[^()\s]|\([^()]*\))+)\)/g, function (match, text, url) {
+                        if (!isSafeUrl(url)) {
+                            return text;
+                        }
+                        return '<a href="' + escapeHtml(url) + '" target="_blank" rel="noopener noreferrer">' + text + '</a>';
+                    });
+            }
+
+            function renderMarkdown(markdown) {
+                var lines = escapeHtml(markdown).split(/\r?\n/);
+                var html = [];
+                var paragraph = [];
+                var quote = [];
+                var listTag = null;
+                var listItems = [];
+
+                function flushParagraph() {
+                    if (paragraph.length) {
+                        html.push('<p>' + renderInline(paragraph.join(' ')) + '</p>');
+                        paragraph = [];
+                    }
+                }
+
+                function flushQuote() {
+                    if (quote.length) {
+                        html.push('<blockquote>' + renderInline(quote.join(' ')) + '</blockquote>');
+                        quote = [];
+                    }
+                }
+
+                function flushList() {
+                    if (listTag) {
+                        html.push('<' + listTag + '>' + listItems.join('') + '</' + listTag + '>');
+                        listTag = null;
+                        listItems = [];
+                    }
+                }
+
+                function flushAll() {
+                    flushParagraph();
+                    flushQuote();
+                    flushList();
+                }
+
+                for (var i = 0; i < lines.length; i++) {
+                    var line = lines[i];
+                    var heading = line.match(/^(#{1,6})\s+(.*)$/);
+                    var unordered = line.match(/^[-*]\s+(.*)$/);
+                    var ordered = line.match(/^\d+\.\s+(.*)$/);
+                    var blockquote = line.match(/^&gt;\s?(.*)$/);
+
+                    if (/^\s*$/.test(line)) {
+                        flushAll();
+                        continue;
+                    }
+                    if (/^(-{3,}|\*{3,})\s*$/.test(line)) {
+                        flushAll();
+                        html.push('<hr>');
+                        continue;
+                    }
+                    if (heading) {
+                        flushAll();
+                        var level = heading[1].length;
+                        html.push('<h' + level + '>' + renderInline(heading[2].trim()) + '</h' + level + '>');
+                        continue;
+                    }
+                    if (blockquote) {
+                        flushParagraph();
+                        flushList();
+                        quote.push(blockquote[1]);
+                        continue;
+                    }
+                    if (unordered) {
+                        flushParagraph();
+                        flushQuote();
+                        if (listTag !== 'ul') {
+                            flushList();
+                            listTag = 'ul';
+                        }
+                        listItems.push('<li>' + renderInline(unordered[1]) + '</li>');
+                        continue;
+                    }
+                    if (ordered) {
+                        flushParagraph();
+                        flushQuote();
+                        if (listTag !== 'ol') {
+                            flushList();
+                            listTag = 'ol';
+                        }
+                        listItems.push('<li>' + renderInline(ordered[1]) + '</li>');
+                        continue;
+                    }
+                    flushList();
+                    flushQuote();
+                    paragraph.push(line.trim());
+                }
+
+                flushAll();
+                return html.join('\n');
+            }
+
+            document.addEventListener('DOMContentLoaded', function () {
+                var target = document.getElementById('changelog');
+                if (!target) {
+                    return;
+                }
+                fetch(RAW_URL, { cache: 'no-cache' })
+                    .then(function (response) {
+                        if (!response.ok) {
+                            throw new Error('HTTP ' + response.status);
+                        }
+                        return response.text();
+                    })
+                    .then(function (markdown) {
+                        target.innerHTML = renderMarkdown(markdown);
+                    })
+                    .catch(function (error) {
+                        var message = error && error.message === 'HTTP 404'
+                            ? 'Changelog file not found — the branch or path may have changed.'
+                            : 'Could not load the changelog here (network or offline).';
+                        target.innerHTML = '<p>' + message + ' <a href="' + BLOB_URL + '">View it on GitHub</a>.</p>';
+                    });
+            });
+        })();
+    </script>
+</body>
+</html>

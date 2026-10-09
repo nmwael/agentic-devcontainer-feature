@@ -396,6 +396,7 @@
             <a href="#full-toolchain">Full Toolchain <span class="nav-depth">— binaries</span></a>
             <a href="#examples">Examples <span class="nav-depth">— in the wild</span></a>
             <a href="#quick-start">Quick Start <span class="nav-depth">— reference</span></a>
+            <a href="changelog.html">Changelog <span class="nav-depth">— releases</span></a>
         </nav>
 
         <div class="section">
@@ -464,7 +465,7 @@
                         <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
                     </svg>
                     <h3>On-Demand Models</h3>
-                    <p>On-demand GGUF model fetch from HuggingFace — weights are NEVER baked into image layers.</p>
+                    <p>On-demand GGUF model fetch from HuggingFace — weights are NEVER baked into image layers. Model entries may optionally enable speculative decoding via <code>spec_type: "draft-mtp"</code> / <code>spec_draft_n_max</code>.</p>
                     <ul>
                         <li>Installs <code>fetch-models.sh</code> to <code>/usr/local/share/llm-lab/models/</code></li>
                         <li>Writes the shared <code>stack.json</code> manifest — one entry per served model</li>
@@ -724,6 +725,8 @@
             <table class="reference">
                 <tr><th>Option</th><th>Default</th><th>Description</th></tr>
                 <tr><td>MODELS</td><td>(empty)</td><td>JSON array <code>[{name,provider,hf,quant,port,context,parallel}]</code> — N models served simultaneously; empty = default single-model <code>gemma4-26b-a4b</code>. Overrides MODEL.</td></tr>
+                <tr><td>spec_type</td><td>(unset)</td><td>Optional per-model field in the <code>MODELS</code> JSON array. Allow-listed value <code>"draft-mtp"</code>; enables llama.cpp MTP (multi-token prediction) speculative decoding for models that ship an embedded MTP head. Requires <code>parallel: 1</code>.</td></tr>
+                <tr><td>spec_draft_n_max</td><td>3</td><td>Optional integer 1-8 (default 3); max draft tokens per step. Only valid when <code>spec_type</code> is set.</td></tr>
                 <tr><td>ROLES</td><td>(empty)</td><td>JSON object mapping agent role → <code>{model, slot}</code> across the MODELS.</td></tr>
                 <tr><td>BIFROST_PORT</td><td>8082</td><td>Bifrost gateway port written into the shared <code>stack.json</code> manifest.</td></tr>
                 <tr><td>MODEL</td><td>gemma-4-26B-A4B-it-UD-IQ2_M</td><td>Legacy single-model: Hugging Face repo/filename identifier.</td></tr>
@@ -766,7 +769,7 @@
         <footer class="footer">
             <p>Repository: <a href="https://github.com/nmwael/agentic-devcontainer-feature" target="_blank">github.com/nmwael/agentic-devcontainer-feature</a></p>
             <p>Powered by devcontainer Features • Published to GHCR • Multi-agent HITL workflow • Tailscale ready</p>
-            <p><a href="https://github.com/nmwael/agentic-devcontainer-feature/blob/main/README.md">README</a> • <a href="https://github.com/nmwael/agentic-devcontainer-feature/blob/main/CONTRIBUTING.md">CONTRIBUTING</a> • <a href="https://github.com/nmwael/agentic-devcontainer-feature/blob/main/LICENSE">LICENSE</a> • <a href="https://github.com/nmwael/agentic-devcontainer-feature/blob/main/SECURITY.md">SECURITY</a></p>
+            <p><a href="https://github.com/nmwael/agentic-devcontainer-feature/blob/main/README.md">README</a> • <a href="https://github.com/nmwael/agentic-devcontainer-feature/blob/main/CONTRIBUTING.md">CONTRIBUTING</a> • <a href="https://github.com/nmwael/agentic-devcontainer-feature/blob/main/LICENSE">LICENSE</a> • <a href="https://github.com/nmwael/agentic-devcontainer-feature/blob/main/SECURITY.md">SECURITY</a> • <a href="changelog.html">CHANGELOG</a></p>
         </footer>
     </div>
 </body>
