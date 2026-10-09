@@ -23,6 +23,15 @@ llm_validate_local() {
             (.port | type) == "number" and
             ((.parallel // 1) | type) == "number"
         )
+        and all(.[];
+            (.spec_type // "") as $st |
+            ($st == "" or $st == "draft-mtp")
+            and (($st != "draft-mtp") or ((.parallel // 1) == 1))
+            and ((.spec_draft_n_max // 0) == 0
+                 or (($st == "draft-mtp") and ((.spec_draft_n_max | type) == "number")
+                     and (.spec_draft_n_max == (.spec_draft_n_max | floor))
+                     and (.spec_draft_n_max >= 1 and .spec_draft_n_max <= 8)))
+        )
     ' >/dev/null 2>&1 || return 1
     printf '%s' "$2" | jq -e '
         (type == "object") and (length > 0) and

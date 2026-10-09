@@ -1,14 +1,14 @@
 {
     "name": "On-Demand Models",
     "id": "models",
-    "version": "1.4.0",
+    "version": "1.5.0",
     "description": "ON-DEMAND multi-model config; weights (9-16 GB) are NEVER baked into image layers. Owns stack.json manifest (single source of truth for bifrost upstreams and opencode role->model mapping). CLOUD_MODE routes all agents to the hosted opencode provider instead of local slots. Profile files .devcontainer/llm-lab-{models,roles}.json are resolved at RUNTIME (postCreateCommand) because the workspace is not mounted during the build stage. Legacy single-model options MODEL/QUANT are deprecated in favor of MODELS.",
     "postCreateCommand": "/usr/local/share/llm-lab/models/resolve-stack.sh",
     "options": {
         "MODELS": {
             "type": "string",
             "default": "",
-            "description": "JSON array of model specs [{name,provider,hf,quant,url,port,context,parallel}, ...]. Optional url = exact repo/filename.gguf path on huggingface.co; required for real repos, omit for the legacy hf-derived path. Empty = resolve from .devcontainer/llm-lab-models.json at runtime, else default single-model (gemma4-26b-a4b). An explicit value here takes precedence and disables runtime profile resolution."
+            "description": "JSON array of model specs [{name,provider,hf,quant,url,port,context,parallel,spec_type,spec_draft_n_max}, ...]. Optional url = exact repo/filename.gguf path on huggingface.co; required for real repos, omit for the legacy hf-derived path. Optional spec_type: allowed value \"draft-mtp\" (requires parallel:1). Optional spec_draft_n_max: integer 1-8 (default llama.cpp 3). Empty = resolve from .devcontainer/llm-lab-models.json at runtime, else default single-model (gemma4-26b-a4b). An explicit value here takes precedence and disables runtime profile resolution."
         },
         "ROLES": {
             "type": "string",

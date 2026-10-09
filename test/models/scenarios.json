@@ -25,5 +25,23 @@
                 "ROLES": "{\\\"architect\\\":{\\\"model\\\":\\\"e5-26b\\\",\\\"slot\\\":0},\\\"build\\\":{\\\"model\\\":\\\"e5-26b\\\",\\\"slot\\\":1}}"
             }
         }
+    },
+    "mtp-embedded": {
+        "image": "ubuntu:24.04",
+        "features": {
+            "models": {
+                "MODELS": "[{\"name\":\"mtp-model\",\"provider\":\"local-mtp\",\"hf\":\"org/mtp\",\"quant\":\"Q4_K_M\",\"port\":18081,\"context\":32768,\"parallel\":1,\"spec_type\":\"draft-mtp\",\"spec_draft_n_max\":4}]",
+                "ROLES": "{\"architect\":{\"model\":\"mtp-model\",\"slot\":0},\"coder\":{\"model\":\"mtp-model\",\"slot\":0},\"build\":{\"model\":\"mtp-model\",\"slot\":0}}"
+            }
+        }
+    },
+    "mtp-rejected": {
+        "image": "ubuntu:24.04",
+        "features": {
+            "models": {
+                "MODELS": "[{\"name\":\"mtp-bad\",\"provider\":\"local-mtp\",\"hf\":\"org/mtp\",\"quant\":\"Q4_K_M\",\"port\":18081,\"context\":32768,\"parallel\":2,\"spec_type\":\"draft-mtp\",\"spec_draft_n_max\":4}]",
+                "ROLES": "{\"architect\":{\"model\":\"mtp-bad\",\"slot\":0},\"coder\":{\"model\":\"mtp-bad\",\"slot\":0},\"build\":{\"model\":\"mtp-bad\",\"slot\":0}}"
+            }
+        }
     }
 }

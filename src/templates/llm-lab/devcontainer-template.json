@@ -28,7 +28,7 @@
         "MODELS": {
             "type": "string",
             "default": "",
-            "description": "JSON array of model specs [{name,provider,hf,quant,port,context,parallel}, ...] to serve simultaneously (multi-upstream). Empty = default single-model (gemma4-26b-a4b). Overrides MODEL."
+            "description": "JSON array of model specs [{name,provider,hf,quant,port,context,parallel,spec_type,spec_draft_n_max}, ...] to serve simultaneously (multi-upstream). Optional spec_type: allowed value \"draft-mtp\" (requires parallel:1). Optional spec_draft_n_max: integer 1-8 (default llama.cpp 3). Empty = default single-model (gemma4-26b-a4b). Overrides MODEL."
         },
         "ROLES": {
             "type": "string",

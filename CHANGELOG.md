@@ -41,6 +41,9 @@ All notable changes to this project are documented in this file. The format is b
   - **Explicit options win.** `install.sh` records whether `MODELS`/`ROLES` arrived as feature options (`/usr/local/share/llm-lab/.build-state`); when they did, the resolver leaves the stack untouched instead of clobbering it with a workspace profile file.
   - Switching profiles now needs only a container restart, not a rebuild. The resolver is idempotent and rejects malformed JSON, unknown role models, and slots beyond a model's `parallel` count without corrupting a working stack.
   - **Tests** — `test/models/runtime-resolution.sh` (14 assertions, runs inside `devcontainer features test`) covers the build/runtime split, precedence, cloud-mode preservation, idempotency, and the integrity rejections. The old `test.sh` assertion that `MODELS_DIR` was always exported to `/etc/environment` now asserts the opposite (no stale build-time export).
+- **`models` 1.5.0 — optional per-model speculative-decoding fields (`spec_type: "draft-mtp"`, `spec_draft_n_max`), validated in `llm_validate_local`, passed through to `stack.json`, and emitted as `--spec-type draft-mtp [--spec-draft-n-max N]` by instance launchers.
+
+
 
 ### Added
 - **Cloud mode for the whole agentic stack** — `CLOUD_MODE=true` makes every opencode agent ride the hosted `opencode` provider on GPU-less/cloud boxes:

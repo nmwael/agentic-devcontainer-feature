@@ -26,7 +26,7 @@
 ## Speculative Decoding
 - **Mechanism**: Uses a draft model to predict tokens, then validates with the main model.
 - **Draft Models**: Use `--spec-draft-model` and `--spec-type draft-mtp`.
-- **MTP (Multi-Token Prediction)**: Shared KV cache between draft and main models (e.g., `mtp-gemma-4-12b-it`).
+- **MTP (Multi-Token Prediction)**: Shared KV cache between draft and main models (e.g., `mtp-gemma-4-12b-it`). Embedded MTP (Qwen3.5 `nextn` layers) uses `--spec-type draft-mtp [--spec-draft-n-max N]`, incompatible with `--parallel > 1` and `--mmproj`.
 - **Parameters**: 
   - `--spec-draft-n-max`: Max tokens to speculate.
   - `--spec-draft-ngl`: Number of GPU layers for the draft model.

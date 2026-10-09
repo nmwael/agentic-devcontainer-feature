@@ -182,6 +182,57 @@ resolve
     || fail "unknown role model must fail integrity"
 ok "unknown role model rejected"
 
+
+# MTP speculative-decoding — valid profile with draft-mtp is preserved.
+build
+cat >"$WS/.devcontainer/llm-lab-models.json" <<'JSON'
+[{"name":"mtp-model","provider":"local-mtp","hf":"org/mtp","quant":"Q4_K_M","port":8089,"context":32768,"parallel":1,"spec_type":"draft-mtp","spec_draft_n_max":4}]
+JSON
+cat >"$WS/.devcontainer/llm-lab-roles.json" <<'JSON'
+{"coder":{"model":"mtp-model","slot":0}}
+JSON
+resolve
+[ "$(stack_get '.models[0].spec_type')" = "draft-mtp" ] || fail "spec_type not preserved"
+[ "$(stack_get '.models[0].spec_draft_n_max')" = "4" ] || fail "spec_draft_n_max not preserved"
+ok "mtp valid profile preserved"
+
+# MTP rejected — invalid value for spec_type
+build
+cat >"$WS/.devcontainer/llm-lab-models.json" <<'JSON'
+[{"name":"mtp-bad","provider":"local-mtp","hf":"org/mtp","quant":"Q4_K_M","port":8089,"context":32768,"parallel":1,"spec_type":"none,draft-mtp"}]
+JSON
+cat >"$WS/.devcontainer/llm-lab-roles.json" <<'JSON'
+{"coder":{"model":"mtp-bad","slot":0}}
+JSON
+resolve
+[ "$(stack_get '.models[0].name')" = "gemma4-26b-a4b" ] || fail "invalid spec_type corrupted stack"
+ok "mtp invalid spec_type rejected"
+
+# MTP rejected — draft-mtp requires parallel == 1
+build
+cat >"$WS/.devcontainer/llm-lab-models.json" <<'JSON'
+[{"name":"mtp-par","provider":"local-mtp","hf":"org/mtp","quant":"Q4_K_M","port":8089,"context":32768,"parallel":2,"spec_type":"draft-mtp"}]
+JSON
+cat >"$WS/.devcontainer/llm-lab-roles.json" <<'JSON'
+{"coder":{"model":"mtp-par","slot":0}}
+JSON
+resolve
+[ "$(stack_get '.models[0].name')" = "gemma4-26b-a4b" ] || fail "draft-mtp with parallel>1 corrupted stack"
+ok "mtp draft-mtp with parallel>1 rejected"
+
+# MTP rejected — spec_draft_n_max without spec_type
+build
+cat >"$WS/.devcontainer/llm-lab-models.json" <<'JSON'
+[{"name":"mtp-nmax","provider":"local-mtp","hf":"org/mtp","quant":"Q4_K_M","port":8089,"context":32768,"parallel":1,"spec_draft_n_max":4}]
+JSON
+cat >"$WS/.devcontainer/llm-lab-roles.json" <<'JSON'
+{"coder":{"model":"mtp-nmax","slot":0}}
+JSON
+resolve
+[ "$(stack_get '.models[0].name')" = "gemma4-26b-a4b" ] || fail "spec_draft_n_max without spec_type corrupted stack"
+ok "mtp spec_draft_n_max without spec_type rejected"
+
+
 # An explicit MODELS_DIR option must override <workspace>/models.
 # Restore a valid profile first: build() wipes $WS, so write the profile in.
 build
