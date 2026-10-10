@@ -28,13 +28,13 @@
     }
   },
   "agent": {
-    "architect":    { "model": "local-gemma4-26b/gemma4-26b-a4b-s0" },
-    "coder":        { "model": "local-gemma4-26b/gemma4-26b-a4b-s1" },
-    "researcher":   { "model": "local-gemma4-26b/gemma4-26b-a4b-s2" },
-    "reviewer":     { "model": "local-gemma4-26b/gemma4-26b-a4b-s3" },
-    "build":        { "model": "local-gemma4-26b/gemma4-26b-a4b-s4" },
-    "ui":           { "model": "local-gemma4-26b/gemma4-26b-a4b-s4" },
-    "artist":       { "model": "local-gemma4-26b/gemma4-26b-a4b-s4" }
+    "architect":    { "model": "local-gemma4-26b/gemma4-26b-a4b-s0", "temperature": 0.1, "steps": 30 },
+    "coder":        { "model": "local-gemma4-26b/gemma4-26b-a4b-s1", "temperature": 0.1, "steps": 25 },
+    "researcher":   { "model": "local-gemma4-26b/gemma4-26b-a4b-s2", "temperature": 0.1, "steps": 20 },
+    "reviewer":     { "model": "local-gemma4-26b/gemma4-26b-a4b-s3", "temperature": 0.1, "steps": 15 },
+    "build":        { "model": "local-gemma4-26b/gemma4-26b-a4b-s4", "temperature": 0.2, "steps": 40 },
+    "ui":           { "model": "local-gemma4-26b/gemma4-26b-a4b-s4", "temperature": 0.2, "steps": 20 },
+    "artist":       { "model": "local-gemma4-26b/gemma4-26b-a4b-s4", "temperature": 0.3, "steps": 15 }
   },
   "enabled_providers": ["local-gemma4-26b", "opencode"],
   "subagent_depth": 2,

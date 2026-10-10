@@ -75,7 +75,7 @@ Pure informational queries are answered directly (`@architect` protocol 7). Ever
 
 1. **user → `build` → `architect`.** `build` routes any task needing planning, decomposition, or HITL approval to `architect` (Rules) and never delegates implementation itself.
 2. **`architect` plans → human approves.** Decompose into atomic subtasks (one primary objective each, `@architect` protocol 10) and obtain explicit HITL approval via the `question` tool before any code changes; state "I am waiting for approval" while waiting.
-3. **`architect` → exactly one specialist per subtask.** Each atomic subtask goes to the single appropriate specialist (`coder`, `researcher`, `reviewer`, `ui`, `artist`) as a JSON `Directive` envelope (next section) — one objective per envelope, never bundled, never broadcast to two roles.
+3. **`architect` → exactly one specialist per subtask.** Each atomic subtask goes to the single appropriate specialist (`coder`, `researcher`, `reviewer`, `ui`, `artist`) as a JSON `Directive` envelope (next section) — one objective per envelope, never bundled, never broadcast to two roles. Atomicity concretely means **one objective + one coherent file set per `Directive`**: correct = "add a `--dry-run` flag to `scripts/fetch.sh`" (files: `scripts/fetch.sh`, `test/fetch.bats`); forbidden = "refactor auth and add tests" (two objectives → split into one `Directive` for the refactor and a separate `Directive` for the tests).
 4. **specialist → `architect`: one JSON `Result` envelope.** The specialist's final message is its structured result; it performs no further delegation of any kind.
 5. **`architect` reviews → synthesizes → re-delegates if needed.** Verify the result against the file system (own `read`/`git status`); when refinement is needed, issue a new `Directive` (same `task_id`, `iteration` incremented) back to the **same** specialist. All iteration flows through the architect — specialists NEVER delegate to other specialists (Rules → ⚠️ RECURSION PREVENTION, "Architect-Bridge Only").
 6. **Depth is a hard backstop.** Delegation depth never exceeds `subagent_depth` (currently 2, `opencode.json`); `build` → `architect` → specialist already consumes that budget, and the architect-bridge rule holds even where depth would still allow a delegation.
@@ -96,7 +96,7 @@ The final message of a delegation MUST be exactly one raw JSON object: no markdo
 | `task_id` | yes | string | Unique subtask id (e.g. `"T2"`); echoed on every iteration. |
 | `role` | yes | string | Exactly one of `coder`, `researcher`, `reviewer`, `ui`, `artist`. |
 | `objective` | yes | string | One sentence, one primary objective (atomic-delegation rule). |
-| `context` | yes | string | Everything needed to act, inlined literally — subagents cannot see prior turns (lifecycle rule 201). |
+| `context` | yes | string | Everything needed to act, inlined literally — subagents cannot see prior turns (lifecycle rule 201) — inline all relevant file contents, errors, and decisions literally; never write "as discussed". |
 | `success_criteria` | yes | string[] | Verifiable checks the result must satisfy. |
 | `files` | no | string[] | Exact paths in scope (read/write as the role allows); omit ⇒ no file scope. |
 | `constraints` | no | string[] | Hard limits: POSIX only, no new deps, approved-plan id. |
@@ -124,7 +124,7 @@ Example directive:
 | `role` | yes | string | Echo of the directive's `role`. |
 | `status` | yes | string | `done` \| `blocked` \| `needs_input`. |
 | `summary` | yes | string | One paragraph, human-readable outcome — what the architect synthesizes. |
-| `blocker` | iff `status` ≠ `done` | string | The exact error or decision needed; feeds the Multi-Step Correction & Debugging Protocol. Must be absent when `done`. |
+| `blocker` | iff `status` ≠ `done` | string | A JSON-encoded **string** (escaped inside the envelope) with the structured schema `{"type":"missing_file|validation_failed|ambiguous_spec|tool_error|permission_denied","detail":"exact error/decision","suggested_action":"retry|revise_plan|ask_human|adjust_scope"}`; feeds the Multi-Step Correction & Debugging Protocol. Must be absent when `done`. |
 | `artifacts` | coder: iff `done`; else no | `{path, action, note}[]` | Files touched, claimed — the architect verifies each on disk. `action`: `created` \| `modified` \| `deleted`. |
 | `checks` | coder + ui/artist: iff `done`; else no | `{command, outcome, evidence}[]` | Real command output, never paraphrase. `outcome`: `pass` \| `fail` \| `skip`. |
 | `findings` | researcher + reviewer: iff `done`; else no | objects with `path:line` | Evidence-backed content: research facts (`{claim, evidence}`), review issues (`{severity, path, line, issue, suggestion}`). No uncited claims; `UNKNOWN` beats guessing. |
@@ -145,6 +145,18 @@ Example result:
     {"command": "dash -n scripts/fetch.sh", "outcome": "pass", "evidence": "exit 0, no output"},
     {"command": "bats test/fetch.bats", "outcome": "pass", "evidence": "3 tests, 0 failures"}
   ]
+}
+```
+
+Example blocked result (note `blocker` is a JSON string escaped inside the envelope):
+
+```json
+{
+  "task_id": "T2",
+  "role": "coder",
+  "status": "blocked",
+  "summary": "Cannot add --dry-run: the target script does not exist at the given path.",
+  "blocker": "{\"type\":\"missing_file\",\"detail\":\"scripts/fetch.sh not found in workspace\",\"suggested_action\":\"revise_plan\"}"
 }
 ```
 
@@ -174,6 +186,7 @@ Agents can run in parallel when their work is independent (e.g., two unrelated c
 - When multiple agents work in parallel, wait for all to complete before responding.
 - If the task requires an explicit Human-in-the-Loop (HITL) approval (e.g., the Architect's plan before code modification), the agent must state: "I am waiting for approval."
 - For all other situations where a subtask is complete and further direction is needed from the user, the agent must state: "I am waiting for instructions."
+- **Exact wording (mandatory):** these two status strings are literal, not paraphrases — "I am waiting for approval" while blocked on HITL approval, and "I am waiting for instructions" when a subtask is complete and further user direction is needed.
 
 ### 🔧 Tools & Package Requests (HITL Gate)
 - **Never install a missing tool yourself.** If you need a system package, CLI, language runtime, or capability that isn't already in the devcontainer (via `apt`/`pip`/`npm`/`go install`, or by downloading a binary), stop and request it through the Architect instead. One-off installs often fail, vanish on rebuild, or pollute the box.
@@ -183,3 +196,9 @@ Agents can run in parallel when their work is independent (e.g., two unrelated c
 ## Verification Protocol
 
 **Mandatory Change Verification**: Before any task is marked as 'completed', the Architect MUST verify that all claimed code changes actually exist on the filesystem. This is done by performing a `git status` or `ls -R` check to confirm the existence of new/modified files and verifying their content against the agent's report. A task is not complete until the physical artifacts are verified.
+
+**Per-artifact verification checklist** (apply to every claimed artifact, in order):
+
+- (a) **Read the file** and confirm its content matches what the agent claimed was written.
+- (b) **`git status`** (or `git diff --stat`) and confirm that only the expected files changed — no stray new files, no claimed-but-absent paths.
+- (c) **Re-run each reported check** (`checks[].command`) and confirm the observed `outcome` and `evidence` match the report; a `pass` in the report that fails on re-run invalidates the artifact.

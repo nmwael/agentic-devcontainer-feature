@@ -117,6 +117,18 @@ assert isinstance(data, dict) and "features" in data, "template devcontainer.jso
     }
 }
 
+@test "opencode-agents fragment: every agent carries numeric temperature + integer steps" {
+    frag="$REPO_ROOT/src/opencode-agents/templates/opencode.json.fragment"
+    jq -e '[ .agent[] | ((.temperature | type) == "number") and ((.steps | type) == "number") and (.steps == (.steps | floor)) ] | all' "$frag" >/dev/null || {
+        echo "opencode.json.fragment: every agent entry must declare a numeric temperature and an integer steps"
+        return 1
+    }
+    jq -e '.agent.architect.temperature == 0.1 and .agent.artist.temperature == 0.3' "$frag" >/dev/null || {
+        echo "opencode.json.fragment: architect temperature must be 0.1 and artist 0.3"
+        return 1
+    }
+}
+
 @test "opencode-agents fragment: limit.output is never limit.context" {
     frag="$REPO_ROOT/src/opencode-agents/templates/opencode.json.fragment"
     jq -e '[ .provider[].models[]? | (.limit.output == .limit.context) ] | any | not' "$frag" >/dev/null || {

@@ -86,6 +86,70 @@ J
     rm -rf "$out" "$stack"
 }
 
+@test "generate-opencode.sh emits per-agent temperature and steps (local mode)" {
+    stack=$(mktemp)
+    cat >"$stack" <<'J'
+{"schema":1,"models_dir":"/tmp/m","bifrost_port":8082,"opencode_port":4096,"subagent_depth":2,"cloud":false,"cloud_provider":"opencode","models":[{"name":"gemma4-26b-a4b","provider":"local-gemma4-26b","hf":"x","quant":"Q2","port":8089,"context":65536,"parallel":5}],"roles":{"architect":{"model":"gemma4-26b-a4b","slot":0},"coder":{"model":"gemma4-26b-a4b","slot":1},"researcher":{"model":"gemma4-26b-a4b","slot":2},"reviewer":{"model":"gemma4-26b-a4b","slot":3},"build":{"model":"gemma4-26b-a4b","slot":4},"ui":{"model":"gemma4-26b-a4b","slot":4},"artist":{"model":"gemma4-26b-a4b","slot":4}}}
+J
+    out=$(mktemp -d)
+    run /usr/local/share/opencode-agents/generate-opencode.sh "$stack" "$out/opencode.json"
+    [ "$status" -eq 0 ]
+    jq -e '[ .agent[] | ((.temperature | type) == "number") and ((.steps | type) == "number") and (.steps == (.steps | floor)) ] | all' "$out/opencode.json" >/dev/null || {
+        echo "every agent must carry a numeric temperature and an integer steps:"
+        jq -c '.agent' "$out/opencode.json"
+        return 1
+    }
+    jq -e '.agent.architect.temperature == 0.1 and .agent.artist.temperature == 0.3' "$out/opencode.json" >/dev/null || {
+        echo "architect temperature must be 0.1 and artist 0.3:"
+        jq -c '.agent' "$out/opencode.json"
+        return 1
+    }
+    rm -rf "$out" "$stack"
+}
+
+@test "generate-opencode.sh emits per-agent temperature and steps (cloud mode)" {
+    stack=$(mktemp)
+    cat >"$stack" <<'J'
+{"schema":1,"models_dir":"/tmp/m","bifrost_port":8082,"opencode_port":4096,"subagent_depth":2,"cloud":true,"cloud_provider":"opencode","models":[],"roles":{"architect":{"model":"big-pickle","slot":0},"artist":{"model":"big-pickle","slot":0}}}
+J
+    out=$(mktemp -d)
+    run /usr/local/share/opencode-agents/generate-opencode.sh "$stack" "$out/opencode.json"
+    [ "$status" -eq 0 ]
+    jq -e '.agent.architect.temperature == 0.1 and .agent.artist.temperature == 0.3 and (.agent.artist.steps | type == "number")' "$out/opencode.json" >/dev/null || {
+        echo "cloud mode must emit per-agent temperature/steps (architect 0.1, artist 0.3):"
+        jq -c '.agent' "$out/opencode.json"
+        return 1
+    }
+    rm -rf "$out" "$stack"
+}
+
+@test "generate-opencode.sh lets an explicit role temperature/steps win" {
+    stack=$(mktemp)
+    cat >"$stack" <<'J'
+{"schema":1,"models_dir":"/tmp/m","bifrost_port":8082,"opencode_port":4096,"subagent_depth":2,"cloud":true,"cloud_provider":"opencode","models":[],"roles":{"build":{"model":"big-pickle","slot":0,"temperature":0.7,"steps":5}}}
+J
+    out=$(mktemp -d)
+    run /usr/local/share/opencode-agents/generate-opencode.sh "$stack" "$out/opencode.json"
+    [ "$status" -eq 0 ]
+    jq -e '.agent.build.temperature == 0.7 and .agent.build.steps == 5' "$out/opencode.json" >/dev/null || {
+        echo "explicit role temperature/steps must override per-role defaults:"
+        jq -c '.agent.build' "$out/opencode.json"
+        return 1
+    }
+    rm -rf "$out" "$stack"
+}
+
+@test "opencode-agents fragment: every agent carries numeric temperature + integer steps" {
+    jq -e '[ .agent[] | ((.temperature | type) == "number") and ((.steps | type) == "number") and (.steps == (.steps | floor)) ] | all' /usr/local/share/opencode-agents/opencode.json.fragment >/dev/null || {
+        echo "shipped fragment: every agent entry must declare a numeric temperature and an integer steps"
+        return 1
+    }
+    jq -e '.agent.architect.temperature == 0.1 and .agent.artist.temperature == 0.3' /usr/local/share/opencode-agents/opencode.json.fragment >/dev/null || {
+        echo "shipped fragment: architect temperature must be 0.1 and artist 0.3"
+        return 1
+    }
+}
+
 @test "scaffold.sh generates from stack.json when present (fragment when absent)" {
     stack=$(mktemp)
     cat >"$stack" <<'J'

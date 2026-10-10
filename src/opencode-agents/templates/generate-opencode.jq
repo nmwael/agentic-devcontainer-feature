@@ -7,6 +7,16 @@
 #     bifrost gateway), per-slot model ids "{name}" + "-s0..-s{parallel-1}",
 #     agent -> model-id pin map from stack.roles, and top-level model/small_model
 #     = the "build" role's model id (keyed off the first role when "build" absent).
+#
+# Every agent entry also carries per-role sampling/budget defaults (temperature,
+# steps). An explicit .temperature/.steps on the stack.roles entry overrides the
+# per-role default.
+def temp_default($role):
+    { architect: 0.1, coder: 0.1, researcher: 0.1, reviewer: 0.1,
+      build: 0.2, ui: 0.2, artist: 0.3 }[$role] // 0.1;
+def steps_default($role):
+    { architect: 30, coder: 25, researcher: 20, reviewer: 15,
+      build: 40, ui: 20, artist: 15 }[$role] // 20;
 (.cloud // false) as $is_cloud
 | (.cloud_provider // "opencode") as $cprov
 | .opencode_port as $op
@@ -15,7 +25,11 @@
 | ((if ($roles | has("build")) then $roles.build else ($roles | to_entries[0].value) end)) as $primary
 | if $is_cloud then
     ((reduce ($roles | to_entries[]) as $e ({};
-          . + { ($e.key): { model: ($cprov + "/" + $e.value.model) } }))) as $agent_map
+          . + { ($e.key): {
+                    model: ($cprov + "/" + $e.value.model),
+                    temperature: ($e.value.temperature // temp_default($e.key)),
+                    steps: ($e.value.steps // steps_default($e.key))
+                } }))) as $agent_map
     | {
         "$schema": "https://opencode.ai/config.json",
         model: ($cprov + "/" + $primary.model),
@@ -56,7 +70,9 @@
     | ((reduce ($roles | to_entries[]) as $e ({};
               . + { ($e.key): { model:
                         ((first($models[] | select(.name == $e.value.model))).provider
-                         + "/" + $e.value.model + "-s" + ($e.value.slot | tostring)) } }))) as $agent_map
+                         + "/" + $e.value.model + "-s" + ($e.value.slot | tostring)),
+                    temperature: ($e.value.temperature // temp_default($e.key)),
+                    steps: ($e.value.steps // steps_default($e.key)) } }))) as $agent_map
     | {
         "$schema": "https://opencode.ai/config.json",
         model: $primary_id,

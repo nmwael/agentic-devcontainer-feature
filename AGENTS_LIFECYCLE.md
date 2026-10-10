@@ -38,7 +38,7 @@ To prevent "Infinite Spins" and "Step Exhaustion," all agents must adhere to the
 
 ## Agent communication rules (hard-learned from diagnostics)
 
-201: - Subagents have fully isolated context: they cannot see earlier conversation turns. Never reference prior-turn content in a delegation prompt — always inline the full literal content.
+201: - Subagents have fully isolated context: they cannot see earlier conversation turns. Never reference prior-turn content in a delegation prompt — always inline the full literal content. Inline all relevant file contents, errors, and decisions literally; never write 'as discussed'.
 202: - Never trust a subagent's success report. Verify every write with the architect's own read/glob before reporting success to the user.
 203: - Prefer full-content write over surgical edit when creating or rewriting files. After any edit, re-read the file to confirm original content was preserved.
 204: - Scratch/tmp files a subagent writes for itself (wip/, /tmp/opencode, or the workspace) MUST be uid-prefixed (e.g., `scratch_<flow>_<uuid4>/` or `<short-uuid>_name.py`) so concurrent agents never collide or overwrite each other's working files.
