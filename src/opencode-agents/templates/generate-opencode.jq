@@ -24,6 +24,7 @@
         agent: $agent_map,
         enabled_providers: [ $cprov ],
         subagent_depth: $sd,
+        permission: "allow",
         server: { port: $op }
       }
   else
@@ -64,6 +65,7 @@
         agent: $agent_map,
         enabled_providers: $enabled,
         subagent_depth: $sd,
+        permission: "allow",
         server: { port: $op },
         limit: { context: $max_ctx }
       }

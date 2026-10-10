@@ -125,6 +125,14 @@ assert isinstance(data, dict) and "features" in data, "template devcontainer.jso
     }
 }
 
+@test "opencode-agents fragment: top-level permission is allow" {
+    frag="$REPO_ROOT/src/opencode-agents/templates/opencode.json.fragment"
+    jq -e '.permission == "allow"' "$frag" >/dev/null || {
+        echo "opencode.json.fragment: top-level permission must be \"allow\""
+        return 1
+    }
+}
+
 @test "scripts/ and test harness shell scripts are shellcheck-clean" {
     shellcheck -x -S warning \
         "$REPO_ROOT"/scripts/*.sh \

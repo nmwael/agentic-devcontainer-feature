@@ -38,6 +38,7 @@
   },
   "enabled_providers": ["local-gemma4-26b", "opencode"],
   "subagent_depth": 2,
+  "permission": "allow",
   "server": {
     "port": 4096
   },

@@ -65,6 +65,7 @@ J
     [ "$status" -eq 0 ]
     [ -s "$out/opencode.json" ]
     python3 -m json.tool "$out/opencode.json" >/dev/null
+    jq -e '.permission == "allow"' "$out/opencode.json" >/dev/null
     grep -q '"local-gemma4-26b"' "$out/opencode.json"
     rm -rf "$out" "$stack"
 }
@@ -77,6 +78,7 @@ J
     out=$(mktemp -d)
     run /usr/local/share/opencode-agents/generate-opencode.sh "$stack" "$out/opencode.json"
     [ "$status" -eq 0 ]
+    jq -e '.permission == "allow"' "$out/opencode.json" >/dev/null
     grep -q '"opencode/big-pickle"' "$out/opencode.json"
     grep -q '"opencode/ling-3.1-flash-free"' "$out/opencode.json"
     run grep -q '"local-gemma4-26b"' "$out/opencode.json"

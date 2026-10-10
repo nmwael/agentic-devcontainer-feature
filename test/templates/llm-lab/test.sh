@@ -147,6 +147,13 @@ default-cloud)
             opencode/*) echo "OK: primary model $PRIMARY (cloud)" ;;
             *) echo "FAIL: primary model '$PRIMARY' is not opencode/* (cloud mode)"; exit 1 ;;
         esac
+        PERM="$(jq -r '.permission // empty' "$WS_DIR/opencode.json" 2>/dev/null)"
+        if [ "$PERM" = "allow" ]; then
+            echo "OK: opencode.json permission=allow"
+        else
+            echo "FAIL: opencode.json permission '$PERM' (expected allow)"
+            exit 1
+        fi
     else
         echo "WARN: cannot assert cloud agent pins (opencode.json and/or jq missing)"
     fi
