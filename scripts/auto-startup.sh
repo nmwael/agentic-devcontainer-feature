@@ -39,10 +39,14 @@ if command -v tailscale >/dev/null 2>&1; then
     if sudo timeout 5 tailscale status >/dev/null 2>&1; then
         echo "[auto-startup] tailscale already up"
     elif [ -n "${TS_AUTHKEY:-}" ]; then
-        # Stable tailnet node name (override via TS_HOSTNAME env).
-        # Container hostnames are random IDs by default; a fixed name makes
-        # the box findable as llm-lab (tailscale ip -4 / tailscale status).
-        TS_HOSTNAME="${TS_HOSTNAME:-llm-lab}"
+        # Stable tailnet node name: TS_HOSTNAME comes from containerEnv (host
+        # override via ${localEnv:TS_HOSTNAME}, else the workspace-folder
+        # basename). Engines without nested substitution can leave a literal
+        # ${...} here, so fall back to this workspace's folder name.
+        _ws="$(CDPATH='' cd -- "$(dirname -- "$0")/.." && pwd)"
+        case "${TS_HOSTNAME:-}" in
+        ""|*'${'*) TS_HOSTNAME="$(basename "$_ws")" ;;
+        esac
         sudo tailscale up --authkey="$TS_AUTHKEY" --hostname="$TS_HOSTNAME" \
             --accept-routes --accept-dns --operator="$(id -un)" 2>/dev/null ||
             echo "[auto-startup] WARNING: tailscale up (authkey) failed"

@@ -43,7 +43,7 @@ To prevent infinite loops and ensure progress in complex tasks (like CAD script 
 4.  **Verification**: Every correction must be verified by running the script/command and reporting the output (success or failure) back to the Architect before moving to the next step.
 
 ### `@architect`
-The primary orchestrator of this system. Its function is the logical decomposition of user directives into discrete, executable subtasks, which are then delegated to specialist agents via the Task tool. It does not possess the capacity for direct code generation. Its protocols mandate:
+The primary orchestrator of this system. Its function is the logical decomposition of user directives into discrete, executable subtasks, which are then delegated to specialist agents via the `subagent` tool. It does not possess the capacity for direct code generation. Its protocols mandate:
 1. Analysis of all incoming requests to segment them into precise subtasks and delegate accordingly.
 2. Synthesis of resultant data from subordinate agents into a cohesive final report.
 3. For complex, multi-stage operations, concurrent execution of specialized agents is prioritized where logical independence permits.
@@ -71,14 +71,16 @@ The primary orchestrator of this system. Its function is the logical decompositi
 
 ## Orchestration Flow
 
-Pure informational queries are answered directly (`@architect` protocol 7). Everything else that can change code travels exactly one loop:
+Pure informational queries are answered directly (`@architect` protocol 7). Everything else that can change code travels exactly one loop, and every delegation round-trips through the architect — never directly between specialists, and never an agent to itself:
+
+**Canonical loop:** human → `architect` (plan) → human approval → `architect` → subagent → `architect` → subagent → … → `architect` → human. `build` is only the entry router (`human → build → architect`); it never owns the loop.
 
 1. **user → `build` → `architect`.** `build` routes any task needing planning, decomposition, or HITL approval to `architect` (Rules) and never delegates implementation itself.
 2. **`architect` plans → human approves.** Decompose into atomic subtasks (one primary objective each, `@architect` protocol 10) and obtain explicit HITL approval via the `question` tool before any code changes; state "I am waiting for approval" while waiting.
 3. **`architect` → exactly one specialist per subtask.** Each atomic subtask goes to the single appropriate specialist (`coder`, `researcher`, `reviewer`, `ui`, `artist`) as a JSON `Directive` envelope (next section) — one objective per envelope, never bundled, never broadcast to two roles. Atomicity concretely means **one objective + one coherent file set per `Directive`**: correct = "add a `--dry-run` flag to `scripts/fetch.sh`" (files: `scripts/fetch.sh`, `test/fetch.bats`); forbidden = "refactor auth and add tests" (two objectives → split into one `Directive` for the refactor and a separate `Directive` for the tests).
 4. **specialist → `architect`: one JSON `Result` envelope.** The specialist's final message is its structured result; it performs no further delegation of any kind.
 5. **`architect` reviews → synthesizes → re-delegates if needed.** Verify the result against the file system (own `read`/`git status`); when refinement is needed, issue a new `Directive` (same `task_id`, `iteration` incremented) back to the **same** specialist. All iteration flows through the architect — specialists NEVER delegate to other specialists (Rules → ⚠️ RECURSION PREVENTION, "Architect-Bridge Only").
-6. **Depth is a hard backstop.** Delegation depth never exceeds `subagent_depth` (currently 2, `opencode.json`); `build` → `architect` → specialist already consumes that budget, and the architect-bridge rule holds even where depth would still allow a delegation.
+6. **Depth is a hard backstop.** Delegation depth never exceeds `subagent_depth` (currently 3, `opencode.json`); every extra level must still round-trip through the architect, and the architect-bridge plus no-self-delegation rules hold even where depth would still allow a delegation.
 7. **Mandatory reviewer gate.** No code task is complete until the `reviewer` returns a passing `Result` (`status: done`); only then may the architect report completion — see `## Workflow`.
 
 Anti-stall mechanics for this loop (atomic delegations, plateau detection, verify-before-report) live in `AGENTS_LIFECYCLE.md` and are binding here.
@@ -172,8 +174,9 @@ Agents can run in parallel when their work is independent (e.g., two unrelated c
 
 ### ⚠️ RECURSION PREVENTION
 - **Architect-Bridge Only:** Specialists NEVER delegate to other specialists. All cross-specialist work (e.g., a `coder` needing research, a `reviewer` needing context) is reported back to the `architect`, who then activates the appropriate specialist. No agent may delegate to a different specialist type directly.
+- **No Self-Delegation:** No agent may spawn itself. An agent (including `architect`, `coder`, `researcher`, `reviewer`, `ui`, `artist`, `build`) must NEVER invoke its own role/`subagent` type, directly or indirectly — self-delegation is forbidden regardless of remaining depth.
 - **Task Completion:** A subagent's task is complete when it provides the final requested data or code, not when it delegates a "next step" to another agent. 
-- **Depth Awareness:** Agents must monitor their current depth and stop any delegation that would exceed the `subagent_depth` limit (currently 2).
+- **Depth Awareness:** Agents must monitor their current depth and stop any delegation that would exceed the `subagent_depth` limit (currently 3).
 
 ### ❓ Mandatory Questioning & Approval Protocol
 - **Mandatory Questioning**: For clarifying ambiguity, preferences, or choices, agents MUST use the `question` tool instead of plain text.
