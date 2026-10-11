@@ -39,10 +39,10 @@ if command -v tailscale >/dev/null 2>&1; then
     if sudo timeout 5 tailscale status >/dev/null 2>&1; then
         echo "[auto-startup] tailscale already up"
     elif [ -n "${TS_AUTHKEY:-}" ]; then
-        # Stable tailnet node name: TS_HOSTNAME comes from containerEnv (host
-        # override via ${localEnv:TS_HOSTNAME}, else the workspace-folder
-        # basename). Engines without nested substitution can leave a literal
-        # ${...} here, so fall back to this workspace's folder name.
+        # Stable tailnet node name: honour a host-provided TS_HOSTNAME
+        # (${localEnv:TS_HOSTNAME} in containerEnv), else derive it from this
+        # workspace's folder name. (The devcontainer engine does not expand
+        # nested ${...}, so the derivation happens here, not in the manifest.)
         _ws="$(CDPATH='' cd -- "$(dirname -- "$0")/.." && pwd)"
         case "${TS_HOSTNAME:-}" in
         ""|*'${'*) TS_HOSTNAME="$(basename "$_ws")" ;;
