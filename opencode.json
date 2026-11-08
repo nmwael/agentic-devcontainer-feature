@@ -11,31 +11,53 @@
   },
   "agent": {
     "architect": {
-      "model": "opencode/big-pickle"
+      "model": "opencode/big-pickle",
+      "temperature": 0.1,
+      "steps": 30
     },
     "coder": {
-      "model": "opencode/ling-3.1-flash-free"
+      "model": "opencode/ling-3.1-flash-free",
+      "temperature": 0.1,
+      "steps": 25
     },
     "researcher": {
-      "model": "opencode/nemotron-3-ultra-free"
+      "model": "opencode/nemotron-3-ultra-free",
+      "temperature": 0.1,
+      "steps": 20
     },
     "reviewer": {
-      "model": "opencode/nemotron-3.5-lightning-free"
+      "model": "opencode/nemotron-3.5-lightning-free",
+      "temperature": 0.1,
+      "steps": 15
     },
     "build": {
-      "model": "opencode/ling-3.1-flash-free"
+      "model": "opencode/ling-3.1-flash-free",
+      "temperature": 0.2,
+      "steps": 40
     },
     "ui": {
-      "model": "opencode/fledge-alpha-free"
+      "model": "opencode/fledge-alpha-free",
+      "temperature": 0.2,
+      "steps": 20
     },
     "artist": {
-      "model": "opencode/space-bunny-free"
+      "model": "opencode/space-bunny-free",
+      "temperature": 0.3,
+      "steps": 15
+    },
+    "ai-researcher": {
+      "model": "opencode/mimo-v2.6-flash-free",
+      "temperature": 0.1,
+      "steps": 20
     }
   },
-  "enabled_providers": [
-    "opencode","google","nvidia", "openrouter"
+  "policies": [
+    { "action": "provider.use", "resource": "*", "effect": "deny" },
+    { "action": "provider.use", "resource": "opencode", "effect": "allow" },
+    { "action": "provider.use", "resource": "nvidia", "effect": "allow" }
   ],
   "subagent_depth": 3,
+  "permission": "allow",
   "server": {
     "port": 4096
   }

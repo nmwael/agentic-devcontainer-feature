@@ -36,9 +36,9 @@ echo "Opencode-agents config: OVERWRITE=$OVERWRITE WITH_LIBRARY=$WITH_LIBRARY IN
 # Ship AGENTS.md and AGENTS_LIFECYCLE.md
 mkdir -p "$INSTALL_DIR"
 
-# Create .opencode/agent/ directory structure
+# Create .opencode/agents/ directory structure
 if [ ! -d "$INSTALL_DIR/.opencode" ]; then
-    mkdir -p "$INSTALL_DIR/.opencode/agent"
+    mkdir -p "$INSTALL_DIR/.opencode/agents"
 fi
 
 # Template directory (shipped with the feature)
@@ -48,10 +48,10 @@ TPL_DIR="$(dirname "$0")/templates"
 cp -f "$TPL_DIR/AGENTS.md" "$INSTALL_DIR/AGENTS.md"
 cp -f "$TPL_DIR/AGENTS_LIFECYCLE.md" "$INSTALL_DIR/AGENTS_LIFECYCLE.md"
 
-# Copy .opencode/agent/*.md files
-mkdir -p "$INSTALL_DIR/.opencode/agent"
-for f in "$TPL_DIR/.opencode/agent"/*.md; do
-    [ -f "$f" ] && cp -f "$f" "$INSTALL_DIR/.opencode/agent/"
+# Copy .opencode/agents/*.md files
+mkdir -p "$INSTALL_DIR/.opencode/agents"
+for f in "$TPL_DIR/.opencode/agents"/*.md; do
+    [ -f "$f" ] && cp -f "$f" "$INSTALL_DIR/.opencode/agents/"
 done
 
 # Copy library books if WITH_LIBRARY is true

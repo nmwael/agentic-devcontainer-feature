@@ -43,10 +43,14 @@ else
 fi
 
 # Scaffold the agent payload into the workspace (AGENTS.md, library, .opencode/agent)
+# Derive the workspace from this script's location (<workspace>/scripts/post-create.sh)
+# instead of $PWD: postCreateCommand may run with cwd=/ , which previously made
+# scaffold.sh write opencode.json at the filesystem root.
 SCAFFOLD="/usr/local/share/opencode-agents/scaffold.sh"
+WORKSPACE="$(CDPATH='' cd -- "$(dirname -- "$0")/.." && pwd)"
 if [ -x "$SCAFFOLD" ]; then
-    echo "[post-create] scaffolding agent payload into workspace..."
-    "$SCAFFOLD" || echo "[post-create] WARNING: scaffold.sh reported an issue (see output above)"
+    echo "[post-create] scaffolding agent payload into workspace ($WORKSPACE)..."
+    WORKSPACE="$WORKSPACE" "$SCAFFOLD" || echo "[post-create] WARNING: scaffold.sh reported an issue (see output above)"
 else
     echo "[post-create] scaffold.sh not found at $SCAFFOLD"
 fi

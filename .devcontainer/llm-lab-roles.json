@@ -1,9 +1,9 @@
 {
-  "architect": {"model": "big-pickle", "slot": 0},
-  "coder": {"model": "ling-3.1-flash-free", "slot": 0},
-  "researcher": {"model": "nemotron-3-ultra-free", "slot": 0},
-  "reviewer": {"model": "nemotron-3.5-lightning-free", "slot": 0},
-  "build": {"model": "ling-3.1-flash-free", "slot": 0},
-  "ui": {"model": "fledge-alpha-free", "slot": 0},
-  "artist": {"model": "space-bunny-free", "slot": 0}
+  "architect": {"model": "big-pickle", "slot": 0, "provider": "opencode"},
+  "coder": {"model": "ling-3.1-flash-free", "slot": 0, "provider": "opencode"},
+  "researcher": {"model": "nemotron-3-ultra-free", "slot": 0, "provider": "opencode"},
+  "reviewer": {"model": "nemotron-3.5-lightning-free", "slot": 0, "provider": "opencode"},
+  "build": {"model": "ling-3.1-flash-free", "slot": 0, "provider": "opencode"},
+  "ui": {"model": "fledge-alpha-free", "slot": 0, "provider": "opencode"},
+  "artist": {"model": "space-bunny-free", "slot": 0, "provider": "opencode"}
 }

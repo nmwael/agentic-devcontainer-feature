@@ -1,7 +1,7 @@
-# generate-opencode.jq — convert the shared stack.json manifest (written by the
+# generate-opencode.jq -- convert the shared stack.json manifest (written by the
 # models feature) into an opencode.json:
 #   * cloud mode   (stack.json.cloud == true): every agent routes to the hosted
-#     opencode provider ("opencode/<roles[].model>"); no local providers, no
+#     provider ("<provider>/<roles[].model>"); no local providers, no
 #     per-slot ids, slots/latency/context come from the hosted model directly.
 #   * local mode   (default): one provider per model backend (baseURL through the
 #     bifrost gateway), per-slot model ids "{name}" + "-s0..-s{parallel-1}",
@@ -24,19 +24,21 @@ def steps_default($role):
 | .roles as $roles
 | ((if ($roles | has("build")) then $roles.build else ($roles | to_entries[0].value) end)) as $primary
 | if $is_cloud then
-    ((reduce ($roles | to_entries[]) as $e ({};
+    (reduce ($roles | to_entries[]) as $e ([]; . + [($e.value.provider // $cprov)]) | unique) as $all_providers
+    | (reduce $all_providers[] as $p ({}; . + {($p): {options: {setCacheKey: false}}})) as $providers
+    | (reduce ($roles | to_entries[]) as $e ({};
           . + { ($e.key): {
-                    model: ($cprov + "/" + $e.value.model),
+                    model: (($e.value.provider // $cprov) + "/" + $e.value.model),
                     temperature: ($e.value.temperature // temp_default($e.key)),
                     steps: ($e.value.steps // steps_default($e.key))
-                } }))) as $agent_map
+                } }) ) as $agent_map
     | {
         "$schema": "https://opencode.ai/config.json",
-        model: ($cprov + "/" + $primary.model),
-        small_model: ($cprov + "/" + $primary.model),
-        provider: { ($cprov): { options: { setCacheKey: false } } },
+        model: (($primary.provider // $cprov) + "/" + $primary.model),
+        small_model: (($primary.provider // $cprov) + "/" + $primary.model),
+        provider: $providers,
         agent: $agent_map,
-        enabled_providers: [ $cprov ],
+        enabled_providers: $all_providers,
         subagent_depth: $sd,
         permission: "allow",
         server: { port: $op }
@@ -67,12 +69,12 @@ def steps_default($role):
           )
       ) + { opencode: { options: { setCacheKey: false } } }) as $providers
     | ((reduce $models[] as $m ([]; . + [$m.provider])) | unique | . + ["opencode"]) as $enabled
-    | ((reduce ($roles | to_entries[]) as $e ({};
+    | (reduce ($roles | to_entries[]) as $e ({};
               . + { ($e.key): { model:
                         ((first($models[] | select(.name == $e.value.model))).provider
                          + "/" + $e.value.model + "-s" + ($e.value.slot | tostring)),
                     temperature: ($e.value.temperature // temp_default($e.key)),
-                    steps: ($e.value.steps // steps_default($e.key)) } }))) as $agent_map
+                    steps: ($e.value.steps // steps_default($e.key)) } }) ) as $agent_map
     | {
         "$schema": "https://opencode.ai/config.json",
         model: $primary_id,

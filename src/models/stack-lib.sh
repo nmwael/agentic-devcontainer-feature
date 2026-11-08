@@ -51,12 +51,14 @@ llm_validate_local() {
 
 # llm_validate_cloud ROLES_JSON
 # Cloud integrity: >=1 role, every role carries a non-empty hosted model id.
+# Optional .provider per role (defaults to "opencode").
 llm_validate_cloud() {
     printf '%s' "$1" | jq -e '
         (type == "object") and (length > 0) and
         all(to_entries[];
             (.value | type) == "object" and
-            (.value.model | type) == "string" and (.value.model | length) > 0
+            (.value.model | type) == "string" and (.value.model | length) > 0 and
+            ((.value.provider // "opencode") | type == "string")
         )
     ' >/dev/null 2>&1
 }
@@ -72,7 +74,7 @@ llm_write_stack() {
             --argjson schema "$STACK_SCHEMA" \
             '{
                 schema: $schema,
-                notation: "cloud mode: roles.model = hosted opencode provider model id (slots unused)",
+                notation: "cloud mode: roles.model = hosted provider model id; roles[].provider optional (default opencode)",
                 models_dir: $md,
                 bifrost_port: ($bp | tonumber),
                 opencode_port: ($op | tonumber),
@@ -80,7 +82,7 @@ llm_write_stack() {
                 cloud: true,
                 cloud_provider: "opencode",
                 models: [],
-                roles: $r
+                roles: ($r | with_entries(.value.provider //= "opencode"))
             }' >"$STACK_FILE"
     else
         jq -n --argjson m "$_m" --argjson r "$_r" \

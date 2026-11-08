@@ -11,19 +11,13 @@
       "uid": "1000",
       "gid": "1000"
     },
-    "ghcr.io/nmwael/agentic-devcontainer-feature/llama-server": "1",
-    "ghcr.io/nmwael/agentic-devcontainer-feature/gpu-bridge": "1.0.1",
-    "ghcr.io/nmwael/agentic-devcontainer-feature/bifrost-gateway": "1",
-    "ghcr.io/nmwael/agentic-devcontainer-feature/models": "1",
-    "ghcr.io/nmwael/agentic-devcontainer-feature/opencode-agents": "1",
-    "ghcr.io/devcontainers-extra/features/opencode": {
-      "version": "latest"
-    },
-    "ghcr.io/tailscale/codespace/tailscale": {
-      "version": "latest"
-    },
-    "ghcr.io/devcontainers-extra/features/apt-get-packages": {
-      "version": "1",
+    "ghcr.io/nmwael/agentic-devcontainer-feature/llama-server:1.0.6": {},
+    "ghcr.io/nmwael/agentic-devcontainer-feature/gpu-bridge:1.0.1": {},
+    "ghcr.io/nmwael/agentic-devcontainer-feature/bifrost-gateway:1.1.4": {},
+    "ghcr.io/nmwael/agentic-devcontainer-feature/models:1.6.0": {},
+    "ghcr.io/nmwael/agentic-devcontainer-feature/opencode-agents:1.5.0": {},
+    "ghcr.io/tailscale/codespace/tailscale:1.0.8": {},
+    "ghcr.io/devcontainers-extra/features/apt-get-packages:1.0.8": {
       "packages": "gh,jq,ripgrep,shfmt,shellcheck,bats,python3,python3-pip,python3-venv"
     },
     "ghcr.io/devcontainers/features/docker-in-docker:4": {
@@ -32,8 +26,26 @@
     "ghcr.io/devcontainers/features/node:2": {
       "version": "24"
     },
+    "ghcr.io/devcontainers-extra/features/npm-package:1.0.4": {
+      "package": "@opencode/cli",
+      "version": "2.1.2"
+    },
     "ghcr.io/devcontainers-extra/features/devcontainers-cli:1": {}
   },
+  "overrideFeatureInstallOrder": [
+    "ghcr.io/devcontainers/features/common-utils:2",
+    "ghcr.io/nmwael/agentic-devcontainer-feature/llama-server:1.0.6",
+    "ghcr.io/nmwael/agentic-devcontainer-feature/gpu-bridge:1.0.1",
+    "ghcr.io/nmwael/agentic-devcontainer-feature/models:1.6.0",
+    "ghcr.io/nmwael/agentic-devcontainer-feature/bifrost-gateway:1.1.4",
+    "ghcr.io/nmwael/agentic-devcontainer-feature/opencode-agents:1.5.0",
+    "ghcr.io/tailscale/codespace/tailscale:1.0.8",
+    "ghcr.io/devcontainers-extra/features/apt-get-packages:1.0.8",
+    "ghcr.io/devcontainers/features/docker-in-docker:4",
+    "ghcr.io/devcontainers/features/node:2",
+    "ghcr.io/devcontainers-extra/features/npm-package:1.0.4",
+    "ghcr.io/devcontainers-extra/features/devcontainers-cli:1"
+  ],
   "privileged": true,
   "capAdd": [
     "SYS_PTRACE"
@@ -51,9 +63,12 @@
     "--volume=/usr/lib/wsl/drivers:/usr/lib/wsl/drivers:ro"
   ],
   "forwardPorts": [
+    8080,
     8082,
     8089,
-    4096
+    8090,
+    4096,
+    5173
   ],
   "customizations": {
     "vscode": {
@@ -73,13 +88,13 @@
     "GOOGLE_API_KEY": "${localEnv:GOOGLE_API_KEY}",
     "NVIDIA_API_KEY": "${localEnv:NVIDIA_API_KEY}",
     "SKIP_LLAMA_START": "${localEnv:SKIP_LLAMA_START}",
+    "BIFROST_SETUP_TOKEN": "${localEnv:BIFROST_SETUP_TOKEN}",
+    "GH_TOKEN": "${localEnv:GH_TOKEN}",
+    "OPENCODE_PASSWORD": "${localEnv:OPENCODE_SERVER_PASSWORD}",
+    "SUBAGENT_DEPTH": "3",
     "CLOUD_MODE": "true",
     "CLOUD_MODEL": "big-pickle"
   },
   "postCreateCommand": "bash scripts/post-create.sh",
-  "postStartCommand": "bash scripts/auto-startup.sh",
-  "remoteEnv": {
-    "CLOUD_MODE": "true",
-    "CLOUD_MODEL": "big-pickle"
-  }
+  "postStartCommand": "bash scripts/auto-startup.sh"
 }
