@@ -224,7 +224,7 @@ assert isinstance(data, dict) and "features" in data, "template devcontainer.jso
     local role
     for role in architect coder researcher reviewer ui artist; do
         grep -q 'Delegation JSON envelope' \
-            "$REPO_ROOT/src/opencode-agents/templates/.opencode/agent/$role.md" || {
+            "$REPO_ROOT/src/opencode-agents/templates/.opencode/agents/$role.md" || {
             echo "role prompt $role.md: no pointer to the delegation JSON envelope"
             return 1
         }
