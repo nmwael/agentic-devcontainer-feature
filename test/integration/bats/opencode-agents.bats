@@ -5,7 +5,7 @@
     [ -f /usr/local/share/opencode-agents/AGENTS.md ]
     [ -f /usr/local/share/opencode-agents/AGENTS_LIFECYCLE.md ]
     [ -x /usr/local/share/opencode-agents/scaffold.sh ]
-    [ -d /usr/local/share/opencode-agents/.opencode/agent ]
+    [ -d /usr/local/share/opencode-agents/.opencode/agents ]
     [ -d /usr/local/share/opencode-agents/library ]
 }
 
@@ -15,7 +15,7 @@
     [ -f /workspaces/ci/AGENTS.md ]
     [ -f /workspaces/ci/AGENTS_LIFECYCLE.md ]
     [ -d /workspaces/ci/library ]
-    [ -d /workspaces/ci/.opencode/agent ]
+    [ -d /workspaces/ci/.opencode/agents ]
 }
 
 @test "scaffold.sh generates opencode.json from the shipped fragment (fresh workspace)" {
