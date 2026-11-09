@@ -108,11 +108,11 @@ default-cloud)
         echo "WARN: AGENTS_LIFECYCLE.md missing from workspace"
     fi
 
-    # .opencode/agent/*.md
-    if [ -d "$WS_DIR/.opencode/agent" ]; then
-        echo "OK: .opencode/agent/ directory scaffolded"
+    # .opencode/agents/*.md
+    if [ -d "$WS_DIR/.opencode/agents" ]; then
+        echo "OK: .opencode/agents/ directory scaffolded"
     else
-        echo "WARN: .opencode/agent/ missing"
+        echo "WARN: .opencode/agents/ missing"
     fi
 
     # library/

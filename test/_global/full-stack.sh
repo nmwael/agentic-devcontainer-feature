@@ -61,8 +61,8 @@ WORKSPACE="$SCRATCH" /usr/local/share/opencode-agents/scaffold.sh >/dev/null 2>&
     || fail "scaffold.sh exited non-zero"
 [ -f "$SCRATCH/AGENTS.md" ] || fail "scaffold did not produce AGENTS.md"
 [ -f "$SCRATCH/AGENTS_LIFECYCLE.md" ] || fail "scaffold did not produce AGENTS_LIFECYCLE.md"
-[ -d "$SCRATCH/.opencode/agent" ] || fail "scaffold did not produce .opencode/agent/"
+[ -d "$SCRATCH/.opencode/agents" ] || fail "scaffold did not produce .opencode/agents/"
 [ -f "$SCRATCH/library/EXTENSIONS.md" ] || fail "scaffold did not produce library/"
-ok "scaffold produced expected workspace files (AGENTS.md, .opencode/agent, library)"
+ok "scaffold produced expected workspace files (AGENTS.md, .opencode/agents, library)"
 
 echo "PASS: full-stack"
