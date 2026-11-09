@@ -16,7 +16,7 @@ on:
 jobs:
   static:
     name: Static checks
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v7.0.1
 
@@ -46,7 +46,7 @@ jobs:
 
   integration:
     name: Container integration (bats per feature)
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs: static
     steps:
       - uses: actions/checkout@v7.0.1
@@ -56,7 +56,7 @@ jobs:
 
   devcontainer-cli:
     name: "devcontainer CLI features test (${{ matrix.name }})"
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs: static
     strategy:
       fail-fast: false
